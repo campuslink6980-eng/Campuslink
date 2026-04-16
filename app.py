@@ -5603,10 +5603,11 @@ def _serialize_announcement_doc(doc: dict, *, include_audience: bool = True) -> 
     return out
 
 
-# default -> admin login
+from flask import send_from_directory
+
 @app.route("/")
 def home():
-    return redirect(url_for("admin_login"))
+    return send_from_directory("static", "main.html")
 
 
 # ---------- Admin routes ----------
