@@ -7,3 +7,4 @@ PyJWT==2.10.1
 qrcode[pil]>=7.4.2
 reportlab>=4.0.0
 cloudinary
+gunicorn
