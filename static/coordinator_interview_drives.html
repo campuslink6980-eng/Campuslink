@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interview Drives · CampusLink</title>
+  <style>
+    :root { --primary: #001bb7; --accent: #0046ff; --bg: #f9f8f6; --paper: #fff; --text: #11224e; --muted: #6b7280; --border: #e2e8f0; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: "Segoe UI", system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    .header { background: linear-gradient(90deg, var(--primary), var(--accent)); color: #fff; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; }
+    .header h1 { margin: 0; font-size: 20px; }
+    a { color: #fff; text-decoration: none; font-weight: 600; }
+    a.link { color: var(--accent); }
+    .container { max-width: 800px; margin: 0 auto; padding: 28px 20px; }
+    .card { background: var(--paper); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-bottom: 24px; }
+    .top-actions { margin-bottom: 20px; }
+    .btn { padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; font-size: 14px; text-decoration: none; display: inline-block; }
+    .btn-primary { background: linear-gradient(135deg, var(--primary), var(--accent)); color: #fff; }
+    .btn-ghost { background: #f3f4f6; color: var(--text); border: 1px solid var(--border); }
+    .drive-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid var(--border); }
+    .drive-row:last-child { border-bottom: none; }
+    .drive-info strong { display: block; }
+    .drive-meta { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <h1>Interview Drives</h1>
+    <a href="/coordinator/dashboard">← Dashboard</a>
+  </header>
+  <main class="container">
+    <div class="card">
+      <div class="top-actions">
+        <a href="/coordinator/post-interview" class="btn btn-primary">Post Completed Interview</a>
+      </div>
+      <div id="drives-list"></div>
+    </div>
+  </main>
+  <script>
+    (function() {
+      function loadDrives() {
+        fetch("/api/coordinator/interview-drives", { credentials: "same-origin" })
+          .then(function(r) {
+            if (r.status === 401) { window.location.href = "/login"; return null; }
+            if (r.status === 403) { window.location.href = "/main"; return null; }
+            return r.json();
+          })
+          .then(function(data) {
+            var list = document.getElementById("drives-list");
+            if (!data || !data.drives) { list.innerHTML = "<p style=\"color:var(--muted);\">No drives yet.</p>"; return; }
+            if (!data.drives.length) { list.innerHTML = "<p style=\"color:var(--muted);\">No drives yet. Post a completed interview to get started.</p>"; return; }
+            list.innerHTML = data.drives.map(function(d) {
+              var meta = [d.interview_date, d.rounds && d.rounds.length ? d.rounds.join(", ") : ""].filter(Boolean).join(" · ");
+              return "<div class=\"drive-row\"><div><strong>" + (d.company || "—") + " · " + (d.role || "—") + "</strong><div class=\"drive-meta\">" + (meta || "—") + "</div><a href=\"/interview-drive/" + d.id + "\" class=\"link\" style=\"font-size:13px;\">View drive page</a></div></div>";
+            }).join("");
+          })
+          .catch(function() { document.getElementById("drives-list").innerHTML = "<p class=\"err\">Failed to load.</p>"; });
+      }
+      loadDrives();
+    })();
+  </script>
+</body>
+</html>

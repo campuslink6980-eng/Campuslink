@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CampusLink · Applications</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <style>
+    :root { --li-blue:#0a66c2; --bg:#f3f2ef; --card:#fff; --text:#1f2937; --muted:#64748b; --border:#dbe3ec; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; background:var(--bg); color:var(--text); min-height:100vh; }
+    .topnav { position:sticky; top:0; z-index:50; background:linear-gradient(90deg,#001bb7 0%, #0046ff 100%); border-bottom:none; box-shadow:0 8px 16px rgba(0,0,0,0.08); padding:10px 18px; display:flex; justify-content:space-between; align-items:center; gap:12px; }
+    .topnav-brand { font-weight:800; color:#fff; }
+    .topnav-links { display:flex; gap:10px; flex-wrap:wrap; }
+    .topnav-links a { text-decoration:none; color:#fff; font-weight:600; font-size:14px; padding:8px 12px; border-radius:999px; }
+    .topnav-links a.active { background:rgba(255,255,255,0.2); color:#fff; }
+    .wrap { max-width:980px; margin:0 auto; padding:20px 16px 42px; }
+    .page-head h1 { margin:0; font-size:30px; letter-spacing:-0.02em; color:#0f172a; }
+    .page-head p { margin:6px 0 0; color:var(--muted); font-size:14px; }
+    .tabs { margin-top:12px; display:flex; gap:10px; flex-wrap:wrap; }
+    .tab { border:1px solid var(--border); background:#fff; border-radius:999px; padding:8px 14px; font-size:13px; font-weight:700; color:#334155; cursor:pointer; }
+    .tab.active { background:#e8f3ff; color:var(--li-blue); border-color:#bfdbfe; }
+    .shell { margin-top:14px; }
+    .state { padding:18px; text-align:center; color:var(--muted); font-size:14px; background:#fff; border:1px solid var(--border); border-radius:12px; }
+    .list { display:grid; gap:12px; }
+    .card { background:#fff; border:1px solid var(--border); border-radius:12px; box-shadow:0 2px 8px rgba(15,23,42,0.06); padding:16px; display:flex; justify-content:space-between; align-items:flex-start; gap:14px; }
+    .card h2 { margin:0; font-size:18px; color:#0f172a; }
+    .company { margin-top:4px; color:#475569; font-size:14px; }
+    .meta { margin-top:8px; color:#64748b; font-size:13px; }
+    .badge { display:inline-flex; padding:4px 10px; border-radius:999px; font-size:11px; font-weight:800; }
+    .badge.applied { background:#fef9c3; color:#a16207; }
+    .badge.shortlisted { background:#dcfce7; color:#166534; }
+    .badge.rejected { background:#fee2e2; color:#991b1b; }
+    .card-actions { display:flex; flex-direction:column; align-items:flex-end; gap:8px; min-width:150px; }
+    .btn { border:1px solid var(--border); background:#fff; border-radius:10px; padding:10px 12px; font-size:13px; font-weight:700; color:#334155; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; min-height:40px; }
+    .btn:hover { border-color:#bfdbfe; color:var(--li-blue); }
+    .empty-icon { font-size:40px; margin-bottom:10px; }
+    @media (max-width:768px){
+      .topnav { padding:10px 12px; }
+      .wrap { padding:16px 12px 30px; }
+      .page-head h1 { font-size:24px; }
+      .card { flex-direction:column; }
+      .card-actions { width:100%; align-items:stretch; min-width:0; }
+      .card-actions .btn { width:100%; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topnav">
+    <div class="topnav-brand">CampusLink</div>
+    <nav class="topnav-links" aria-label="Main">
+      <a href="/user/dashboard">Home</a>
+      <a href="/jobs">Jobs</a>
+      <a href="/applications" class="active">Applications</a>
+    </nav>
+  </header>
+  <div class="wrap">
+    <div class="page-head">
+      <h1>My Applications</h1>
+      <p>Track all applied opportunities in one place.</p>
+      <div class="tabs" role="tablist" aria-label="Application status tabs">
+        <button class="tab active" data-status="all" type="button">Applied</button>
+        <button class="tab" data-status="shortlisted" type="button">Selected</button>
+        <button class="tab" data-status="rejected" type="button">Rejected</button>
+      </div>
+    </div>
+
+    <div class="shell">
+      <div id="state" class="state">Loading your applications…</div>
+      <div id="list" class="list" style="display: none;"></div>
+    </div>
+  </div>
+
+  <script>
+    function escapeHtml(s) {
+      return String(s || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll("\"", "&quot;");
+    }
+
+    function statusClass(st) {
+      var u = String(st || "APPLIED").toUpperCase();
+      if (u === "SHORTLISTED") return "shortlisted";
+      if (u === "REJECTED") return "rejected";
+      return "applied";
+    }
+
+    function statusLabel(st) {
+      var u = String(st || "APPLIED").toUpperCase();
+      if (u === "SHORTLISTED") return "🟢 Selected";
+      if (u === "REJECTED") return "🔴 Rejected";
+      return "🟡 Pending";
+    }
+
+    function formatWhen(iso) {
+      if (!iso) return "";
+      try {
+        var d = new Date(iso);
+        if (isNaN(d.getTime())) return iso;
+        return d.toLocaleString(undefined, {
+          dateStyle: "medium",
+          timeStyle: "short",
+        });
+      } catch (e) {
+        return iso;
+      }
+    }
+
+    var allItems = [];
+    var activeStatus = "all";
+
+    function renderList() {
+      var stateEl = document.getElementById("state");
+      var listEl = document.getElementById("list");
+      listEl.innerHTML = "";
+      var items = allItems.filter(function (ap) {
+        if (activeStatus === "all") return true;
+        return statusClass(ap.status) === activeStatus;
+      });
+      if (!items.length) {
+        listEl.style.display = "none";
+        stateEl.style.display = "block";
+        stateEl.innerHTML = "<div class=\"empty-icon\">📭</div><div><strong>No applications in this tab</strong></div>";
+        return;
+      }
+      stateEl.style.display = "none";
+      listEl.style.display = "grid";
+      items.forEach(function (ap) {
+        var title = ap.job_role || ap.job_title || "Role";
+        var company = ap.job_company || "Company";
+        var when = formatWhen(ap.applied_at);
+        var card = document.createElement("div");
+        card.className = "card";
+        var left = document.createElement("div");
+        left.innerHTML =
+          "<h2>" + escapeHtml(title) + "</h2>" +
+          "<div class=\"company\">" + escapeHtml(company) + "</div>" +
+          "<div class=\"meta\">Applied Date: " + escapeHtml(when || "N/A") + "</div>";
+        var right = document.createElement("div");
+        right.className = "card-actions";
+        var badge = document.createElement("span");
+        badge.className = "badge " + statusClass(ap.status);
+        badge.textContent = statusLabel(ap.status);
+        right.appendChild(badge);
+        if (ap.job_id) {
+          var a = document.createElement("a");
+          a.className = "btn";
+          var jobPath = ap.job_source === "alumni" ? "/alumni-jobs/" : "/jobs/";
+          a.href = jobPath + encodeURIComponent(ap.job_id);
+          a.textContent = "View Application";
+          right.appendChild(a);
+        }
+        card.appendChild(left);
+        card.appendChild(right);
+        listEl.appendChild(card);
+      });
+    }
+
+    async function load() {
+      var stateEl = document.getElementById("state");
+      try {
+        var res = await fetch("/api/student/applications", { credentials: "same-origin" });
+        if (res.status === 401) {
+          window.location.href = "/login";
+          return;
+        }
+        if (!res.ok) {
+          stateEl.textContent = "Could not load applications.";
+          return;
+        }
+        var data = await res.json();
+        allItems = data.items || [];
+        if (!allItems.length) {
+          stateEl.style.display = "block";
+          stateEl.innerHTML =
+            "<div class=\"empty-icon\">📭</div><div><strong>No applications yet</strong></div>" +
+            "<div style=\"margin-top:8px;font-size:13px;\">Browse jobs and apply to see them listed here.</div>" +
+            "<div style=\"margin-top:16px;\"><a class=\"btn\" href=\"/jobs\">Go to Jobs</a></div>";
+          return;
+        }
+        renderList();
+      } catch (e) {
+        stateEl.style.display = "block";
+        stateEl.textContent = "Something went wrong loading applications.";
+      }
+    }
+
+    document.querySelectorAll(".tab").forEach(function (tab) {
+      tab.addEventListener("click", function () {
+        activeStatus = tab.getAttribute("data-status") || "all";
+        document.querySelectorAll(".tab").forEach(function (t) { t.classList.remove("active"); });
+        tab.classList.add("active");
+        renderList();
+      });
+    });
+
+    load();
+  </script>
+</body>
+</html>

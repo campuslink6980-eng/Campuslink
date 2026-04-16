@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CampusLink · Job Details</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <link rel="stylesheet" href="/static/css/job-deadline.css" />
+  <style>
+    :root { --li-blue:#0a66c2; --bg:#f3f2ef; --card:#fff; --text:#1f2937; --muted:#64748b; --border:#dbe3ec; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; background:var(--bg); color:var(--text); min-height:100vh; }
+    .topnav { position:sticky; top:0; z-index:50; background:linear-gradient(90deg,#001bb7 0%, #0046ff 100%); border-bottom:none; box-shadow:0 8px 16px rgba(0,0,0,0.08); padding:10px 18px; display:flex; justify-content:space-between; align-items:center; gap:12px; }
+    .topnav-brand { font-weight:800; color:#fff; }
+    .topnav-links { display:flex; gap:10px; flex-wrap:wrap; }
+    .topnav-links a { text-decoration:none; color:#fff; font-weight:600; font-size:14px; padding:8px 12px; border-radius:999px; }
+    .topnav-links a.active { background:rgba(255,255,255,0.2); color:#fff; }
+    .wrap { max-width:980px; margin:0 auto; padding:20px 16px 40px; }
+    .card { background:#fff; border:1px solid var(--border); border-radius:14px; padding:18px; box-shadow:0 2px 8px rgba(15,23,42,0.06); color:var(--text); }
+    h1 { margin:0; font-size:24px; color:#0f172a; line-height:1.3; }
+    .meta { margin-top:8px; font-size:13px; color: var(--muted); display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+    .pill { display:inline-flex; padding:4px 8px; border-radius:999px; font-size:11px; font-weight:700; background:#eef6ff; color:#1d4ed8; border:1px solid #dbeafe; }
+    .btn {
+      border:1px solid var(--border);
+      background: #fff;
+      border-radius:10px;
+      padding:10px 14px;
+      font-size:13px;
+      font-weight:700;
+      cursor:pointer;
+      color:#334155;
+      text-decoration:none;
+    }
+    .btn.primary {
+      background: var(--li-blue);
+      border-color: var(--li-blue);
+      color:#fff;
+    }
+    .btn[disabled] { opacity: 0.6; cursor: not-allowed; box-shadow:none; }
+    .btn.not-eligible-btn {
+      background: #fff1f2;
+      border: 1px solid #fecdd3;
+      color: #be123c;
+      box-shadow: none;
+    }
+    .apply-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+    .reasons { margin-top: 10px; font-size: 13px; color: #b45309; }
+    .reasons ul { margin: 8px 0 0; padding-left: 18px; }
+    .skill-hint {
+      margin-top: 10px;
+      font-size: 13px;
+      line-height: 1.5;
+      color: #475569;
+      text-align: right;
+      max-width: 420px;
+      margin-left: auto;
+    }
+    .skill-hint ul { margin: 6px 0 0; padding-left: 18px; text-align: left; }
+    .ineligible-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      background: rgba(15, 23, 42, 0.55);
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .ineligible-overlay.open { display: flex; }
+    .ineligible-dialog {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px 24px;
+      max-width: 440px;
+      width: 100%;
+      color: #0f172a;
+      box-shadow: 0 24px 48px rgba(0,0,0,0.45);
+    }
+    .ineligible-dialog h3 { margin: 0 0 14px; font-size: 16px; font-weight: 800; color: #0f172a; }
+    .ineligible-dialog ul { margin: 0 0 16px; padding-left: 1.2em; line-height: 1.55; font-size: 14px; }
+    .ineligible-dialog .dlg-close {
+      font-size: 13px;
+      font-weight: 700;
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: #334155;
+      cursor: pointer;
+      float: right;
+    }
+    .job-important-criteria {
+      margin-top: 14px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(251, 191, 36, 0.45);
+      background: #fffbeb;
+    }
+    .job-important-criteria h2 {
+      margin: 0 0 8px;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      color: #b45309;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .job-important-criteria .job-important-criteria-body {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.55;
+      color: #92400e;
+      white-space: pre-wrap;
+    }
+    .desc { margin-top: 12px; font-size: 14px; line-height: 1.6; color: #334155; white-space: pre-wrap; overflow-wrap: break-word; }
+    .state { padding:12px; color: var(--muted); font-size: 14px; }
+    @media (max-width:768px){
+      .topnav { padding:10px 12px; }
+      .wrap { padding:16px 12px 28px; }
+      .card { padding:14px; }
+      h1 { font-size:21px; }
+      .apply-actions { width:100%; align-items:stretch; }
+      .apply-actions > div { width:100%; }
+      .apply-actions .btn { width:100%; }
+      .skill-hint { text-align:left; margin-left:0; max-width:none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topnav">
+    <div class="topnav-brand">CampusLink</div>
+    <nav class="topnav-links" aria-label="Main">
+      <a href="/user/dashboard">Home</a>
+      <a href="/jobs" class="active">Jobs</a>
+    </nav>
+  </header>
+  <div class="wrap">
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
+        <div>
+          <h1 id="title">Loading…</h1>
+          <div class="meta" id="meta"></div>
+        </div>
+        <div class="apply-actions">
+          <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;">
+            <button class="btn" id="editBtn" type="button" style="display:none;">Edit</button>
+            <button class="btn" id="deleteBtn" type="button" style="display:none;">Delete</button>
+            <a href="#" id="skillGapBtn" class="btn" style="display:none; text-decoration:none; line-height:inherit;">Skill gap</a>
+            <button class="btn primary" id="applyBtn" type="button" disabled>Apply</button>
+          </div>
+          <p id="applyDeadlineNote" class="job-deadline-note" style="display:none; text-align:right; margin:0;"></p>
+        </div>
+      </div>
+
+      <div id="deadlineCountdown" class="job-deadline-countdown" style="margin-top:4px;" aria-live="polite"></div>
+      <div id="importantCriteria" class="job-important-criteria" style="display:none;" role="note"></div>
+      <div id="skillHint" class="skill-hint" style="display:none;"></div>
+      <div id="reasons" class="reasons" style="display:none;"></div>
+      <div id="desc" class="desc"></div>
+      <div id="req" class="desc" style="margin-top:8px;"></div>
+      <div id="salary" class="desc" style="margin-top:8px;"></div>
+      <div id="attachment" class="desc" style="margin-top:8px;"></div>
+      <div id="state" class="state"></div>
+    </div>
+  </div>
+
+  <div class="ineligible-overlay" id="ineligibleOverlay" aria-hidden="true">
+    <div class="ineligible-dialog" role="dialog" aria-modal="true" aria-labelledby="ineligibleTitle">
+      <h3 id="ineligibleTitle">You are not eligible for this job because:</h3>
+      <ul id="ineligibleReasonList"></ul>
+      <button type="button" class="dlg-close" id="ineligibleOk">OK</button>
+    </div>
+  </div>
+
+  <script src="/static/js/job-deadline-ui.js"></script>
+  <script>
+    function escapeHtml(s) {
+      return String(s || "")
+        .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+        .replaceAll("\"","&quot;").replaceAll("'","&#039;");
+    }
+
+    function bindIneligibleModal() {
+      var overlay = document.getElementById("ineligibleOverlay");
+      var ok = document.getElementById("ineligibleOk");
+      var dialog = overlay && overlay.querySelector(".ineligible-dialog");
+      function close() {
+        if (!overlay) return;
+        overlay.classList.remove("open");
+        overlay.setAttribute("aria-hidden", "true");
+      }
+      if (ok) ok.addEventListener("click", close);
+      if (overlay) {
+        overlay.addEventListener("click", function (e) { if (e.target === overlay) close(); });
+      }
+      if (dialog) {
+        dialog.addEventListener("click", function (e) { e.stopPropagation(); });
+      }
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && overlay && overlay.classList.contains("open")) close();
+      });
+    }
+
+    function openIneligibleModal(reasons) {
+      var overlay = document.getElementById("ineligibleOverlay");
+      var list = document.getElementById("ineligibleReasonList");
+      if (!overlay || !list) return;
+      list.innerHTML = "";
+      var rows = Array.isArray(reasons) ? reasons.filter(Boolean) : [];
+      if (!rows.length) {
+        var li = document.createElement("li");
+        li.textContent = "You do not meet one or more eligibility requirements.";
+        list.appendChild(li);
+      } else {
+        rows.forEach(function (r) {
+          var li = document.createElement("li");
+          li.textContent = r;
+          list.appendChild(li);
+        });
+      }
+      overlay.classList.add("open");
+      overlay.setAttribute("aria-hidden", "false");
+    }
+
+    bindIneligibleModal();
+
+    async function load() {
+      const id = window.location.pathname.split("/").pop();
+      const title = document.getElementById("title");
+      const meta = document.getElementById("meta");
+      const desc = document.getElementById("desc");
+      const req = document.getElementById("req");
+      const state = document.getElementById("state");
+      const salaryEl = document.getElementById("salary");
+      const attachmentEl = document.getElementById("attachment");
+      const applyBtn = document.getElementById("applyBtn");
+      const editBtn = document.getElementById("editBtn");
+      const deleteBtn = document.getElementById("deleteBtn");
+      const skillGapBtn = document.getElementById("skillGapBtn");
+      const reasonsEl = document.getElementById("reasons");
+      const skillHintEl = document.getElementById("skillHint");
+      const importantCriteriaEl = document.getElementById("importantCriteria");
+      function normalizeText(v) {
+        return String(v || "").toLowerCase().replace(/\s+/g, " ").trim();
+      }
+      function pushUnique(list, seen, text) {
+        const raw = String(text || "").trim();
+        if (!raw) return;
+        const key = normalizeText(raw);
+        if (seen.has(key)) return;
+        seen.add(key);
+        list.push(raw);
+      }
+
+      state.textContent = "Loading job…";
+      try {
+        const res = await fetch(`/api/jobs/${encodeURIComponent(id)}`);
+        if (res.status === 401) { window.location.href = "/login"; return; }
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || "Failed to load job");
+
+        const j = data.job || {};
+        title.textContent = `${j.role || "Role"} · ${j.company_name || "Company"}`;
+        const locationVal = j.location || j.job_location || j.city || "";
+        const locationText = locationVal ? `Location: ${locationVal}` : "";
+        meta.innerHTML = `
+          <span class="pill">${escapeHtml(j.type || "")}</span>
+          <span class="pill">${escapeHtml(j.mode || "")}</span>
+          ${locationText ? `<span>${escapeHtml(locationText)}</span>` : ""}
+          <span>Application deadline: ${escapeHtml(j.deadline || j.application_deadline || "—")}</span>
+          <span style="margin-left:8px;">Eligible: ${escapeHtml((j.eligible_branches || []).join(", ") || "All")}</span>
+        `;
+        const icText = (j.important_criteria_text && String(j.important_criteria_text).trim()) || "";
+        if (j.important_criteria_enabled && icText) {
+          importantCriteriaEl.style.display = "block";
+          importantCriteriaEl.innerHTML =
+            "<h2><span aria-hidden=\"true\">⚠️</span> Important Criteria</h2>" +
+            "<p class=\"job-important-criteria-body\">" +
+            escapeHtml(icText).replace(/\n/g, "<br>") +
+            "</p>";
+        } else {
+          importantCriteriaEl.style.display = "none";
+          importantCriteriaEl.innerHTML = "";
+        }
+        let descHtml = "";
+        if (j.about) {
+          descHtml += escapeHtml(j.about).replace(/\n/g, "<br>");
+        }
+        if (j.responsibilities && j.responsibilities.length) {
+          descHtml += (descHtml ? "\n\n" : "") + "Key responsibilities:\n" +
+            j.responsibilities.map((r) => "• " + escapeHtml(r)).join("\n");
+        }
+        if (!descHtml && j.description) {
+          descHtml = escapeHtml(j.description);
+        }
+        desc.innerHTML = descHtml ? descHtml.replace(/\n/g, "<br>") : "No description provided.";
+        let reqParts = [];
+        const reqSeen = new Set();
+        if (j.required_skills && j.required_skills.length) {
+          pushUnique(reqParts, reqSeen, "Required skills: " + j.required_skills.join(", "));
+        }
+        if (j.preferred_skills && j.preferred_skills.length) {
+          pushUnique(reqParts, reqSeen, "Preferred skills: " + j.preferred_skills.join(", "));
+        }
+        if (j.min_cgpa !== undefined && j.min_cgpa !== null && String(j.min_cgpa).trim() !== "") {
+          pushUnique(reqParts, reqSeen, "Minimum CGPA (on 10): " + j.min_cgpa);
+        }
+        if (j.batch_year) pushUnique(reqParts, reqSeen, "Target batch / graduation year: " + j.batch_year);
+        if (j.experience) pushUnique(reqParts, reqSeen, "Experience: " + j.experience);
+        if (j.backlog_criteria) pushUnique(reqParts, reqSeen, "Backlog criteria: " + j.backlog_criteria);
+        if (j.requirements) {
+          const normalizedReq = normalizeText(j.requirements);
+          const overlapsExisting = reqParts.some(function (p) { return normalizedReq.includes(normalizeText(p)); });
+          if (!overlapsExisting) pushUnique(reqParts, reqSeen, j.requirements);
+        }
+        req.innerHTML = reqParts.length ? reqParts.map(escapeHtml).join("<br>") : "";
+        let salaryParts = [];
+        const salarySeen = new Set();
+        if (j.salary) pushUnique(salaryParts, salarySeen, "Salary / stipend: " + j.salary);
+        if (j.perks && j.perks.length) pushUnique(salaryParts, salarySeen, "Perks: " + j.perks.join(", "));
+        if (j.selection_process) pushUnique(salaryParts, salarySeen, "Selection: " + j.selection_process);
+        if (j.rounds && j.rounds.length) pushUnique(salaryParts, salarySeen, "Rounds: " + j.rounds.join(" → "));
+        if (j.joining_date) pushUnique(salaryParts, salarySeen, "Expected joining: " + j.joining_date);
+        salaryEl.innerHTML = salaryParts.length ? salaryParts.map(escapeHtml).join("<br>") : "";
+
+        const multi = j.attachments || [];
+        if (multi.length) {
+          attachmentEl.innerHTML = multi.map((a, i) => {
+            const fn = a.filename || "Document " + (i + 1);
+            return `<div style="margin-top:4px;"><a href="/jobs/${encodeURIComponent(id)}/attachment?n=${i}" class="link" style="font-size:13px;">Download ${escapeHtml(fn)}</a></div>`;
+          }).join("");
+        } else {
+          const att = j.attachment || {};
+          if (att.has_attachment && att.filename) {
+            attachmentEl.innerHTML = `<a href="/jobs/${encodeURIComponent(id)}/attachment" class="link" style="font-size:13px;">Download detailed JD (${escapeHtml(att.filename)})</a>`;
+          } else {
+            attachmentEl.textContent = "";
+          }
+        }
+
+        const apply = data.apply || { can_apply: false, reasons: [] };
+        const manage = data.manage || {};
+        const deadlineNote = document.getElementById("applyDeadlineNote");
+        const cdEl = document.getElementById("deadlineCountdown");
+        applyBtn.textContent = "Apply";
+        applyBtn.classList.remove("apply-closed");
+        if (deadlineNote) {
+          deadlineNote.style.display = "none";
+          deadlineNote.textContent = "";
+        }
+
+        const CL = window.CampusLinkJobDeadline;
+        const deadlinePassed = !!(apply.deadline_passed || (CL && CL.isDeadlinePassed(j)));
+
+        function sealApplyDeadlineClosed() {
+          if (apply.already_applied) return;
+          applyBtn.disabled = true;
+          applyBtn.textContent = "Applications Closed";
+          applyBtn.classList.add("apply-closed");
+          applyBtn.onclick = null;
+          if (deadlineNote) {
+            deadlineNote.textContent = "⚠ Application deadline has passed";
+            deadlineNote.style.display = "block";
+          }
+        }
+
+        if (CL && cdEl && !apply.already_applied) {
+          if (deadlinePassed) {
+            cdEl.textContent = "⏳ Applications closed";
+            cdEl.className = "job-deadline-countdown cl-cd-ended";
+          } else {
+            cdEl.className = "job-deadline-countdown";
+            CL.renderCountdown(cdEl, j, {
+              onClosed: function () {
+                sealApplyDeadlineClosed();
+                reasonsEl.style.display = "block";
+                reasonsEl.innerHTML = "<div class=\"job-deadline-note\" style=\"margin-top:0;\">⚠ Application deadline has passed</div>";
+              },
+            });
+          }
+        } else if (cdEl && apply.already_applied) {
+          cdEl.textContent = "";
+          cdEl.className = "job-deadline-countdown";
+        }
+
+        if (manage.can_edit) {
+          editBtn.style.display = "inline-flex";
+          deleteBtn.style.display = "inline-flex";
+          editBtn.onclick = () => {
+            window.location.href = `/jobs/${encodeURIComponent(id)}/edit`;
+          };
+          deleteBtn.onclick = async () => {
+            if (!confirm("Are you sure you want to delete this job?")) return;
+            const r = await fetch(`/api/jobs/${encodeURIComponent(id)}`, { method: "DELETE" });
+            const d = await r.json().catch(() => ({}));
+            if (!r.ok) {
+              alert(d.error || "Failed to delete job");
+              return;
+            }
+            window.location.href = "/jobs";
+          };
+        }
+
+        if (skillHintEl) {
+          skillHintEl.style.display = "none";
+          skillHintEl.innerHTML = "";
+        }
+        applyBtn.classList.remove("not-eligible-btn");
+        applyBtn.onclick = null;
+
+        if (apply.already_applied) {
+          applyBtn.disabled = true;
+          applyBtn.textContent = `Already applied (${apply.application_status || "APPLIED"})`;
+          reasonsEl.style.display = "none";
+        } else if (deadlinePassed) {
+          sealApplyDeadlineClosed();
+          reasonsEl.style.display = "block";
+          const other = (apply.reasons || []).filter(function (r) {
+            return !/application deadline has passed/i.test(String(r));
+          });
+          let html = "<div class=\"job-deadline-note\" style=\"margin-top:0;\">⚠ Application deadline has passed</div>";
+          if (other.length) {
+            html += "<strong style=\"display:block;margin-top:10px;color:#fed7aa;\">Other requirements:</strong><ul style=\"margin:6px 0 0;padding-left:18px;color:#fed7aa;\">" +
+              other.map(function (r) { return "<li>" + escapeHtml(r) + "</li>"; }).join("") + "</ul>";
+          }
+          reasonsEl.innerHTML = html;
+        } else if (apply.can_apply) {
+          applyBtn.disabled = false;
+          applyBtn.textContent = "Apply Now";
+          reasonsEl.style.display = "none";
+          var sug = apply.skill_suggestions || [];
+          if (skillHintEl) {
+            if (sug.length) {
+              skillHintEl.style.display = "block";
+              skillHintEl.innerHTML =
+                "<p style=\"margin:0 0 6px;\"><strong>You are eligible to apply.</strong> Improving these skills can strengthen your profile:</p><ul>" +
+                sug.map(function (s) { return "<li>" + escapeHtml(s) + "</li>"; }).join("") +
+                "</ul><p style=\"margin:8px 0 0;font-size:12px;opacity:0.9;\">Eligible to apply — skills are suggestions only.</p>";
+            } else {
+              skillHintEl.style.display = "block";
+              skillHintEl.innerHTML = "<p style=\"margin:0;\">Eligible to apply. Keep your profile and skills updated for better chances.</p>";
+            }
+          }
+          applyBtn.onclick = async () => {
+            applyBtn.disabled = true;
+            applyBtn.textContent = "Applying…";
+            try {
+              const r = await fetch(`/api/jobs/${encodeURIComponent(id)}/apply`, { method: "POST" });
+              if (r.status === 401) { window.location.href = "/login"; return; }
+              const d = await r.json().catch(() => ({}));
+              if (!r.ok) {
+                var rs = d.reasons || [];
+                var msg = d.error || "Not eligible for this job.";
+                if (rs.length) msg += "\n\n• " + rs.join("\n• ");
+                throw new Error(msg);
+              }
+              applyBtn.textContent = "Applied";
+              if (skillHintEl) skillHintEl.style.display = "none";
+            } catch (err) {
+              alert(err && err.message ? err.message : "Apply failed");
+              applyBtn.disabled = false;
+              applyBtn.textContent = "Apply Now";
+            }
+          };
+        } else {
+          applyBtn.disabled = false;
+          applyBtn.classList.add("not-eligible-btn");
+          applyBtn.textContent = "Not Eligible";
+          reasonsEl.style.display = "none";
+          var inelig = apply.reasons || [];
+          applyBtn.onclick = function () {
+            openIneligibleModal(inelig);
+          };
+        }
+        if (skillGapBtn) {
+          skillGapBtn.href = "/student/skill-gap/" + encodeURIComponent(id);
+          skillGapBtn.style.display = "inline-flex";
+        }
+        state.textContent = "";
+      } catch (e) {
+        state.textContent = e.message || "Failed to load job";
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", load);
+  </script>
+</body>
+</html>
+

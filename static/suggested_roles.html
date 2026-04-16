@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Suggested Roles · CampusLink</title>
+  <style>
+    :root {
+      --bg: #f3f2ef;
+      --card: #fff;
+      --border: #e0e0e0;
+      --text: #191919;
+      --muted: #666;
+      --li: #0a66c2;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .top {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+    }
+    .top-left {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .top-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      color: var(--text);
+      text-decoration: none;
+      background: #fff;
+      font-size: 18px;
+    }
+    .top h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+      flex: 1;
+    }
+    .wrap {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 14px 12px 24px;
+      display: grid;
+      gap: 12px;
+    }
+    .role-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+    }
+    .role-title {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 700;
+    }
+    .role-score {
+      margin: 8px 0 0;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .tier-strong { color: #15803d; }
+    .tier-good { color: #a16207; }
+    .tier-moderate { color: #c2410c; }
+    .role-why {
+      margin: 10px 0 0;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+      color: #334155;
+      font-size: 13px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+    .actions {
+      margin-top: 12px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      border: none;
+      border-radius: 999px;
+      padding: 9px 14px;
+      min-height: 40px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-primary {
+      background: var(--li);
+      color: #fff;
+    }
+    .btn-muted {
+      background: #eef2ff;
+      color: #1e3a8a;
+    }
+    .btn-danger {
+      background: #fff1f2;
+      color: #be123c;
+    }
+    .links {
+      margin-top: 10px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .links a {
+      color: var(--li);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .links a:hover { text-decoration: underline; }
+    .empty,
+    .err {
+      text-align: center;
+      padding: 28px 16px;
+      color: var(--muted);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+    .err { color: #b42318; }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="top-left">
+      <a href="/user/dashboard" id="backLink" class="top-btn" aria-label="Back">←</a>
+      <a href="/user/dashboard" id="homeLink" class="top-btn" aria-label="Home">⌂</a>
+    </div>
+    <h1>🎯 Suggested Roles</h1>
+  </header>
+  <main class="wrap" id="main">
+    <div class="empty">Loading suggestions...</div>
+  </main>
+  <script>
+    (function () {
+      function esc(v) {
+        return String(v || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+      function closeOrReturn(e) {
+        e.preventDefault();
+        if (window.history.length > 1) {
+          window.history.back();
+          return;
+        }
+        try {
+          window.close();
+        } catch (_) {}
+        window.location.href = "/user/dashboard";
+      }
+      var back = document.getElementById("backLink");
+      var home = document.getElementById("homeLink");
+      if (back) back.addEventListener("click", closeOrReturn);
+      if (home) home.addEventListener("click", closeOrReturn);
+
+      function openIneligible(reasons) {
+        var msg = (reasons || []).filter(Boolean).join("\n• ");
+        alert(msg ? "Not eligible because:\n• " + msg : "You are not eligible for this role.");
+      }
+
+      async function load() {
+        var main = document.getElementById("main");
+        try {
+          var res = await fetch("/api/student/suggested-jobs?min_score=50", { credentials: "same-origin" });
+          if (res.status === 401) {
+            window.location.href = "/login";
+            return;
+          }
+          if (!res.ok) throw new Error("load failed");
+          var data = await res.json();
+          var items = data.items || [];
+          if (!items.length) {
+            main.innerHTML = '<div class="empty">No suitable roles found yet. Improve your profile for better matches.</div>';
+            return;
+          }
+          main.innerHTML = "";
+          items.forEach(function (j) {
+            var tier = j.match_tier || "moderate";
+            var tierClass = tier === "strong" ? "tier-strong" : tier === "good" ? "tier-good" : "tier-moderate";
+            var emoji = tier === "strong" ? "🟢" : tier === "good" ? "🟡" : "🟠";
+            var label = tier === "strong" ? "Strong Match" : tier === "good" ? "Good Match" : "Moderate Match";
+            var alreadyApplied = j.already_applied === true;
+            var applyOk = !alreadyApplied && j.apply_eligible === true;
+            var reasons = j.apply_reasons && j.apply_reasons.length ? j.apply_reasons : (j.apply_reasons_detail || []);
+            var jobBase = j.job_source === "alumni" ? "/alumni-jobs/" : "/jobs/";
+
+            var card = document.createElement("article");
+            card.className = "role-card";
+            card.innerHTML =
+              '<p class="role-title">' + esc((j.title || "Role") + " - " + (j.company || "Company")) + "</p>" +
+              '<p class="role-score ' + tierClass + '">Match Score: ' + esc(String(j.match_score ?? j.final_score ?? "—")) + "% " + emoji + " " + label + "</p>";
+
+            if (j.why && j.why.length) {
+              var why = document.createElement("p");
+              why.className = "role-why";
+              why.innerHTML = j.why.slice(0, 4).map(esc).join("<br>");
+              card.appendChild(why);
+            }
+
+            var actions = document.createElement("div");
+            actions.className = "actions";
+            var primary = document.createElement("button");
+            primary.type = "button";
+            primary.className = "btn " + (alreadyApplied ? "btn-muted" : (applyOk ? "btn-primary" : "btn-danger"));
+            primary.textContent = alreadyApplied ? "Applied" : (applyOk ? "Apply Now" : "Not Eligible");
+            primary.addEventListener("click", function () {
+              if (!alreadyApplied && !applyOk) {
+                openIneligible(reasons);
+                return;
+              }
+              window.location.href = jobBase + encodeURIComponent(j.job_id);
+            });
+            actions.appendChild(primary);
+            card.appendChild(actions);
+
+            var links = document.createElement("div");
+            links.className = "links";
+            var aJob = document.createElement("a");
+            aJob.href = jobBase + encodeURIComponent(j.job_id);
+            aJob.textContent = "View job";
+            var aPred = document.createElement("a");
+            aPred.href = "/student/placement-predictor?job_id=" + encodeURIComponent(j.job_id);
+            aPred.textContent = "Full match breakdown";
+            links.appendChild(aJob);
+            links.appendChild(aPred);
+            card.appendChild(links);
+            main.appendChild(card);
+          });
+        } catch (_) {
+          main.innerHTML = '<div class="err">Could not load suggestions right now.</div>';
+        }
+      }
+      load();
+    })();
+  </script>
+</body>
+</html>

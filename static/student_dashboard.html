@@ -1,0 +1,3598 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CampusLink · Student Dashboard</title>
+  <link rel="stylesheet" href="/static/css/campuslink-sos.css" />
+  <link rel="stylesheet" href="/static/css/job-deadline.css" />
+  <link rel="stylesheet" href="/static/css/campuslink-mobile-shell.css" />
+  <style>
+    :root {
+      --primary: #001bb7;
+      --primary-dark: #11224e;
+      --accent: #0046ff;
+      --warm: #ff8040;
+      --cream: #f5f1dc;
+      --paper: #fcfcfc;
+      --bg: #f9f8f6;
+      --danger: #dc0e0e;
+      --text: #11224e;
+      --muted: #6b7280;
+      --border: #e2e8f0;
+    }
+    * { box-sizing: border-box; }
+    html, body { max-width: 100%; overflow-x: hidden; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    a { color: inherit; text-decoration: none; }
+    /* Top navbar */
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 12px 20px;
+      background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+      color: #fff;
+      box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+      flex-wrap: wrap;
+      min-height: 64px;
+    }
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 320px;
+      flex: 1;
+    }
+    .nav-logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0;
+      border-radius: 12px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      color: #fff;
+    }
+    .nav-logo img {
+      height: 72px;
+      width: auto;
+      object-fit: contain;
+      display: block;
+    }
+    .nav-search {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      background: rgba(255,255,255,0.16);
+      border-radius: 12px;
+      padding: 10px 12px;
+      border: 1px solid rgba(255,255,255,0.2);
+      width: 100%;
+    }
+    .nav-search input {
+      border: none;
+      outline: none;
+      width: 100%;
+      background: transparent;
+      color: #fff;
+      font-size: 14px;
+    }
+    .nav-search input::placeholder { color: rgba(255,255,255,0.7); }
+    .nav-search-wrapper {
+      position: relative;
+      flex: 1;
+      max-width: 520px;
+    }
+    .search-results {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      right: 0;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      max-height: 400px;
+      overflow-y: auto;
+      z-index: 1000;
+      display: none;
+    }
+    .search-results.show {
+      display: block;
+    }
+    .search-result-item {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.12s ease;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .search-result-item:hover {
+      background: rgba(0,27,183,0.06);
+    }
+    .search-result-item:last-child {
+      border-bottom: none;
+    }
+    .search-result-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 700;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .search-result-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .search-result-name {
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+    .search-result-meta {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .search-no-results {
+      padding: 16px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .nav-link {
+      font-weight: 600;
+      color: #fff;
+      font-size: 14px;
+      padding: 8px 12px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 8px;
+      transition: background 0.12s ease;
+      text-decoration: none;
+    }
+    .nav-link:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    .nav-link.active {
+      background: rgba(255,255,255,0.15);
+    }
+    .nav-link-icon {
+      font-size: 18px;
+    }
+    .nav-link-text {
+      display: inline;
+    }
+    @media (max-width: 768px) {
+      body.cl-student-app .nav-link-text {
+        display: none;
+      }
+      body.cl-student-app .nav-link {
+        padding: 8px;
+      }
+    }
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn-login,
+    .btn-register {
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.6);
+      background: transparent;
+      color: #fff;
+      transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.1s ease;
+    }
+    .btn-register {
+      background: linear-gradient(135deg, #ff8040, #f5f1dc);
+      color: var(--primary-dark);
+      border: none;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.14);
+    }
+    .btn-login:hover,
+    .btn-register:hover { transform: translateY(-1px); }
+    .badge {
+      min-width: 18px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: var(--warm);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .nav-notification {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: background 0.12s ease;
+      font-size: 20px;
+    }
+    .nav-notification:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    .nav-notification-badge {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      border-radius: 999px;
+      background: var(--warm);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 18px;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    /* Notification Dropdown */
+    .nav-notification-wrapper {
+      position: relative;
+    }
+    .notification-dropdown {
+      position: absolute;
+      top: 50px;
+      right: 0;
+      width: 380px;
+      max-height: 480px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+      z-index: 1000;
+      overflow: hidden;
+      display: none;
+    }
+    .notification-dropdown.show {
+      display: block;
+    }
+    .notification-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border-bottom: 1px solid #eee;
+      background: #f9fafb;
+    }
+    .notification-header h3 {
+      margin: 0;
+      font-size: 16px;
+      color: #1f2937;
+    }
+    .notification-header button {
+      background: none;
+      border: none;
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .notification-header button:hover {
+      text-decoration: underline;
+    }
+    .notification-list {
+      max-height: 380px;
+      overflow-y: auto;
+    }
+    .notification-item {
+      display: flex;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid #f3f4f6;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .notification-item:hover {
+      background: #f9fafb;
+    }
+    .notification-item.unread {
+      background: #eff6ff;
+    }
+    .notification-item.unread .notification-message {
+      font-weight: 700;
+    }
+    .notification-item.unread:hover {
+      background: #dbeafe;
+    }
+    .notification-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .notification-icon.job { background: #dbeafe; color: #2563eb; }
+    .notification-icon.connection { background: #dcfce7; color: #16a34a; }
+    .notification-icon.message { background: #fef3c7; color: #d97706; }
+    .notification-icon.application { background: #f3e8ff; color: #9333ea; }
+    .notification-icon.announcement { background: #e0e7ff; color: #4338ca; }
+    .notification-icon.default { background: #f3f4f6; color: #6b7280; }
+    .notification-content {
+      flex: 1;
+      min-width: 0;
+    }
+    .notification-message {
+      font-size: 14px;
+      color: #1f2937;
+      margin: 0 0 4px;
+      line-height: 1.4;
+    }
+    .notification-time {
+      font-size: 12px;
+      color: #9ca3af;
+    }
+    .notification-empty {
+      padding: 40px 20px;
+      text-align: center;
+      color: #9ca3af;
+    }
+    .notification-empty-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+    .notification-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .notif-btn {
+      padding: 6px 14px;
+      border-radius: 16px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+    }
+    .notif-btn.accept {
+      background: #2563eb;
+      color: #fff;
+    }
+    .notif-btn.accept:hover {
+      background: #1d4ed8;
+    }
+    .notif-btn.ignore {
+      background: #f3f4f6;
+      color: #4b5563;
+      border: 1px solid #e5e7eb;
+    }
+    .notif-btn.ignore:hover {
+      background: #e5e7eb;
+    }
+    .notification-status {
+      display: inline-block;
+      margin-top: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 12px;
+    }
+    .notification-status.accepted {
+      background: #dcfce7;
+      color: #16a34a;
+    }
+    /* Layout — desktop default; stack on small laptop / tablet */
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 7fr) minmax(280px, 3fr);
+      gap: 20px;
+      padding: 20px 24px;
+      max-width: min(100%, 1440px);
+      width: 100%;
+      margin: 0 auto;
+      align-items: start;
+    }
+    .left,
+    .right {
+      min-width: 0;
+      width: 100%;
+    }
+    @media (max-width: 1024px) and (min-width: 769px) {
+      .layout {
+        grid-template-columns: minmax(0, 68fr) minmax(260px, 32fr);
+        gap: 14px;
+        padding: 16px;
+      }
+    }
+    .card {
+      background: var(--paper);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.04);
+      overflow: hidden;
+    }
+    .card + .card { margin-top: 12px; }
+    .card-header {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--primary-dark);
+    }
+    .card-sub {
+      padding: 0 14px 10px;
+      margin: 0;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+    .suggested-roles-wrap {
+      padding: 10px 14px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .suggested-role-card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      background: #fff;
+      outline: none;
+      text-align: left;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .suggested-role-card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 6px 16px rgba(0,70,255,0.08);
+    }
+    .suggested-role-title {
+      font-weight: 800;
+      font-size: 14px;
+      color: var(--primary-dark);
+      margin: 0 0 4px;
+    }
+    .suggested-role-company {
+      font-size: 12px;
+      color: var(--muted);
+      margin: 0 0 8px;
+    }
+    .suggested-role-score {
+      font-size: 13px;
+      font-weight: 700;
+      margin: 0 0 6px;
+    }
+    .suggested-role-score.tier-strong { color: #16a34a; }
+    .suggested-role-score.tier-good { color: #ca8a04; }
+    .suggested-role-score.tier-moderate { color: #ea580c; }
+    .suggested-role-why {
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.45;
+      margin: 0;
+      padding-top: 6px;
+      border-top: 1px solid var(--border);
+    }
+    .suggested-role-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+      align-items: center;
+    }
+    .suggested-role-links a {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent);
+    }
+    .suggested-role-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+      align-items: center;
+    }
+    .suggested-apply-btn {
+      font-size: 12px;
+      font-weight: 700;
+      padding: 8px 14px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: #fff;
+    }
+    .suggested-apply-btn:hover {
+      filter: brightness(1.05);
+    }
+    .suggested-ineligible-btn {
+      font-size: 12px;
+      font-weight: 700;
+      padding: 8px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      background: #f4f4f5;
+      color: var(--muted);
+    }
+    .suggested-ineligible-btn:hover {
+      background: #eaeaec;
+      color: var(--primary-dark);
+    }
+    .suggested-applied-btn {
+      font-size: 12px;
+      font-weight: 700;
+      padding: 8px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(34, 197, 94, 0.45);
+      cursor: pointer;
+      background: rgba(34, 197, 94, 0.12);
+      color: #15803d;
+    }
+    .suggested-applied-btn:hover {
+      background: rgba(34, 197, 94, 0.2);
+      color: #166534;
+    }
+    .suggested-ineligible-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 12000;
+      background: rgba(15, 23, 42, 0.45);
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .suggested-ineligible-overlay.open {
+      display: flex;
+    }
+    .suggested-ineligible-dialog {
+      background: var(--paper);
+      border-radius: 16px;
+      max-width: 420px;
+      width: 100%;
+      padding: 20px 22px;
+      box-shadow: 0 24px 48px rgba(0,0,0,0.18);
+      border: 1px solid var(--border);
+    }
+    .suggested-ineligible-dialog h3 {
+      margin: 0 0 12px;
+      font-size: 16px;
+      color: var(--primary-dark);
+    }
+    .suggested-ineligible-dialog ul {
+      margin: 0 0 16px;
+      padding-left: 1.2em;
+      color: var(--primary-dark);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .suggested-ineligible-dialog .dlg-actions {
+      display: flex;
+      justify-content: flex-end;
+    }
+    .suggested-ineligible-dialog button.close-dlg {
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 16px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #fff;
+      cursor: pointer;
+    }
+    .suggested-roles-empty {
+      font-size: 13px;
+      color: var(--muted);
+      padding: 8px 14px 16px;
+      line-height: 1.5;
+    }
+    /* Left column */
+    .profile-top {
+      padding: 14px;
+      text-align: center;
+      background: linear-gradient(135deg, var(--cream), #fff);
+    }
+    .avatar {
+      width: 78px;
+      height: 78px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border: 3px solid #fff;
+      margin: 0 auto 10px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-weight: 800;
+      font-size: 26px;
+    }
+    .profile-name { font-weight: 800; font-size: 16px; }
+    .profile-sub { color: var(--muted); font-size: 12px; margin: 4px 0 10px; }
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 12px;
+      border-top: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .stat-row strong { color: var(--primary-dark); }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(0,27,183,0.08);
+      color: var(--primary-dark);
+      font-size: 12px;
+      font-weight: 600;
+    }
+    /* Main feed */
+    .ghost {
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 12px;
+      padding: 8px 12px;
+      font-size: 13px;
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      cursor: pointer;
+      transition: transform 0.1s ease, border 0.1s ease;
+    }
+    .ghost:hover { transform: translateY(-1px); border-color: var(--accent); }
+    .feed {
+      display: grid;
+      gap: 12px;
+      padding: 14px 24px 20px;
+    }
+    .composer-card {
+      padding: 16px 24px;
+      display: grid;
+      gap: 10px;
+    }
+    .composer-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .composer-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      flex: 0 0 44px;
+    }
+    .composer-start-btn {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      text-align: left;
+      padding: 11px 14px;
+      background: #fff;
+      color: var(--muted);
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .composer-start-btn:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+    }
+    .composer-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+    }
+    .post {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      background: #fff;
+      width: 100%;
+      max-width: 100%;
+      overflow: hidden;
+    }
+    .post-head {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .post-feed-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 10px 0 4px;
+      letter-spacing: 0.02em;
+    }
+    .post-user {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .mini-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--warm), var(--accent));
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-weight: 700;
+    }
+    .post-meta { font-size: 12px; color: var(--muted); }
+    .post-body { margin: 10px 0; line-height: 1.5; font-size: 14px; white-space: pre-wrap; overflow-wrap: break-word; word-wrap: break-word; }
+    .post-body .hashtag-link { color: #0A66C2; font-weight: 600; text-decoration: none; }
+    .post-body .mention-link { color: #0A66C2; font-weight: 600; text-decoration: none; }
+    .post-body .hashtag-link:hover,
+    .post-body .mention-link:hover { text-decoration: underline; }
+    .post-media {
+      border-radius: 12px;
+      background: linear-gradient(135deg, #dbeafe, #e0f2fe);
+    }
+    .post-media-carousel {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 200px;
+      max-height: 420px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+    .post-media-carousel--multi .post-media-viewport {
+      padding-left: 44px;
+      padding-right: 44px;
+    }
+    .post-media-viewport {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 180px;
+      padding: 12px 16px;
+      box-sizing: border-box;
+      width: 100%;
+    }
+    .post-media-slide-el {
+      max-width: 100%;
+      max-height: 360px;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+      border-radius: 8px;
+    }
+    .post-media-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 2;
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(15, 23, 42, 0.55);
+      color: #fff;
+      font-size: 18px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      padding: 0;
+    }
+    .post-media-nav:hover {
+      background: rgba(15, 23, 42, 0.78);
+    }
+    .post-media-nav:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+    .post-media-nav-prev { left: 8px; }
+    .post-media-nav-next { right: 8px; }
+    .post-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 10px;
+      font-size: 13px;
+      color: var(--muted);
+      flex-wrap: wrap;
+      width: 100%;
+    }
+    .post-stats {
+      display: flex;
+      gap: 18px;
+      align-items: center;
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
+      color: #64748b;
+      font-size: 14px;
+    }
+    .post-stat-like {
+      border: 1px solid #e2e8f0;
+      background: #fff;
+      border-radius: 999px;
+      padding: 6px 12px;
+      color: #e11d48;
+      font-weight: 600;
+    }
+    .post-action-btn {
+      border: none;
+      background: transparent;
+      color: #475569;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      flex: 1;
+      justify-content: center;
+      min-height: 44px;
+      min-width: 0;
+    }
+    .post-action-btn:hover { background: #f1f5f9; color: #0f172a; }
+    .post-setting-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 6px 0;
+      cursor: pointer;
+    }
+    .comments-off-banner {
+      font-size: 13px;
+      color: #64748b;
+      padding: 8px 10px;
+      background: #f8fafc;
+      border-radius: 8px;
+      margin-top: 8px;
+      border: 1px solid var(--border);
+    }
+    .feed-comment-preview {
+      margin-top: 8px;
+      padding: 8px 0 0;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 13px;
+      color: #334155;
+      line-height: 1.4;
+    }
+    .feed-comment-preview-line strong {
+      font-weight: 700;
+      color: #0f172a;
+    }
+    a.view-all-comments-btn {
+      display: inline-block;
+      margin-top: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent);
+      text-decoration: none;
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+    }
+    a.view-all-comments-btn:hover {
+      text-decoration: underline;
+    }
+    .post-comments {
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
+      display: grid;
+      gap: 8px;
+    }
+    .post-comment-item {
+      display: grid;
+      grid-template-columns: 30px 1fr;
+      gap: 8px;
+      align-items: start;
+    }
+    .comment-avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #e2e8f0;
+      color: #334155;
+      display: grid;
+      place-items: center;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .comment-bubble {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 10px;
+    }
+    .comment-author { font-weight: 700; font-size: 12px; color: #0f172a; }
+    .comment-text { font-size: 13px; color: #334155; margin-top: 2px; }
+    .comment-time { font-size: 11px; color: #94a3b8; margin-top: 4px; }
+    .comment-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 6px;
+    }
+    .comment-action-btn {
+      border: none;
+      background: transparent;
+      color: #64748b;
+      font-size: 12px;
+      padding: 0;
+      cursor: pointer;
+    }
+    .comment-action-btn:hover { color: #0A66C2; text-decoration: underline; }
+    .comment-like-btn.liked { color: #e11d48; }
+    .comment-owner-menu { position: relative; margin-left: auto; }
+    .comment-owner-dots {
+      border: none;
+      background: transparent;
+      color: #64748b;
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1;
+    }
+    .comment-owner-dropdown {
+      position: absolute;
+      top: 18px;
+      right: 0;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      min-width: 120px;
+      box-shadow: 0 8px 20px rgba(15,23,42,0.12);
+      display: none;
+      z-index: 3;
+    }
+    .comment-owner-dropdown.show { display: block; }
+    .comment-owner-dropdown button {
+      width: 100%;
+      border: none;
+      background: transparent;
+      padding: 8px 10px;
+      text-align: left;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .comment-owner-dropdown button:hover { background: #f8fafc; }
+    .reply-input-wrap {
+      margin-top: 8px;
+      display: flex;
+      gap: 8px;
+    }
+    .reply-input-wrap input {
+      flex: 1;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 8px;
+      font-size: 12px;
+    }
+    .comment-replies {
+      margin-top: 6px;
+      padding-left: 12px;
+      border-left: 2px solid #e2e8f0;
+      display: grid;
+      gap: 6px;
+    }
+    .comment-replies .comment-avatar {
+      width: 24px;
+      height: 24px;
+      font-size: 10px;
+    }
+    .comment-replies .comment-text {
+      font-size: 12px;
+    }
+    .view-all-comments-btn {
+      border: none;
+      background: transparent;
+      color: #0A66C2;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 0;
+      cursor: pointer;
+      text-align: left;
+      margin-top: 2px;
+    }
+    .view-all-comments-btn:hover { text-decoration: underline; }
+    /* Right column */
+    .list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .list li {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .list li:last-child { border-bottom: none; }
+    .notice-tag {
+      font-size: 11px;
+      color: var(--accent);
+      font-weight: 700;
+    }
+    .notice-item-title { font-weight: 700; color: var(--primary-dark); }
+    .notice-item-body { color: var(--muted); font-size: 13px; margin-top: 4px; line-height: 1.45; }
+
+    .announcements-feed { padding: 10px 12px 12px; }
+    .announcement-card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      background: #fff;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+    }
+    .announcement-card:last-child { margin-bottom: 0; }
+    .announcement-card-title { font-weight: 700; font-size: 14px; color: var(--primary-dark); margin: 0 0 6px; }
+    .announcement-card-desc { color: var(--text); font-size: 13px; line-height: 1.5; margin: 0 0 8px; white-space: pre-wrap; }
+    .announcement-card-meta { font-size: 12px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .announcement-card-media { margin-top: 8px; max-width: 100%; border-radius: 8px; display: block; }
+    .announcement-card-media-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--accent); margin-top: 8px; }
+    .announcement-media-stack { margin-top: 10px; display: flex; flex-direction: column; gap: 10px; }
+    .announcement-media-img { max-width: 100%; border-radius: 8px; display: block; }
+    .announcement-media-video { width: 100%; max-height: 280px; border-radius: 8px; background: #000; }
+    .announcement-media-link { font-size: 13px; font-weight: 600; color: var(--accent); text-decoration: none; }
+    .announcement-media-link:hover { text-decoration: underline; }
+
+    /* Post modal */
+    .post-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1200;
+      padding: 16px;
+    }
+    .post-modal-overlay.open { display: flex; }
+    .post-modal {
+      width: min(680px, 96vw);
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 22px 60px rgba(0,0,0,0.22);
+      overflow: hidden;
+      transform: translateY(8px);
+      opacity: 0;
+      transition: transform .16s ease, opacity .16s ease;
+    }
+    .post-modal-overlay.open .post-modal {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .post-modal-head {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .post-modal-user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .post-modal-close {
+      border: none;
+      background: transparent;
+      font-size: 24px;
+      color: var(--muted);
+      cursor: pointer;
+      line-height: 1;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+    }
+    .post-modal-close:hover { background: #f1f5f9; color: var(--text); }
+    .post-modal-body { padding: 14px; display: grid; gap: 12px; }
+    .mention-suggestions {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #fff;
+      max-height: 220px;
+      overflow-y: auto;
+      display: none;
+    }
+    .mention-suggestions.show { display: block; }
+    .mention-item {
+      padding: 10px 12px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 13px;
+      border-bottom: 1px solid var(--border);
+    }
+    .mention-item:last-child { border-bottom: none; }
+    .mention-item:hover { background: #f8fafc; }
+    .post-modal-text {
+      width: 100%;
+      min-height: 140px;
+      resize: vertical;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 14px;
+      line-height: 1.45;
+      color: var(--text);
+      background: #fff;
+    }
+    .post-modal-text:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,70,255,0.16); }
+    .post-media-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .post-media-preview {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      background: #f8fafc;
+      display: none;
+      position: relative;
+    }
+    .post-media-preview.show { display: block; }
+    .post-media-preview img, .post-media-preview video {
+      width: 100%;
+      max-height: 320px;
+      object-fit: contain;
+      display: block;
+      background: #fff;
+    }
+    .post-media-remove {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      border: none;
+      background: rgba(0,0,0,0.62);
+      color: #fff;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    .post-modal-foot {
+      border-top: 1px solid var(--border);
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    .post-submit-btn {
+      border: none;
+      border-radius: 999px;
+      padding: 10px 18px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      background: #0A66C2;
+      cursor: pointer;
+    }
+    .post-submit-btn:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+    }
+    .post-owner-menu {
+      position: relative;
+      margin-left: auto;
+    }
+    .post-owner-dots {
+      border: none;
+      background: transparent;
+      font-size: 18px;
+      cursor: pointer;
+      color: var(--muted);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+    }
+    .post-owner-dots:hover { background: #f1f5f9; color: var(--text); }
+    .post-owner-dropdown {
+      position: absolute;
+      top: 36px;
+      right: 0;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      min-width: 140px;
+      box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+      display: none;
+      z-index: 5;
+    }
+    .post-owner-dropdown.show { display: block; }
+    .post-owner-dropdown button {
+      width: 100%;
+      border: none;
+      background: transparent;
+      text-align: left;
+      padding: 10px 12px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .post-owner-dropdown button:hover { background: #f8fafc; }
+    .feed-loading {
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+      padding: 10px 0 2px;
+    }
+    .share-post-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1300;
+      padding: 16px;
+    }
+    .share-post-overlay.open { display: flex; }
+    .share-post-modal {
+      width: 100%;
+      max-width: 480px;
+      background: #fff;
+      border-radius: 14px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 16px 36px rgba(0,0,0,0.18);
+      overflow: hidden;
+    }
+    .share-post-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      font-weight: 700;
+    }
+    .share-post-body { padding: 12px 14px; display: grid; gap: 10px; }
+    .share-connections-list { max-height: 220px; overflow: auto; border: 1px solid var(--border); border-radius: 10px; }
+    .share-conn-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-bottom: 1px solid #f1f5f9; }
+    .share-conn-item:last-child { border-bottom: none; }
+    .logout-icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      font-size: 18px;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.7);
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .li-profile-wrapper {
+  position: relative;
+}
+
+/* Avatar */
+.li-avatar {
+  width: 36px;
+  height: 36px;
+  background: #ffffff;
+  border-radius: 50%;
+  border: 1px solid #dcdcdc;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: #000;
+}
+
+.li-avatar:hover {
+  background: #f3f2ef;
+}
+
+/* Dropdown */
+.li-dropdown {
+  position: absolute;
+  top: 48px;
+  right: 0;
+  width: 260px;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: none;
+  animation: fadeIn 0.15s ease-in-out;
+  z-index: 1000;
+}
+
+/* User Info */
+.li-user-info {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+}
+
+.li-user-avatar {
+  width: 48px;
+  height: 48px;
+  background: #000;
+  border-radius: 50%;
+}
+
+.li-name {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.li-role {
+  font-size: 13px;
+  color: #666;
+  margin: 2px 0 0;
+}
+
+/* View Profile button */
+.li-btn {
+  display: block;
+  margin: 0 16px 12px;
+  padding: 8px;
+  text-align: center;
+  border-radius: 20px;
+  border: 1px solid #0a66c2;
+  color: #0a66c2;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.li-btn:hover {
+  background: #eef3f8;
+}
+
+/* Divider */
+.li-divider {
+  height: 1px;
+  background: #e0e0e0;
+  margin: 8px 0;
+}
+
+/* Links */
+.li-link {
+  display: block;
+  padding: 10px 16px;
+  text-decoration: none;
+  color: #333;
+  font-size: 14px;
+}
+
+.li-link:hover {
+  background: #f3f2ef;
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+
+  </style>
+</head>
+<body class="cl-student-app">
+  <header class="nav cl-student-topnav">
+    <a href="/user/dashboard" class="nav-logo cl-nav-logo-link" aria-label="CampusLink home">
+      <img src="/images/logo.png" alt="CampusLink logo">
+    </a>
+    <div class="nav-search-wrapper cl-nav-search-slot">
+      <div class="nav-search">
+        <span>🔍</span>
+        <input id="search-input" type="text" placeholder="Search jobs, companies, students" aria-label="Search jobs, companies, students" autocomplete="off" />
+      </div>
+      <div class="search-results" id="search-results"></div>
+    </div>
+    <div class="cl-nav-desktop-tray">
+      <span class="nav-stats" id="navConnectionsMentor" style="font-size:13px;opacity:0.9;">Connections: 0 | Mentor: 0</span>
+      <nav class="nav-links" role="navigation" aria-label="Main navigation">
+        <a class="nav-link" href="/jobs" aria-label="Jobs">
+          <span class="nav-link-icon">💼</span>
+          <span class="nav-link-text">Jobs</span>
+        </a>
+        <a class="nav-link" href="/student/placement-predictor" aria-label="Placement Predictor">
+          <span class="nav-link-icon">📊</span>
+          <span class="nav-link-text">Placement Predictor</span>
+        </a>
+        <a class="nav-link" href="/interviews" target="_blank" rel="noopener" aria-label="Interview">
+          <span class="nav-link-icon">📝</span>
+          <span class="nav-link-text">Interview</span>
+        </a>
+        <a class="nav-link" href="#" data-campuslink-sos-open aria-label="Raise support ticket">
+          <span class="nav-link-icon">🆘</span>
+          <span class="nav-link-text">Raise Issue / Help</span>
+        </a>
+        <a class="nav-link nav-link-messages-desktop" href="/messages" aria-label="Messages">
+          <span class="nav-link-icon">💬</span>
+          <span class="nav-link-text">Messages</span>
+        </a>
+      </nav>
+    </div>
+    <div class="nav-notification-wrapper cl-nav-bell-slot">
+      <div class="nav-notification" onclick="toggleNotifications()" aria-label="Notifications" role="button" tabindex="0">
+        <span>🔔</span>
+        <span class="nav-notification-badge" id="notification-badge" style="display: none;">0</span>
+      </div>
+      <div class="notification-dropdown" id="notificationDropdown">
+        <div class="notification-header">
+          <h3>Notifications</h3>
+          <button onclick="markAllNotificationsRead()">Mark all as read</button>
+        </div>
+        <div class="notification-list" id="notificationList">
+          <div class="notification-empty">
+            <div class="notification-empty-icon">🔔</div>
+            <p>No notifications yet</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <a href="/messages" class="cl-nav-msg-icon" aria-label="Messages">💬</a>
+    <div class="li-profile-wrapper cl-nav-profile-slot">
+      <div class="li-avatar" onclick="toggleProfileMenu()" role="button" aria-label="Profile menu" aria-expanded="false" tabindex="0">
+        <span id="nav-profile-initials">ST</span>
+      </div>
+
+      <div class="li-dropdown" id="liDropdown" role="menu">
+        <div class="li-user-info">
+          <div class="li-user-avatar"></div>
+          <div>
+            <p class="li-name" id="nav-dropdown-profile-name">Your Name</p>
+            <p class="li-role">Student · CampusLink</p>
+          </div>
+        </div>
+
+        <a href="/profile/me" class="li-btn" role="menuitem">View Profile</a>
+
+        <div class="li-divider"></div>
+
+        <a href="/student/profile" class="li-link" role="menuitem">Edit Profile</a>
+        <a href="/student/settings" class="li-link" role="menuitem">Settings</a>
+        <a href="/logout" class="li-link" role="menuitem">Sign out</a>
+      </div>
+    </div>
+  </header>
+
+  <a href="/announcements" class="cl-announcement-ticker" id="cl-announcement-ticker" target="_blank" rel="noopener" aria-label="Announcements — open full list">
+    <div class="cl-announcement-ticker-inner cl-announcement-ticker-inner--static" id="cl-announcement-ticker-inner">
+      <span class="cl-announcement-ticker-msg--empty">📢 Loading campus announcements…</span>
+    </div>
+  </a>
+
+  <div id="cl-mobile-nav-overlay" class="cl-mobile-nav-overlay" aria-hidden="true"></div>
+  <aside id="cl-mobile-nav-drawer" class="cl-mobile-nav-drawer" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Account menu">
+    <div class="cl-mobile-nav-drawer-inner">
+      <div class="cl-drawer-header">
+        <span class="cl-drawer-title">Menu</span>
+        <button type="button" class="cl-drawer-close" id="cl-mobile-drawer-close" aria-label="Close menu">×</button>
+      </div>
+      <nav class="cl-drawer-links">
+        <a href="/profile/me">View Profile</a>
+        <a href="/student/profile">Edit Profile</a>
+        <a href="/static/suggested_roles.html" target="_blank" rel="noopener">Suggested Roles</a>
+        <a href="#" data-campuslink-sos-open>Help (SOS)</a>
+        <a href="/student/settings">Settings</a>
+        <a href="/logout">Logout</a>
+      </nav>
+    </div>
+  </aside>
+
+  <main class="layout">
+    <!-- Left panel: Unified Feed -->
+    <section class="left">
+      <div class="card">
+        <div class="composer-card">
+          <div class="composer-top">
+            <div class="composer-avatar" id="composer-avatar">ST</div>
+            <button type="button" class="composer-start-btn" id="start-post-trigger">Start a post...</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">Feed</div>
+        <div class="feed" id="unified-feed">
+          <div class="post" id="unified-feed-empty">
+            <div class="post-body">
+              No media posts yet. Posts with image/video from students and alumni will appear here.
+            </div>
+          </div>
+        </div>
+        <div class="feed-loading" id="feed-loading" style="display:none;">Loading more posts...</div>
+      </div>
+    </section>
+
+    <!-- Right panel: Announcements -->
+    <aside class="right">
+      <div class="card" id="announcements-feed-anchor">
+        <div class="card-header">Announcements</div>
+        <div class="announcements-feed" id="announcements-feed">
+          <p id="announcements-empty" class="card-sub" style="margin:0;padding:0 4px;">No announcements yet.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">🎯 Suggested Roles For You</div>
+        <p class="card-sub">Roles ranked by match score (50%+). Applying still requires CGPA, branch, and graduation year to match the job.</p>
+        <div id="suggested-roles-feed" class="suggested-roles-wrap" style="display: none;"></div>
+        <p id="suggested-roles-empty" class="suggested-roles-empty">Loading suggestions…</p>
+      </div>
+    </aside>
+  </main>
+
+  <nav class="cl-bottom-nav" aria-label="Primary mobile navigation">
+    <a href="/user/dashboard" class="cl-bottom-nav--active" title="Home" aria-label="Home"><span class="cl-bottom-nav-icon" aria-hidden="true">🏠</span></a>
+    <a href="/jobs" title="Jobs" aria-label="Jobs"><span class="cl-bottom-nav-icon" aria-hidden="true">💼</span></a>
+    <a href="/student/placement-predictor" title="Placement predictor" aria-label="Placement predictor"><span class="cl-bottom-nav-icon" aria-hidden="true">📊</span></a>
+    <a href="/interviews" target="_blank" rel="noopener" title="Interview" aria-label="Interview"><span class="cl-bottom-nav-icon" aria-hidden="true">🎤</span></a>
+    <a href="/announcements" target="_blank" rel="noopener" title="Announcements" aria-label="Announcements"><span class="cl-bottom-nav-icon" aria-hidden="true">📢</span></a>
+  </nav>
+
+  <div class="suggested-ineligible-overlay" id="suggested-ineligible-overlay" aria-hidden="true">
+    <div class="suggested-ineligible-dialog" role="dialog" aria-modal="true" aria-labelledby="suggested-ineligible-title">
+      <h3 id="suggested-ineligible-title">You are not eligible for this job because:</h3>
+      <ul id="suggested-ineligible-list"></ul>
+      <div class="dlg-actions">
+        <button type="button" class="close-dlg" id="suggested-ineligible-close">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LinkedIn-style post modal -->
+  <div class="post-modal-overlay" id="post-modal-overlay" aria-hidden="true">
+    <div class="post-modal" role="dialog" aria-modal="true" aria-label="Create post">
+      <div class="post-modal-head">
+        <div class="post-modal-user">
+          <div class="composer-avatar" id="post-modal-avatar">ST</div>
+          <div>
+            <div id="post-modal-name" style="font-weight:700;">Student</div>
+            <div id="post-modal-role" class="post-meta">Student</div>
+          </div>
+        </div>
+        <button class="post-modal-close" id="post-modal-close" type="button" aria-label="Close">×</button>
+      </div>
+      <div class="post-modal-body">
+        <textarea id="post-modal-text" class="post-modal-text" placeholder="What do you want to talk about?"></textarea>
+        <div class="mention-suggestions" id="mention-suggestions"></div>
+        <div class="post-media-actions">
+          <button class="ghost" type="button" id="modal-photo-btn">📷 Photo</button>
+          <button class="ghost" type="button" id="modal-video-btn">🎥 Video</button>
+        </div>
+        <div class="post-media-preview" id="post-media-preview">
+          <button type="button" class="post-media-remove" id="post-media-remove" aria-label="Remove media">×</button>
+          <div id="post-preview-summary" style="display:none;font-size:12px;color:#475569;padding:8px 0 0;">0 files selected</div>
+          <img id="post-preview-image" alt="Selected media preview" style="display:none;" />
+          <video id="post-preview-video" controls style="display:none;"></video>
+        </div>
+        <input type="file" id="post-photo-input" accept=".jpg,.jpeg,.png,image/jpeg,image/png" multiple style="display:none;" />
+        <input type="file" id="post-video-input" accept=".mp4,video/mp4" style="display:none;" />
+        <div class="post-modal-settings" id="post-modal-settings" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:13px;color:var(--muted);">
+          <div style="font-weight:700;color:var(--text);margin-bottom:8px;">Who can see engagement</div>
+          <label class="post-setting-row"><input type="checkbox" id="post-set-comments" checked /> Allow comments</label>
+          <label class="post-setting-row"><input type="checkbox" id="post-set-like-count" checked /> Show like count</label>
+          <label class="post-setting-row"><input type="checkbox" id="post-set-comment-count" checked /> Show comment count</label>
+        </div>
+      </div>
+      <div class="post-modal-foot">
+        <button class="post-submit-btn" id="post-submit-btn" type="button" disabled>Post</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="share-post-overlay" id="share-post-overlay" aria-hidden="true">
+    <div class="share-post-modal" role="dialog" aria-modal="true" aria-label="Share post">
+      <div class="share-post-head">
+        <span>Share post</span>
+        <button class="post-modal-close" id="share-post-close" type="button" aria-label="Close">×</button>
+      </div>
+      <div class="share-post-body">
+        <button class="ghost" type="button" id="share-copy-link-btn">🔗 Copy link</button>
+        <div style="font-size:12px;color:#64748b;">Share with your accepted connections</div>
+        <div class="share-connections-list" id="share-connections-list"></div>
+        <div style="display:flex;justify-content:flex-end;">
+          <button class="post-submit-btn" id="share-send-btn" type="button">Share to selected</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/cross-tab-auth.js"></script>
+  <script src="/static/js/campuslink-sos.js"></script>
+  <script src="/static/js/job-deadline-ui.js"></script>
+  <script src="/static/js/announcement-media-ui.js"></script>
+  <script>
+
+function isMobileNavDrawerMode() {
+  return window.matchMedia("(max-width: 768px)").matches;
+}
+
+function setMobileNavDrawerOpen(open) {
+  const overlay = document.getElementById("cl-mobile-nav-overlay");
+  const drawer = document.getElementById("cl-mobile-nav-drawer");
+  const avatar = document.querySelector(".li-avatar");
+  if (!overlay || !drawer) return;
+  if (open) {
+    overlay.classList.add("is-open");
+    overlay.setAttribute("aria-hidden", "false");
+    drawer.classList.add("is-open");
+    drawer.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+  } else {
+    overlay.classList.remove("is-open");
+    overlay.setAttribute("aria-hidden", "true");
+    drawer.classList.remove("is-open");
+    drawer.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+  }
+  if (avatar) {
+    avatar.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+}
+
+function toggleMobileNavDrawer() {
+  const drawer = document.getElementById("cl-mobile-nav-drawer");
+  const open = drawer && drawer.classList.contains("is-open");
+  setMobileNavDrawerOpen(!open);
+}
+
+function toggleProfileMenu() {
+  if (isMobileNavDrawerMode()) {
+    const dd = document.getElementById("liDropdown");
+    if (dd) dd.style.display = "none";
+    toggleMobileNavDrawer();
+    return;
+  }
+  const menu = document.getElementById("liDropdown");
+  const isOpen = menu.style.display === "block";
+  menu.style.display = isOpen ? "none" : "block";
+  const avatar = document.querySelector(".li-avatar");
+  if (avatar) {
+    avatar.setAttribute("aria-expanded", !isOpen);
+  }
+}
+
+document.addEventListener("click", function (e) {
+  const wrapper = document.querySelector(".li-profile-wrapper");
+  if (wrapper && !wrapper.contains(e.target)) {
+    document.getElementById("liDropdown").style.display = "none";
+    const avatar = document.querySelector(".li-avatar");
+    if (avatar && !isMobileNavDrawerMode()) {
+      avatar.setAttribute("aria-expanded", "false");
+    }
+  }
+});
+
+// Keyboard accessibility for profile menu
+document.querySelector(".li-avatar")?.addEventListener("keydown", function(e) {
+  if (e.key === "Enter" || e.key === " ") {
+    e.preventDefault();
+    toggleProfileMenu();
+  }
+});
+
+// Keyboard accessibility for notifications
+document.querySelector(".nav-notification")?.addEventListener("keydown", function(e) {
+  if (e.key === "Enter" || e.key === " ") {
+    e.preventDefault();
+    toggleNotifications();
+  }
+});
+
+// Close notification dropdown when clicking outside
+document.addEventListener("click", function(e) {
+  const wrapper = document.querySelector(".nav-notification-wrapper");
+  if (wrapper && !wrapper.contains(e.target)) {
+    document.getElementById("notificationDropdown").classList.remove("show");
+  }
+});
+
+let notificationsData = [];
+let currentUserRole = "Student";
+let currentUserName = "Student";
+let currentUserId = null;
+let feedSkip = 0;
+let feedLimit = 10;
+let feedHasMore = true;
+let feedLoading = false;
+let editingPostId = null;
+let selectedTaggedUsers = [];
+let mentionSearchToken = "";
+let mentionDebounce = null;
+
+const postModalOverlay = document.getElementById("post-modal-overlay");
+const postModalCloseBtn = document.getElementById("post-modal-close");
+const postModalText = document.getElementById("post-modal-text");
+const postSubmitBtn = document.getElementById("post-submit-btn");
+const postPhotoInput = document.getElementById("post-photo-input");
+const postVideoInput = document.getElementById("post-video-input");
+const mentionSuggestionsEl = document.getElementById("mention-suggestions");
+const postMediaPreview = document.getElementById("post-media-preview");
+const postPreviewSummary = document.getElementById("post-preview-summary");
+const postPreviewImage = document.getElementById("post-preview-image");
+const postPreviewVideo = document.getElementById("post-preview-video");
+const postMediaRemove = document.getElementById("post-media-remove");
+const startPostTrigger = document.getElementById("start-post-trigger");
+const postPhotoTrigger = document.getElementById("post-photo-trigger");
+const postVideoTrigger = document.getElementById("post-video-trigger");
+const postArticleTrigger = document.getElementById("post-article-trigger");
+const modalPhotoBtn = document.getElementById("modal-photo-btn");
+const modalVideoBtn = document.getElementById("modal-video-btn");
+const feedLoadingEl = document.getElementById("feed-loading");
+const sharePostOverlay = document.getElementById("share-post-overlay");
+const sharePostCloseBtn = document.getElementById("share-post-close");
+const shareCopyLinkBtn = document.getElementById("share-copy-link-btn");
+const shareConnectionsList = document.getElementById("share-connections-list");
+const shareSendBtn = document.getElementById("share-send-btn");
+let shareTargetPostId = null;
+
+let selectedPostFiles = [];
+let selectedPostPreviewUrl = null;
+
+function updatePostSubmitState() {
+  postSubmitBtn.disabled = selectedPostFiles.length === 0;
+}
+
+function setMentionSuggestions(items) {
+  if (!mentionSuggestionsEl) return;
+  mentionSuggestionsEl.innerHTML = "";
+  if (!items || !items.length) {
+    mentionSuggestionsEl.classList.remove("show");
+    return;
+  }
+  items.forEach((u) => {
+    const row = document.createElement("div");
+    row.className = "mention-item";
+    row.innerHTML = `<span>${escapeHtml(u.name)}</span><span style="color:var(--muted);">${escapeHtml((u.role || "").toLowerCase())}</span>`;
+    row.addEventListener("click", () => applyMention(u));
+    mentionSuggestionsEl.appendChild(row);
+  });
+  mentionSuggestionsEl.classList.add("show");
+}
+
+function applyMention(user) {
+  if (!postModalText) return;
+  const text = postModalText.value || "";
+  const m = text.match(/(^|\s)@([A-Za-z0-9_ ]*)$/);
+  if (!m) return;
+  const prefix = text.slice(0, text.length - m[2].length - 1); // remove partial token after @
+  const mentionText = `@${user.name}`;
+  postModalText.value = `${prefix}${mentionText} `;
+  postModalText.focus();
+  mentionSuggestionsEl.classList.remove("show");
+  if (!selectedTaggedUsers.some(x => x.id === user.id)) {
+    selectedTaggedUsers.push({ id: user.id, name: user.name });
+  }
+}
+
+async function fetchMentionSuggestions(q) {
+  try {
+    const res = await fetch(`/api/posts/mentions?q=${encodeURIComponent(q)}`, { credentials: "same-origin" });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.users || [];
+  } catch (_) {
+    return [];
+  }
+}
+
+function parseTaggedUsersFromCaption(caption, taggedInfo) {
+  const names = {};
+  (taggedInfo || []).forEach((x) => {
+    if (x && x.name && x.id) names[x.name.toLowerCase()] = x.id;
+  });
+  const out = [];
+  const seen = new Set();
+  const matches = caption.match(/@([A-Za-z][A-Za-z0-9_ ]{0,49})/g) || [];
+  matches.forEach((tok) => {
+    const n = tok.slice(1).trim().toLowerCase();
+    const id = names[n];
+    if (id && !seen.has(id)) {
+      seen.add(id);
+      out.push(id);
+    }
+  });
+  return out;
+}
+
+async function openSharePostModal(postId) {
+  shareTargetPostId = postId;
+  if (!sharePostOverlay) return;
+  sharePostOverlay.classList.add("open");
+  sharePostOverlay.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+  if (shareConnectionsList) {
+    shareConnectionsList.innerHTML = "<div class='share-conn-item'>Loading connections...</div>";
+    try {
+      const res = await fetch("/api/connections?status=accepted", { credentials: "same-origin" });
+      if (!res.ok) throw new Error("Failed");
+      const data = await res.json();
+      const items = data.connections || [];
+      if (!items.length) {
+        shareConnectionsList.innerHTML = "<div class='share-conn-item'>No accepted connections found.</div>";
+      } else {
+        shareConnectionsList.innerHTML = "";
+        items.forEach((c) => {
+          const row = document.createElement("label");
+          row.className = "share-conn-item";
+          row.innerHTML = `<input type="checkbox" value="${escapeHtml(c.user_id)}"><span>${escapeHtml(c.name || "Connection")}</span>`;
+          shareConnectionsList.appendChild(row);
+        });
+      }
+    } catch (_) {
+      shareConnectionsList.innerHTML = "<div class='share-conn-item'>Failed to load connections.</div>";
+    }
+  }
+}
+
+function closeSharePostModal() {
+  if (!sharePostOverlay) return;
+  sharePostOverlay.classList.remove("open");
+  sharePostOverlay.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+  shareTargetPostId = null;
+}
+
+function clearPostMediaSelection() {
+  selectedPostFiles = [];
+  if (selectedPostPreviewUrl) {
+    URL.revokeObjectURL(selectedPostPreviewUrl);
+    selectedPostPreviewUrl = null;
+  }
+  postPhotoInput.value = "";
+  postVideoInput.value = "";
+  postPreviewImage.style.display = "none";
+  postPreviewImage.removeAttribute("src");
+  postPreviewVideo.style.display = "none";
+  postPreviewVideo.pause();
+  postPreviewVideo.removeAttribute("src");
+  if (postPreviewSummary) {
+    postPreviewSummary.style.display = "none";
+    postPreviewSummary.textContent = "";
+  }
+  postMediaPreview.classList.remove("show");
+  updatePostSubmitState();
+}
+
+function openPostModal({ focusText = false } = {}) {
+  postModalOverlay.classList.add("open");
+  postModalOverlay.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+  document.getElementById("post-modal-name").textContent = currentUserName || "Student";
+  document.getElementById("post-modal-role").textContent = currentUserRole || "Student";
+  const initials = getInitials(currentUserName || "Student");
+  const modalAvatar = document.getElementById("post-modal-avatar");
+  if (modalAvatar) modalAvatar.textContent = initials;
+  if (editingPostId === null) {
+    postSubmitBtn.textContent = "Post";
+    const ce = document.getElementById("post-set-comments");
+    const sl = document.getElementById("post-set-like-count");
+    const sc = document.getElementById("post-set-comment-count");
+    if (ce) ce.checked = true;
+    if (sl) sl.checked = true;
+    if (sc) sc.checked = true;
+  } else {
+    postSubmitBtn.textContent = "Save";
+  }
+  if (focusText) setTimeout(() => postModalText.focus(), 80);
+}
+
+function closePostModal() {
+  postModalOverlay.classList.remove("open");
+  postModalOverlay.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+  postModalText.value = "";
+  selectedTaggedUsers = [];
+  mentionSuggestionsEl?.classList.remove("show");
+  editingPostId = null;
+  postSubmitBtn.textContent = "Post";
+  clearPostMediaSelection();
+}
+
+function setPostFiles(files, type) {
+  const valid = Array.from(files || []).filter(Boolean);
+  if (!valid.length) return;
+  if (type === "image") {
+    const existingImages = selectedPostFiles.filter(f => f.type === "image").length;
+    const allowed = Math.max(0, 5 - existingImages);
+    if (allowed <= 0) { alert("Maximum 5 images allowed."); return; }
+    const toAdd = valid.slice(0, allowed).map(f => ({ file: f, type: "image" }));
+    selectedPostFiles = selectedPostFiles.concat(toAdd);
+  } else {
+    const hasVideo = selectedPostFiles.some(f => f.type === "video");
+    if (hasVideo) { alert("Only one video is allowed."); return; }
+    selectedPostFiles.push({ file: valid[0], type: "video" });
+  }
+  if (selectedPostPreviewUrl) {
+    URL.revokeObjectURL(selectedPostPreviewUrl);
+    selectedPostPreviewUrl = null;
+  }
+  const first = selectedPostFiles[0];
+  if (first) {
+    selectedPostPreviewUrl = URL.createObjectURL(first.file || first);
+    if (first.type === "image") {
+      postPreviewImage.src = selectedPostPreviewUrl;
+      postPreviewImage.style.display = "block";
+      postPreviewVideo.style.display = "none";
+      postPreviewVideo.pause();
+      postPreviewVideo.removeAttribute("src");
+    } else {
+      postPreviewVideo.src = selectedPostPreviewUrl;
+      postPreviewVideo.style.display = "block";
+      postPreviewImage.style.display = "none";
+      postPreviewImage.removeAttribute("src");
+    }
+  }
+  const imgCount = selectedPostFiles.filter(f => f.type === "image").length;
+  const vidCount = selectedPostFiles.filter(f => f.type === "video").length;
+  if (postPreviewSummary) {
+    postPreviewSummary.style.display = "block";
+    postPreviewSummary.textContent = `${imgCount} image${imgCount !== 1 ? "s" : ""}${vidCount ? " + 1 video" : ""} selected`;
+  }
+  postMediaPreview.classList.add("show");
+  updatePostSubmitState();
+  openPostModal();
+}
+
+startPostTrigger?.addEventListener("click", () => openPostModal());
+postArticleTrigger?.addEventListener("click", () => openPostModal({ focusText: true }));
+postPhotoTrigger?.addEventListener("click", () => postPhotoInput?.click());
+postVideoTrigger?.addEventListener("click", () => postVideoInput?.click());
+modalPhotoBtn?.addEventListener("click", () => postPhotoInput?.click());
+modalVideoBtn?.addEventListener("click", () => postVideoInput?.click());
+postModalCloseBtn?.addEventListener("click", closePostModal);
+postModalOverlay?.addEventListener("click", (e) => { if (e.target === postModalOverlay) closePostModal(); });
+postMediaRemove?.addEventListener("click", () => {
+  if (editingPostId) return;
+  clearPostMediaSelection();
+});
+
+postPhotoInput?.addEventListener("change", (e) => {
+  const files = e.target.files;
+  if (!files || !files.length) return;
+  setPostFiles(files, "image");
+});
+postVideoInput?.addEventListener("change", (e) => {
+  const files = e.target.files;
+  if (!files || !files.length) return;
+  setPostFiles(files, "video");
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && postModalOverlay?.classList.contains("open")) closePostModal();
+});
+
+postModalText?.addEventListener("input", () => {
+  const text = postModalText.value || "";
+  const m = text.match(/(^|\s)@([A-Za-z0-9_ ]*)$/);
+  if (!m) {
+    mentionSuggestionsEl?.classList.remove("show");
+    return;
+  }
+  const q = (m[2] || "").trim();
+  if (!q) {
+    mentionSuggestionsEl?.classList.remove("show");
+    return;
+  }
+  mentionSearchToken = q;
+  if (mentionDebounce) clearTimeout(mentionDebounce);
+  mentionDebounce = setTimeout(async () => {
+    const users = await fetchMentionSuggestions(q);
+    if (mentionSearchToken !== q) return;
+    setMentionSuggestions(users);
+  }, 180);
+});
+
+document.addEventListener("click", (e) => {
+  if (!mentionSuggestionsEl || !mentionSuggestionsEl.classList.contains("show")) return;
+  if (e.target === postModalText) return;
+  if (mentionSuggestionsEl.contains(e.target)) return;
+  mentionSuggestionsEl.classList.remove("show");
+});
+
+document.addEventListener("click", () => {
+  document.querySelectorAll(".post-owner-dropdown.show").forEach((el) => el.classList.remove("show"));
+  document.querySelectorAll(".comment-owner-dropdown.show").forEach((el) => el.classList.remove("show"));
+});
+
+sharePostCloseBtn?.addEventListener("click", closeSharePostModal);
+sharePostOverlay?.addEventListener("click", (e) => { if (e.target === sharePostOverlay) closeSharePostModal(); });
+shareCopyLinkBtn?.addEventListener("click", async () => {
+  if (!shareTargetPostId) return;
+  const link = `${window.location.origin}/post/${encodeURIComponent(shareTargetPostId)}`;
+  try {
+    await navigator.clipboard.writeText(link);
+    alert("Post link copied.");
+  } catch (_) {
+    alert(link);
+  }
+});
+shareSendBtn?.addEventListener("click", async () => {
+  if (!shareTargetPostId || !shareConnectionsList) return;
+  const ids = Array.from(shareConnectionsList.querySelectorAll("input[type='checkbox']:checked")).map((el) => el.value);
+  if (!ids.length) return;
+  const res = await fetch(`/share-post/${encodeURIComponent(shareTargetPostId)}`, {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ connection_user_ids: ids }),
+  });
+  if (!res.ok) return;
+  closeSharePostModal();
+});
+
+document.addEventListener("click", (e) => {
+  const a = e.target.closest && e.target.closest("a.hashtag-link[data-hashtag]");
+  if (!a) return;
+  e.preventDefault();
+  const tag = a.getAttribute("data-hashtag");
+  if (!tag) return;
+  const url = new URL(window.location.href);
+  url.searchParams.set("hashtag", decodeURIComponent(tag));
+  window.history.replaceState({}, "", url.toString());
+  loadUnifiedFeed(true);
+});
+
+function toggleNotifications() {
+  const dropdown = document.getElementById("notificationDropdown");
+  const isShowing = dropdown.classList.contains("show");
+  
+  // Close profile dropdown if open
+  document.getElementById("liDropdown").style.display = "none";
+  
+  if (isShowing) {
+    dropdown.classList.remove("show");
+  } else {
+    dropdown.classList.add("show");
+    loadNotifications();
+  }
+}
+
+// Load notifications
+function notificationFetchHeaders() {
+  const headers = {};
+  const token = localStorage.getItem("campuslink_token");
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  return headers;
+}
+
+async function loadNotifications() {
+  try {
+    const res = await fetch("/api/notifications", {
+      credentials: "same-origin",
+      headers: notificationFetchHeaders(),
+    });
+    if (!res.ok) return;
+    
+    const data = await res.json();
+    notificationsData = data.items || [];
+    const unreadCount = data.unread_count || notificationsData.filter(n => !n.is_read).length;
+    
+    // Update badge
+    const badge = document.getElementById("notification-badge");
+    if (badge) {
+      if (unreadCount > 0) {
+        badge.textContent = unreadCount > 99 ? "99+" : unreadCount;
+        badge.style.display = "flex";
+      } else {
+        badge.style.display = "none";
+      }
+    }
+    
+    // Render notifications
+    renderNotifications(notificationsData);
+  } catch (e) {
+    console.error("Failed to load notifications", e);
+  }
+}
+
+function renderNotifications(items) {
+  const list = document.getElementById("notificationList");
+  if (!list) return;
+  
+  if (!items.length) {
+    list.innerHTML = `
+      <div class="notification-empty">
+        <div class="notification-empty-icon">🔔</div>
+        <p>No notifications yet</p>
+      </div>
+    `;
+    return;
+  }
+  
+  list.innerHTML = items.map(notif => {
+    const notifType = notif.type || notif.notification_type;
+    const iconClass = getNotificationIconClass(notifType);
+    const icon = getNotificationIcon(notifType);
+    const timeAgo = formatTimeAgo(notif.created_at);
+    const unreadClass = notif.is_read ? "" : "unread";
+    const metadata = notif.metadata || {};
+    // For profile correction, show full message from faculty
+    const senderName = notif.sender_name || "";
+    const displayMessage = (notif.notification_type === "profile_correction" && metadata.message)
+      ? metadata.message + (metadata.faculty_name ? " — " + metadata.faculty_name : "")
+      : (notif.notification_type === "announcement" || notifType === "announcement")
+      ? (notif.message || (metadata.title ? `New announcement: ${metadata.title}` : "New campus announcement"))
+      : (notif.message || `${senderName} ${notifType === "like" ? "liked your post" : notifType === "comment" ? "commented on your post" : notifType === "comment_like" ? "liked your comment" : notifType === "mention" ? "mentioned you in a post" : "sent a notification"}`);
+    
+    // Check if this is a pending connection request
+    const isConnectionRequest = notif.notification_type === "connection_request";
+    const isPending = metadata.connection_status === "PENDING";
+    const connectionId = metadata.connection_id;
+    
+    let actionButtons = "";
+    if (isConnectionRequest && isPending && connectionId) {
+      actionButtons = `
+        <div class="notification-actions" onclick="event.stopPropagation()">
+          <button class="notif-btn accept" onclick="respondToConnectionNotif('${connectionId}', 'accept', '${notif.id}')">Accept</button>
+          <button class="notif-btn ignore" onclick="respondToConnectionNotif('${connectionId}', 'reject', '${notif.id}')">Ignore</button>
+        </div>
+      `;
+    } else if (isConnectionRequest && metadata.connection_status === "ACCEPTED") {
+      actionButtons = `<div class="notification-status accepted">Connected</div>`;
+    }
+    
+    return `
+      <div class="notification-item ${unreadClass}" 
+           onclick="handleNotificationClick('${notif.id}', '${notif.notification_type || ''}', '${notif.reference_type || ''}', '${notif.reference_id || ''}', '${notif.post_id || ''}')">
+        <div class="notification-icon ${iconClass}">${icon}</div>
+        <div class="notification-content">
+          <p class="notification-message">${escapeHtml(displayMessage)}</p>
+          <span class="notification-time">${timeAgo}</span>
+          ${actionButtons}
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function getNotificationIconClass(type) {
+  switch (type) {
+    case "like": return "connection";
+    case "comment": return "message";
+    case "mention": return "job";
+    case "job": return "job";
+    case "connection": 
+    case "connection_request": return "connection";
+    case "message": return "message";
+    case "application": return "application";
+    case "profile_correction": return "application";
+    case "announcement": return "announcement";
+    case "comment_like": return "announcement";
+    default: return "default";
+  }
+}
+
+function getNotificationIcon(type) {
+  switch (type) {
+    case "announcement": return "📢";
+    case "like": return "❤️";
+    case "comment": return "💬";
+    case "mention": return "@";
+    case "job": return "💼";
+    case "connection": 
+    case "connection_request": return "🤝";
+    case "message": return "💬";
+    case "application": return "📋";
+    case "profile_correction": return "✏️";
+    case "comment_like": return "❤️";
+    default: return "🔔";
+  }
+}
+
+async function respondToConnectionNotif(connectionId, action, notifId) {
+  try {
+    const res = await fetch(`/api/connections/${connectionId}/respond`, {
+      method: "POST",
+      credentials: "same-origin",
+      headers: {
+        ...notificationFetchHeaders(),
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ action })
+    });
+    
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || "Failed to respond");
+    }
+    
+    // Mark notification as read
+    await fetch(`/api/notifications/${notifId}/read`, {
+      method: "POST",
+      credentials: "same-origin",
+      headers: notificationFetchHeaders(),
+    });
+    
+    // Refresh notifications
+    loadNotifications();
+    
+  } catch (e) {
+    console.error("Failed to respond to connection", e);
+    alert(e.message || "Failed to respond to connection request");
+  }
+}
+
+function formatTimeAgo(dateStr) {
+  if (!dateStr) return "";
+  // Ensure UTC interpretation - add Z if not present
+  let utcStr = dateStr;
+  if (!dateStr.endsWith('Z') && !dateStr.includes('+') && !dateStr.includes('-', 10)) {
+    utcStr = dateStr + 'Z';
+  }
+  const date = new Date(utcStr);
+  const now = new Date();
+  const diffMs = now - date;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+  
+  if (diffMins < 0) return "Just now"; // Handle slight clock differences
+  if (diffMins < 1) return "Just now";
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return date.toLocaleDateString();
+}
+
+async function handleNotificationClick(notifId, notifType, refType, refId, postId) {
+  // Don't navigate for connection requests with action buttons
+  if (notifType === "connection_request") {
+    return;
+  }
+  
+  // Mark as read
+  try {
+    await fetch(`/api/notifications/${notifId}/read`, {
+      method: "POST",
+      credentials: "same-origin",
+      headers: notificationFetchHeaders(),
+    });
+  } catch (e) {
+    console.error("Failed to mark notification as read", e);
+  }
+  
+  // Navigate to relevant page
+  let url = null;
+  if (notifType === "announcement" || refType === "announcement") {
+    url = "/user/dashboard#announcements-feed-anchor";
+  } else if (notifType === "profile_correction") {
+    url = "/profile/me";
+  } else if ((notifType === "share" || refType === "post") && (postId || refId)) {
+    const pid = postId || refId;
+    url = `/post/${encodeURIComponent(pid)}`;
+  } else if (notifType === "comment_like") {
+    const pid = postId || "";
+    if (pid) url = `/post/${encodeURIComponent(pid)}/comments`;
+  } else if ((notifType === "like" || notifType === "comment" || notifType === "mention") && (postId || refId)) {
+    const pid = postId || refId;
+    url = `/user/dashboard?post_id=${encodeURIComponent(pid)}`;
+  } else if (refType === "job" && refId) {
+    url = `/jobs/${refId}`;
+  } else if (refType === "profile" && refId) {
+    url = `/profile/${refId}`;
+  } else if (refType === "conversation" && refId) {
+    // Navigate to messages page with this user
+    url = `/messages?user=${refId}`;
+  }
+  
+  if (url) {
+    window.location.href = url;
+  } else {
+    // Close dropdown and refresh
+    document.getElementById("notificationDropdown").classList.remove("show");
+    loadNotifications();
+  }
+}
+
+async function markAllNotificationsRead() {
+  try {
+    await fetch("/api/notifications", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: notificationFetchHeaders(),
+    });
+    
+    // Refresh notifications
+    loadNotifications();
+  } catch (e) {
+    console.error("Failed to mark all as read", e);
+  }
+}
+
+function escapeHtml(s) {
+  return String(s || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+// User search functionality (header + mobile drawer panels)
+const searchInput = document.getElementById("search-input");
+const searchResults = document.getElementById("search-results");
+const searchInputDrawer = document.getElementById("search-input-drawer");
+const searchResultsDrawer = document.getElementById("search-results-drawer");
+
+async function performSearchInto(query, resultsEl) {
+  if (!resultsEl) return;
+  if (!query || query.length < 1) {
+    resultsEl.classList.remove("show");
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/search/users?q=${encodeURIComponent(query)}`);
+    if (!res.ok) {
+      resultsEl.classList.remove("show");
+      return;
+    }
+
+    const data = await res.json();
+    const users = data.users || [];
+
+    resultsEl.innerHTML = "";
+
+    if (users.length === 0) {
+      const noResults = document.createElement("div");
+      noResults.className = "search-no-results";
+      noResults.textContent = "No users found";
+      resultsEl.appendChild(noResults);
+    } else {
+      users.forEach((user) => {
+        const item = document.createElement("div");
+        item.className = "search-result-item";
+        item.onclick = () => {
+          window.location.href = `/profile/${user.id}`;
+        };
+
+        const avatar = document.createElement("div");
+        avatar.className = "search-result-avatar";
+        avatar.textContent = getInitials(user.name);
+
+        const info = document.createElement("div");
+        info.className = "search-result-info";
+
+        const name = document.createElement("div");
+        name.className = "search-result-name";
+        name.textContent = user.name || "Unknown User";
+
+        const meta = document.createElement("div");
+        meta.className = "search-result-meta";
+        const metaParts = [];
+        if (user.roll_number) metaParts.push(user.roll_number);
+        if (user.branch) metaParts.push(user.branch);
+        if (user.role) metaParts.push(user.role);
+        meta.textContent = metaParts.join(" · ") || "Student";
+
+        info.appendChild(name);
+        info.appendChild(meta);
+        item.appendChild(avatar);
+        item.appendChild(info);
+        resultsEl.appendChild(item);
+      });
+    }
+
+    resultsEl.classList.add("show");
+  } catch (e) {
+    console.error("Search failed", e);
+    resultsEl.classList.remove("show");
+  }
+}
+
+function wireStudentSearchInput(inputEl, resultsEl, timeoutHolder) {
+  if (!inputEl || !resultsEl) return;
+  inputEl.addEventListener("input", (e) => {
+    const query = e.target.value.trim();
+    if (timeoutHolder.t != null) clearTimeout(timeoutHolder.t);
+    timeoutHolder.t = setTimeout(() => {
+      performSearchInto(query, resultsEl);
+    }, 300);
+  });
+
+  inputEl.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      const firstResult = resultsEl.querySelector(".search-result-item");
+      if (firstResult) firstResult.click();
+    } else if (e.key === "Escape") {
+      resultsEl.classList.remove("show");
+      inputEl.blur();
+    }
+  });
+}
+
+if (searchInput) {
+  wireStudentSearchInput(searchInput, searchResults, { t: null });
+}
+if (searchInputDrawer && searchResultsDrawer) {
+  wireStudentSearchInput(searchInputDrawer, searchResultsDrawer, { t: null });
+}
+
+document.addEventListener("click", (e) => {
+  const inHeader = document.querySelector(".cl-student-topnav .nav-search-wrapper");
+  const inDrawer = document.getElementById("cl-drawer-search-wrap");
+  const t = e.target;
+  if (searchResults && (!inHeader || !inHeader.contains(t))) {
+    searchResults.classList.remove("show");
+  }
+  if (searchResultsDrawer && (!inDrawer || !inDrawer.contains(t))) {
+    searchResultsDrawer.classList.remove("show");
+  }
+});
+
+    // Simple helper to safely set text content
+    function setText(id, value, fallback = "—") {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = value != null && value !== "" ? value : fallback;
+    }
+
+    function getInitials(name) {
+      if (!name) return "ST";
+      const parts = name.trim().split(/\s+/);
+      const first = parts[0]?.[0] || "";
+      const second = parts[1]?.[0] || "";
+      return (first + second).toUpperCase() || "ST";
+    }
+
+    async function loadDashboardOverview() {
+      try {
+        const res = await fetch("/api/dashboard/overview");
+        if (!res.ok) return;
+        const data = await res.json();
+        const profile = data.profile || {};
+        const stats = data.stats || {};
+
+        const name = profile.name || "Your profile will appear here";
+        currentUserName = name || "Student";
+        currentUserRole = "Student";
+        setText("nav-dropdown-profile-name", profile.name, "Your Name");
+        setText("student-name", name);
+        setText("student-avatar-initials", getInitials(profile.name));
+        setText("composer-avatar", getInitials(profile.name), "ST");
+        setText("nav-profile-initials", getInitials(profile.name), "ST");
+
+        const branch = profile.branch;
+        const roll = profile.roll_number;
+        const location = profile.location;
+        const branchRollParts = [];
+        if (location) branchRollParts.push(location);
+        if (branch) branchRollParts.push(branch);
+        if (roll) branchRollParts.push(roll);
+        setText("student-branch-roll", branchRollParts.join(" · ") || "Branch, roll, and location will appear here once synced.");
+
+        setText("stat-cgpa", profile.cgpa, "—");
+        setText("stat-branch", branch, "—");
+
+        const openTo = profile.open_to || [];
+        const pill = document.getElementById("profile-strength-pill");
+        if (pill) {
+          if (openTo.length) {
+            pill.textContent = "Open to: " + openTo.join(", ");
+          } else {
+            pill.textContent = "Profile data will appear once your details are synced.";
+          }
+        }
+
+        // Saved items & engagement. If collections are empty, backend returns 0.
+        setText("stat-saved-jobs", stats.saved_jobs ?? 0, "0");
+        setText("stat-saved-internships", stats.saved_internships ?? 0, "0");
+        setText("stat-joined-webinars", stats.joined_webinars ?? 0, "0");
+        var connEl = document.getElementById("navConnectionsMentor");
+        if (connEl) {
+          var conn = stats.connection_count ?? 0;
+          var mentor = stats.mentor_count ?? 0;
+          connEl.textContent = "Connections: " + conn + " | Mentor: " + mentor;
+        }
+      } catch (e) {
+        // Keep placeholders; no fake data is shown.
+        console.error("Failed to load dashboard overview", e);
+      }
+    }
+
+    function renderPostContentHtml(item) {
+      const text = String(item.body || item.content || item.description || "");
+      let html = escapeHtml(text);
+      html = html.replace(/(^|\s)#([A-Za-z0-9_]{1,40})/g, (m, p1, p2) => `${p1}<a class="hashtag-link" href="#" data-hashtag="${encodeURIComponent(p2.toLowerCase())}">#${p2}</a>`);
+      const mentionMap = {};
+      (item.tagged_user_info || []).forEach(u => { if (u && u.name && u.id) mentionMap[u.name.toLowerCase()] = u.id; });
+      html = html.replace(/(^|\s)@([A-Za-z][A-Za-z0-9_ ]{0,49})/g, (m, p1, p2) => {
+        const name = p2.trim();
+        const uid = mentionMap[name.toLowerCase()];
+        if (!uid) return m;
+        return `${p1}<a class="mention-link" href="/profile/${encodeURIComponent(uid)}" target="_blank">@${escapeHtml(name)}</a>`;
+      });
+      return html;
+    }
+
+    function openEditPostModal(item) {
+      editingPostId = item.id;
+      postModalText.value = item.content || "";
+      selectedTaggedUsers = (item.tagged_user_info || []).map(u => ({ id: u.id, name: u.name }));
+      const s = item.settings || {};
+      const ce = document.getElementById("post-set-comments");
+      const sl = document.getElementById("post-set-like-count");
+      const sc = document.getElementById("post-set-comment-count");
+      if (ce) ce.checked = s.comments_enabled !== false;
+      if (sl) sl.checked = s.show_like_count !== false;
+      if (sc) sc.checked = s.show_comment_count !== false;
+      // Keep existing media; don't allow removing all media on edit.
+      clearPostMediaSelection();
+      selectedPostFiles = [{ file: { __existing_media: true }, type: "existing" }];
+      postMediaPreview.classList.add("show");
+      if (item.media_url && item.media_url.toLowerCase().endsWith(".mp4")) {
+        postPreviewVideo.src = item.media_url;
+        postPreviewVideo.style.display = "block";
+      } else if (item.media_url) {
+        postPreviewImage.src = item.media_url;
+        postPreviewImage.style.display = "block";
+      }
+      updatePostSubmitState();
+      openPostModal({ focusText: true });
+    }
+
+    function renderFeedCommentNode(c, ctx) {
+      const wrap = document.createElement("div");
+      wrap.className = "post-comment-item";
+      wrap.dataset.commentId = c.id || "";
+      const avatar = document.createElement("div");
+      avatar.className = "comment-avatar";
+      avatar.textContent = getInitials(c.author_name || "U");
+      const bubble = document.createElement("div");
+      bubble.className = "comment-bubble";
+      const author = document.createElement("div");
+      author.className = "comment-author";
+      author.textContent = c.author_name || "User";
+      const text = document.createElement("div");
+      text.className = "comment-text";
+      text.textContent = c.text || "";
+      const tm = document.createElement("div");
+      tm.className = "comment-time";
+      tm.textContent = c.timestamp ? formatTimeAgo(c.timestamp) : "";
+      bubble.appendChild(author);
+      bubble.appendChild(text);
+      if (tm.textContent) bubble.appendChild(tm);
+
+      const actions = document.createElement("div");
+      actions.className = "comment-actions";
+      const likeBtn = document.createElement("button");
+      likeBtn.type = "button";
+      likeBtn.className = "comment-action-btn comment-like-btn" + (c.liked ? " liked" : "");
+      likeBtn.textContent = (c.liked ? "❤️" : "🤍") + " " + (c.likes_count || 0);
+      likeBtn.addEventListener("click", async () => {
+        if (!c.id) return;
+        try {
+          const res = await fetch("/toggle-comment-like/" + encodeURIComponent(c.id), {
+            method: "POST",
+            credentials: "same-origin",
+            headers: { "Content-Type": "application/json" },
+          });
+          if (res.status === 401) { window.location.href = "/login"; return; }
+          if (!res.ok) return;
+          const data = await res.json();
+          c.liked = !!data.liked;
+          c.likes_count = data.likes_count || 0;
+          likeBtn.classList.toggle("liked", c.liked);
+          likeBtn.textContent = (c.liked ? "❤️" : "🤍") + " " + c.likes_count;
+        } catch (_) {}
+      });
+      actions.appendChild(likeBtn);
+
+      if (!c.parent_id) {
+        const replyBtn = document.createElement("button");
+        replyBtn.type = "button";
+        replyBtn.className = "comment-action-btn";
+        replyBtn.textContent = "Reply";
+        const replyWrap = document.createElement("div");
+        replyWrap.className = "reply-input-wrap";
+        replyWrap.style.display = "none";
+        const replyInput = document.createElement("input");
+        replyInput.type = "text";
+        replyInput.placeholder = "Write a reply...";
+        const replySubmit = document.createElement("button");
+        replySubmit.type = "button";
+        replySubmit.className = "ghost";
+        replySubmit.textContent = "Reply";
+        replySubmit.addEventListener("click", async () => {
+          const replyText = (replyInput.value || "").trim();
+          if (!replyText || !c.id) return;
+          try {
+            const res = await fetch("/add-reply/" + encodeURIComponent(c.id), {
+              method: "POST",
+              credentials: "same-origin",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ text: replyText }),
+            });
+            if (res.status === 401) { window.location.href = "/login"; return; }
+            const data = await res.json();
+            c.replies = c.replies || [];
+            if (data.reply) c.replies.push(data.reply);
+            c.reply_count = (c.reply_count || 0) + 1;
+            replyInput.value = "";
+            replyWrap.style.display = "none";
+            if (ctx.reloadComments) await ctx.reloadComments(true);
+          } catch (_) {}
+        });
+        replyWrap.appendChild(replyInput);
+        replyWrap.appendChild(replySubmit);
+        replyBtn.addEventListener("click", () => {
+          replyWrap.style.display = replyWrap.style.display === "none" ? "flex" : "none";
+          if (replyWrap.style.display === "flex") replyInput.focus();
+        });
+        actions.appendChild(replyBtn);
+        bubble.appendChild(replyWrap);
+      }
+
+      bubble.appendChild(actions);
+
+      if (Array.isArray(c.replies) && c.replies.length) {
+        const replies = document.createElement("div");
+        replies.className = "comment-replies";
+        c.replies.forEach((r) => {
+          replies.appendChild(renderFeedCommentNode(r, ctx));
+        });
+        bubble.appendChild(replies);
+      }
+      wrap.appendChild(avatar);
+      wrap.appendChild(bubble);
+      return wrap;
+    }
+
+    function createPostElement(item) {
+      const article = document.createElement("article");
+      article.className = "post";
+      if (item.id) article.dataset.postId = item.id;
+
+      const head = document.createElement("div");
+      head.className = "post-head";
+
+      const userDiv = document.createElement("div");
+      userDiv.className = "post-user";
+
+      const miniAvatar = document.createElement("div");
+      miniAvatar.className = "mini-avatar";
+      if (item.author_profile_photo) {
+        miniAvatar.style.background = "#e2e8f0";
+        miniAvatar.innerHTML = `<img src="${escapeHtml(item.author_profile_photo)}" alt="Profile" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+      } else {
+        miniAvatar.textContent = getInitials((item.author && item.author.name) || item.student_name || item.title || "CL");
+      }
+
+      const userMeta = document.createElement("div");
+      const titleEl = document.createElement("div");
+      titleEl.style.fontWeight = "700";
+      titleEl.textContent = (item.author && item.author.name) || item.student_name || item.title || "Post";
+      const metaEl = document.createElement("div");
+      metaEl.className = "post-meta";
+      const roleText = (item.author && item.author.role) || "";
+      const roleLabel = roleText ? (String(roleText).toUpperCase() === "ALUMNI" ? "Alumni" : "Student") : "";
+      metaEl.textContent = [roleLabel, item.branch, item.created_at ? formatTimeAgo(item.created_at) : ""].filter(Boolean).join(" · ");
+      userMeta.appendChild(titleEl);
+      if (metaEl.textContent) userMeta.appendChild(metaEl);
+      userDiv.appendChild(miniAvatar);
+      userDiv.appendChild(userMeta);
+      head.appendChild(userDiv);
+
+      const isOwner = currentUserId && item.author_id && String(currentUserId) === String(item.author_id);
+      if (isOwner) {
+        const ownerMenu = document.createElement("div");
+        ownerMenu.className = "post-owner-menu";
+        const dots = document.createElement("button");
+        dots.type = "button";
+        dots.className = "post-owner-dots";
+        dots.textContent = "⋯";
+        const dd = document.createElement("div");
+        dd.className = "post-owner-dropdown";
+        const editBtn = document.createElement("button");
+        editBtn.type = "button";
+        editBtn.textContent = "Edit Post";
+        editBtn.addEventListener("click", () => { dd.classList.remove("show"); openEditPostModal(item); });
+        const delBtn = document.createElement("button");
+        delBtn.type = "button";
+        delBtn.textContent = "Delete Post";
+        delBtn.addEventListener("click", async () => {
+          dd.classList.remove("show");
+          if (!confirm("Delete this post?")) return;
+          const res = await fetch(`/delete-post/${encodeURIComponent(item.id)}`, { method: "POST", credentials: "same-origin" });
+          if (res.status === 401) { window.location.href = "/login"; return; }
+          if (!res.ok) return;
+          article.remove();
+        });
+        dd.appendChild(editBtn); dd.appendChild(delBtn);
+        dots.addEventListener("click", (e) => { e.stopPropagation(); dd.classList.toggle("show"); });
+        ownerMenu.appendChild(dots); ownerMenu.appendChild(dd);
+        head.appendChild(ownerMenu);
+      }
+
+      const body = document.createElement("div");
+      body.className = "post-body";
+      body.innerHTML = renderPostContentHtml(item);
+
+      article.appendChild(head);
+      if (item.feed_label) {
+        const lab = document.createElement("div");
+        lab.className = "post-feed-label";
+        const pt = String(item.post_type || "").toLowerCase();
+        lab.textContent = (pt === "certificate" ? "🎓 " : "") + item.feed_label;
+        article.appendChild(lab);
+      }
+      article.appendChild(body);
+
+      const mediaList = Array.isArray(item.media) && item.media.length
+        ? item.media
+        : ((item.media_url ? [{ type: (String(item.media_url).toLowerCase().endsWith(".mp4") ? "video" : "image"), url: item.media_url }] : []));
+      const slides = [];
+      mediaList.forEach((m) => {
+        if (!m || !m.url) return;
+        const t = (m.type || "").toLowerCase();
+        if (t === "video") slides.push({ type: "video", url: m.url });
+        else slides.push({ type: "image", url: m.url });
+      });
+      if (slides.length) {
+        const mediaWrap = document.createElement("div");
+        mediaWrap.className = "post-media post-media-carousel";
+        mediaWrap.style.maxWidth = "100%";
+        if (slides.length > 1) mediaWrap.classList.add("post-media-carousel--multi");
+
+        const viewport = document.createElement("div");
+        viewport.className = "post-media-viewport";
+
+        let slideIndex = 0;
+        const renderSlide = () => {
+          viewport.innerHTML = "";
+          const s = slides[slideIndex];
+          if (s.type === "video") {
+            const vid = document.createElement("video");
+            vid.className = "post-media-slide-el";
+            vid.src = s.url;
+            vid.controls = true;
+            vid.setAttribute("playsinline", "");
+            viewport.appendChild(vid);
+          } else {
+            const img = document.createElement("img");
+            img.className = "post-media-slide-el";
+            img.src = s.url;
+            img.alt = "Post media";
+            img.loading = "lazy";
+            viewport.appendChild(img);
+          }
+        };
+        renderSlide();
+
+        if (slides.length > 1) {
+          const prevBtn = document.createElement("button");
+          prevBtn.type = "button";
+          prevBtn.className = "post-media-nav post-media-nav-prev";
+          prevBtn.setAttribute("aria-label", "Previous photo or video");
+          prevBtn.textContent = "<";
+          prevBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            slideIndex = (slideIndex - 1 + slides.length) % slides.length;
+            renderSlide();
+          });
+          const nextBtn = document.createElement("button");
+          nextBtn.type = "button";
+          nextBtn.className = "post-media-nav post-media-nav-next";
+          nextBtn.setAttribute("aria-label", "Next photo or video");
+          nextBtn.textContent = ">";
+          nextBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            slideIndex = (slideIndex + 1) % slides.length;
+            renderSlide();
+          });
+          mediaWrap.appendChild(prevBtn);
+          mediaWrap.appendChild(viewport);
+          mediaWrap.appendChild(nextBtn);
+        } else {
+          mediaWrap.appendChild(viewport);
+        }
+        article.appendChild(mediaWrap);
+      }
+
+      if (item.id) {
+        item.likes_count_hidden = !!item.likes_count_hidden;
+        item.comments_count_hidden = !!item.comments_count_hidden;
+        const settings = item.settings || { comments_enabled: true, show_like_count: true, show_comment_count: true };
+        const statsRow = document.createElement("div");
+        statsRow.className = "post-stats";
+        const likeStat = document.createElement("div");
+        likeStat.className = "post-stat-like";
+        const syncLikeStat = () => {
+          if (item.likes_count_hidden) {
+            likeStat.textContent = item.liked ? "❤️ Liked" : "🤍 Likes";
+          } else {
+            likeStat.textContent = `❤ ${item.likes_count ?? 0} Like${(item.likes_count ?? 0) !== 1 ? "s" : ""}`;
+          }
+        };
+        const commentStat = document.createElement("div");
+        const syncCommentStat = () => {
+          if (item.comments_count_hidden) {
+            commentStat.textContent = "💬 Comments";
+          } else {
+            commentStat.textContent = `${item.comments_count ?? 0} Comment${(item.comments_count ?? 0) !== 1 ? "s" : ""}`;
+          }
+        };
+        syncLikeStat();
+        syncCommentStat();
+        statsRow.appendChild(likeStat);
+        statsRow.appendChild(commentStat);
+        article.appendChild(statsRow);
+
+        const footer = document.createElement("div");
+        footer.className = "post-actions";
+        footer.style.display = "flex"; footer.style.gap = "8px"; footer.style.marginTop = "4px"; footer.style.paddingTop = "6px";
+        footer.style.borderTop = "1px solid var(--border)";
+
+        const likeBtn = document.createElement("button");
+        likeBtn.type = "button"; likeBtn.className = "post-action-btn";
+        likeBtn.style.color = item.liked ? "#e11d48" : "inherit";
+        likeBtn.textContent = (item.liked ? "❤️" : "🤍") + " Like";
+
+        const commentBtn = document.createElement("button");
+        commentBtn.type = "button";
+        commentBtn.className = "post-action-btn";
+        commentBtn.textContent = "💬 Comment";
+
+        const shareBtn = document.createElement("button");
+        shareBtn.type = "button";
+        shareBtn.className = "post-action-btn";
+        shareBtn.textContent = "🔁 Share";
+
+        likeBtn.addEventListener("click", async () => {
+          try {
+            const res = await fetch("/toggle-like/" + encodeURIComponent(item.id), { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" } });
+            if (res.status === 401) { window.location.href = "/login"; return; }
+            if (!res.ok) return;
+            const data = await res.json();
+            item.liked = data.liked;
+            item.likes_count = data.likes_count;
+            if (typeof data.likes_count_hidden === "boolean") item.likes_count_hidden = data.likes_count_hidden;
+            likeBtn.style.color = item.liked ? "#e11d48" : "inherit";
+            likeBtn.textContent = (item.liked ? "❤️" : "🤍") + " Like";
+            syncLikeStat();
+          } catch (e) { console.error("Like failed", e); }
+        });
+
+        const commentsList = document.createElement("div");
+        commentsList.className = "post-comments";
+        const viewAllComments = document.createElement("button");
+        viewAllComments.type = "button";
+        viewAllComments.className = "view-all-comments-btn";
+        viewAllComments.textContent = "View all comments";
+        viewAllComments.style.display = "none";
+        let commentsExpanded = false;
+        let commentsCache = [];
+
+        const renderCommentsUi = (arr) => {
+          commentsList.innerHTML = "";
+          if (!Array.isArray(arr) || !arr.length) return;
+          const renderArr = commentsExpanded ? arr : arr.slice(0, 2);
+          renderArr.forEach((c) => {
+            commentsList.appendChild(
+              renderFeedCommentNode(c, {
+                reloadComments: (all) => loadComments(all),
+                showAllReplies: commentsExpanded,
+              })
+            );
+          });
+          const total = typeof item.comments_count === "number" ? item.comments_count : 0;
+          viewAllComments.style.display = total > 2 ? "inline-block" : "none";
+          viewAllComments.textContent = commentsExpanded ? "Show less comments" : "View all comments";
+        };
+
+        const loadComments = async (all) => {
+          const q = all ? "all=1" : "limit=2";
+          try {
+            const res = await fetch("/comments/" + encodeURIComponent(item.id) + "?" + q, { credentials: "same-origin" });
+            if (res.status === 401) { window.location.href = "/login"; return; }
+            if (!res.ok) return;
+            const data = await res.json();
+            commentsCache = data.comments || [];
+            item.comments_count = data.count ?? item.comments_count ?? 0;
+            syncCommentStat();
+            renderCommentsUi(commentsCache);
+          } catch (e) {
+            console.error("Failed to load comments", e);
+          }
+        };
+
+        viewAllComments.addEventListener("click", () => {
+          commentsExpanded = !commentsExpanded;
+          if (commentsExpanded) {
+            loadComments(true);
+          } else {
+            renderCommentsUi(commentsCache);
+          }
+        });
+
+        const commentWrap = document.createElement("div");
+        commentWrap.style.display = "flex"; commentWrap.style.alignItems = "center"; commentWrap.style.gap = "8px"; commentWrap.style.flexWrap = "wrap";
+        const commentInput = document.createElement("input");
+        commentInput.type = "text"; commentInput.placeholder = "Write a comment..."; commentInput.style.flex = "1"; commentInput.style.minWidth = "120px";
+        commentInput.style.padding = "6px 10px"; commentInput.style.borderRadius = "6px"; commentInput.style.border = "1px solid var(--border)";
+        commentInput.style.background = "rgba(255,255,255,0.05)"; commentInput.style.color = "var(--text)"; commentInput.style.fontSize = "13px";
+        const commentSubmit = document.createElement("button");
+        commentSubmit.type = "button"; commentSubmit.className = "ghost"; commentSubmit.textContent = "Comment"; commentSubmit.style.cursor = "pointer"; commentSubmit.style.fontSize = "12px";
+        commentSubmit.addEventListener("click", async () => {
+          const text = (commentInput.value || "").trim();
+          if (!text) return;
+          try {
+            const res = await fetch("/add-comment/" + encodeURIComponent(item.id), {
+              method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text }),
+            });
+            if (res.status === 401) { window.location.href = "/login"; return; }
+            if (!res.ok) return;
+            const data = await res.json();
+            item.comments_count = data.comments_count;
+            syncCommentStat();
+            if (data.comment) {
+              commentsCache = [data.comment].concat(commentsCache || []);
+              if (!commentsExpanded) commentsCache = commentsCache.slice(0, 2);
+              renderCommentsUi(commentsCache);
+            } else {
+              await loadComments(commentsExpanded);
+            }
+            commentInput.value = "";
+          } catch (e) { console.error("Comment failed", e); }
+        });
+
+        commentBtn.addEventListener("click", () => {
+          window.open("/post/" + encodeURIComponent(item.id) + "/comments", "_blank", "noopener,noreferrer");
+        });
+        shareBtn.addEventListener("click", () => openSharePostModal(item.id));
+
+        footer.appendChild(likeBtn);
+        footer.appendChild(commentBtn);
+        footer.appendChild(shareBtn);
+        article.appendChild(footer);
+
+        const commentsOffBanner = document.createElement("div");
+        commentsOffBanner.className = "comments-off-banner";
+        commentsOffBanner.textContent = "Comments are turned off for this post.";
+        commentsOffBanner.style.display = settings.comments_enabled ? "none" : "block";
+        article.appendChild(commentsOffBanner);
+        if (settings.comments_enabled) {
+          article.appendChild(commentsList);
+          article.appendChild(viewAllComments);
+          loadComments(false);
+        }
+        const commentRow = document.createElement("div");
+        commentRow.className = "post-comment-row";
+        commentRow.style.marginTop = "8px"; commentRow.style.paddingTop = "8px"; commentRow.style.borderTop = "1px solid rgba(255,255,255,0.06)";
+        commentRow.style.display = settings.comments_enabled ? "block" : "none";
+        commentWrap.appendChild(commentInput); commentWrap.appendChild(commentSubmit); commentRow.appendChild(commentWrap); article.appendChild(commentRow);
+      }
+
+      return article;
+    }
+
+    async function loadUnifiedFeed(reset = true) {
+      const container = document.getElementById("unified-feed");
+      if (!container) return;
+      const emptyStateId = "unified-feed-empty";
+      if (feedLoading) return;
+      if (!feedHasMore && !reset) return;
+      feedLoading = true;
+      if (feedLoadingEl) feedLoadingEl.style.display = "block";
+      try {
+        if (reset) {
+          feedSkip = 0;
+          feedHasMore = true;
+          container.innerHTML = "";
+        }
+        const hashtag = new URLSearchParams(window.location.search).get("hashtag");
+        const endpoint = hashtag
+          ? `/hashtag/${encodeURIComponent(hashtag)}`
+          : `/api/dashboard/student-posts?limit=${encodeURIComponent(feedLimit)}&skip=${encodeURIComponent(feedSkip)}`;
+        const res = await fetch(endpoint, { credentials: "same-origin" });
+        if (!res.ok) return;
+        const data = await res.json();
+        const posts = data.posts || [];
+        if (reset && data.current_user_id) {
+          currentUserId = data.current_user_id;
+          updateMyPostsLink();
+        }
+        if (!posts.length && reset) {
+          const emptyEl = document.createElement("div");
+          emptyEl.id = emptyStateId;
+          emptyEl.className = "post";
+          emptyEl.innerHTML = "<div class=\"post-body\">No media posts yet. Posts with image/video from students and alumni will appear here.</div>";
+          container.appendChild(emptyEl);
+          return;
+        }
+        posts.forEach((post) => {
+          container.appendChild(createPostElement(post));
+        });
+        feedSkip += posts.length;
+        feedHasMore = hashtag ? false : Boolean(data.has_more);
+      } catch (e) {
+        if (reset) {
+          container.innerHTML = "";
+          const emptyEl = document.createElement("div");
+          emptyEl.id = emptyStateId;
+          emptyEl.className = "post";
+          emptyEl.innerHTML = "<div class=\"post-body\">No media posts yet. Posts with image/video from students and alumni will appear here.</div>";
+          container.appendChild(emptyEl);
+        }
+      } finally {
+        feedLoading = false;
+        if (feedLoadingEl) feedLoadingEl.style.display = "none";
+      }
+    }
+
+    function renderAnnouncementTicker(items) {
+      const inner = document.getElementById("cl-announcement-ticker-inner");
+      if (!inner) return;
+      if (!items || !items.length) {
+        inner.classList.add("cl-announcement-ticker-inner--static");
+        inner.innerHTML = "<span class=\"cl-announcement-ticker-msg--empty\">📢 No announcements right now · open for details</span>";
+        return;
+      }
+      const esc = (s) => String(s || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      const parts = items.slice(0, 12).map((n) => "📢 " + esc((n.title || "Announcement").trim()));
+      const line = parts.join("&nbsp;&nbsp;|&nbsp;&nbsp;");
+      inner.classList.remove("cl-announcement-ticker-inner--static");
+      inner.innerHTML = "<span class=\"ticker-seg\">" + line + "</span><span class=\"ticker-seg\" aria-hidden=\"true\">" + line + "</span>";
+    }
+
+    function updateMyPostsLink() {
+      if (!currentUserId) return;
+      const href = "/user-posts/" + encodeURIComponent(currentUserId);
+      ["dropdown-my-posts", "drawer-my-posts"].forEach((id) => {
+        const a = document.getElementById(id);
+        if (a) a.href = href;
+      });
+    }
+
+    async function loadAnnouncements() {
+      const feed = document.getElementById("announcements-feed");
+      try {
+        const res = await fetch("/api/dashboard/important-notices");
+        if (!res.ok) {
+          renderAnnouncementTicker([]);
+          return;
+        }
+        const data = await res.json();
+        const items = data.items || [];
+        renderAnnouncementTicker(items);
+        if (!feed) return;
+        feed.innerHTML = "";
+        if (!items.length) {
+          const p = document.createElement("p");
+          p.id = "announcements-empty";
+          p.className = "card-sub";
+          p.style.margin = "0";
+          p.style.padding = "0 4px";
+          p.textContent = "No announcements yet.";
+          feed.appendChild(p);
+          return;
+        }
+        items.forEach((n) => {
+          const card = document.createElement("article");
+          card.className = "announcement-card";
+          const title = document.createElement("h3");
+          title.className = "announcement-card-title";
+          title.textContent = n.title || "Announcement";
+          const desc = document.createElement("div");
+          desc.className = "announcement-card-desc";
+          desc.textContent = n.description || n.body || "";
+          card.appendChild(title);
+          if (desc.textContent) card.appendChild(desc);
+          const meta = document.createElement("div");
+          meta.className = "announcement-card-meta";
+          const posted = (n.posted_by || n.created_by || "").trim();
+          const when = n.created_at ? new Date(n.created_at).toLocaleString() : "";
+          meta.textContent = [posted && "Posted by " + posted, when].filter(Boolean).join(" · ");
+          if (meta.textContent) card.appendChild(meta);
+          if (window.CampusLinkAnnouncementMediaUI) {
+            window.CampusLinkAnnouncementMediaUI.appendItems(card, n);
+          }
+          feed.appendChild(card);
+        });
+      } catch (e) {
+        renderAnnouncementTicker([]);
+        if (feed) {
+          feed.innerHTML = "";
+          const p = document.createElement("p");
+          p.className = "card-sub";
+          p.textContent = "Could not load announcements.";
+          feed.appendChild(p);
+        }
+      }
+    }
+
+    postSubmitBtn?.addEventListener("click", async () => {
+      if (!selectedPostFiles.length) return;
+      postSubmitBtn.disabled = true;
+      try {
+        const caption = (postModalText.value || "").trim();
+        const inferredTagIds = parseTaggedUsersFromCaption(caption, selectedTaggedUsers);
+        let res;
+        const pst = {
+          comments_enabled: document.getElementById("post-set-comments")?.checked !== false,
+          show_like_count: document.getElementById("post-set-like-count")?.checked !== false,
+          show_comment_count: document.getElementById("post-set-comment-count")?.checked !== false,
+        };
+        if (editingPostId) {
+          res = await fetch(`/edit-post/${encodeURIComponent(editingPostId)}`, {
+            method: "POST",
+            credentials: "same-origin",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ content: caption, tagged_users: inferredTagIds, settings: pst }),
+          });
+        } else {
+          const fd = new FormData();
+          fd.append("content", caption);
+          fd.append("comments_enabled", pst.comments_enabled ? "true" : "false");
+          fd.append("show_like_count", pst.show_like_count ? "true" : "false");
+          fd.append("show_comment_count", pst.show_comment_count ? "true" : "false");
+          selectedPostFiles.forEach((m) => {
+            if (m?.file && !m.file.__existing_media) fd.append("media", m.file);
+          });
+          inferredTagIds.forEach((id) => fd.append("tagged_users[]", id));
+          res = await fetch("/api/posts/media", {
+            method: "POST",
+            credentials: "same-origin",
+            body: fd,
+          });
+        }
+        if (res.status === 401) { window.location.href = "/login"; return; }
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || (editingPostId ? "Failed to update post" : "Failed to create post"));
+        closePostModal();
+        await loadUnifiedFeed(true);
+      } catch (e) {
+        alert(e.message || "Failed to save post");
+      } finally {
+        updatePostSubmitState();
+      }
+    });
+
+    async function loadLatestJobs() {
+      const container = document.getElementById("latest-jobs-feed");
+      const emptyState = document.getElementById("latest-jobs-empty");
+      if (!container) return;
+      try {
+        const res = await fetch("/api/jobs");
+        if (!res.ok) return;
+        const data = await res.json();
+        const items = (data.items || []).slice(0, 5);
+        if (!items.length) {
+          if (emptyState) emptyState.style.display = "block";
+          return;
+        }
+        if (emptyState) emptyState.remove();
+        items.forEach((job) => {
+          const article = document.createElement("article");
+          article.className = "post";
+          const head = document.createElement("div");
+          head.className = "post-head";
+
+          const userDiv = document.createElement("div");
+          userDiv.className = "post-user";
+          const miniAvatar = document.createElement("div");
+          miniAvatar.className = "mini-avatar";
+          miniAvatar.textContent = getInitials(job.company_name || "Job");
+          const userMeta = document.createElement("div");
+          const titleEl = document.createElement("div");
+          titleEl.style.fontWeight = "700";
+          titleEl.textContent = `${job.role || "Role"} · ${job.company_name || "Company"}`;
+          const metaEl = document.createElement("div");
+          metaEl.className = "post-meta";
+          metaEl.textContent = [
+            job.type,
+            job.mode,
+            job.deadline && ("Deadline: " + job.deadline),
+          ]
+            .filter(Boolean)
+            .join(" · ");
+          userMeta.appendChild(titleEl);
+          if (metaEl.textContent) userMeta.appendChild(metaEl);
+          const cdRow = document.createElement("div");
+          cdRow.className = "job-deadline-countdown job-deadline-countdown--light";
+          cdRow.id = "dash-job-cd-" + job.id;
+          userMeta.appendChild(cdRow);
+          if (window.CampusLinkJobDeadline) {
+            window.CampusLinkJobDeadline.renderCountdown(cdRow, job, { light: true });
+          }
+          userDiv.appendChild(miniAvatar);
+          userDiv.appendChild(userMeta);
+          head.appendChild(userDiv);
+
+          const body = document.createElement("div");
+          body.className = "post-body";
+          body.textContent = job.description || "";
+
+          const actions = document.createElement("div");
+          actions.className = "post-actions";
+          const viewBtn = document.createElement("button");
+          viewBtn.className = "ghost";
+          viewBtn.type = "button";
+          viewBtn.textContent = job.deadline_passed ? "View (applications closed)" : "View & Apply";
+          viewBtn.onclick = () => {
+            window.location.href = "/jobs/" + encodeURIComponent(job.id);
+          };
+          actions.appendChild(viewBtn);
+
+          article.appendChild(head);
+          article.appendChild(body);
+          article.appendChild(actions);
+          container.appendChild(article);
+        });
+      } catch (e) {
+        console.error("Failed to load latest jobs", e);
+      }
+    }
+
+    async function loadMyApplications() {
+      const container = document.getElementById("my-applications-feed");
+      const emptyState = document.getElementById("my-applications-empty");
+      if (!container || !emptyState) return;
+      try {
+        const res = await fetch("/api/student/applications", { credentials: "same-origin" });
+        if (!res.ok) {
+          emptyState.textContent = "Could not load applications.";
+          emptyState.style.display = "block";
+          return;
+        }
+        const data = await res.json();
+        const items = data.items || [];
+        if (!items.length) {
+          emptyState.innerHTML = "No applications yet. <a href=\"/jobs\" style=\"color:var(--accent);font-weight:600;\">Browse jobs</a>";
+          emptyState.style.display = "block";
+          container.style.display = "none";
+          return;
+        }
+        emptyState.style.display = "none";
+        container.style.display = "flex";
+        container.innerHTML = "";
+        items.slice(0, 5).forEach((ap) => {
+          const article = document.createElement("article");
+          article.className = "post";
+          const head = document.createElement("div");
+          head.className = "post-head";
+          const userDiv = document.createElement("div");
+          userDiv.className = "post-user";
+          const miniAvatar = document.createElement("div");
+          miniAvatar.className = "mini-avatar";
+          miniAvatar.textContent = getInitials(ap.job_company || "Job");
+          const userMeta = document.createElement("div");
+          const titleEl = document.createElement("div");
+          titleEl.style.fontWeight = "700";
+          titleEl.textContent = `${ap.job_role || "Role"} · ${ap.job_company || "Company"}`;
+          const metaEl = document.createElement("div");
+          metaEl.className = "post-meta";
+          metaEl.textContent = [ap.job_type, ap.job_mode, ap.status].filter(Boolean).join(" · ");
+          userMeta.appendChild(titleEl);
+          if (metaEl.textContent) userMeta.appendChild(metaEl);
+          userDiv.appendChild(miniAvatar);
+          userDiv.appendChild(userMeta);
+          head.appendChild(userDiv);
+
+          const body = document.createElement("div");
+          body.className = "post-body";
+          body.textContent = ap.applied_at ? `Applied at ${ap.applied_at}` : "";
+
+          const actions = document.createElement("div");
+          actions.className = "post-actions";
+          const viewBtn = document.createElement("button");
+          viewBtn.className = "ghost";
+          viewBtn.type = "button";
+          viewBtn.textContent = "View job";
+          viewBtn.onclick = () => {
+            const jobPath = ap.job_source === "alumni" ? "/alumni-jobs/" : "/jobs/";
+            window.location.href = jobPath + encodeURIComponent(ap.job_id);
+          };
+          actions.appendChild(viewBtn);
+
+          article.appendChild(head);
+          article.appendChild(body);
+          article.appendChild(actions);
+          container.appendChild(article);
+        });
+        if (items.length > 5) {
+          const more = document.createElement("p");
+          more.className = "suggested-roles-empty";
+          more.style.marginTop = "8px";
+          more.innerHTML = "<a href=\"/applications\" style=\"color:var(--accent);font-weight:700;\">View all " + items.length + " applications →</a>";
+          container.appendChild(more);
+        }
+      } catch (e) {
+        console.error("Failed to load applications", e);
+        emptyState.textContent = "Could not load applications.";
+        emptyState.style.display = "block";
+      }
+    }
+
+    // Set active navigation link based on current page
+    function setActiveNavLink() {
+      const currentPath = window.location.pathname;
+      const navLinks = document.querySelectorAll(".nav-link");
+      navLinks.forEach(link => {
+        link.classList.remove("active");
+        const href = link.getAttribute("href");
+        if (href === currentPath ||
+            (currentPath.startsWith("/jobs") && href === "/jobs") ||
+            (currentPath.startsWith("/applications") && href === "/applications") ||
+            (currentPath.startsWith("/student/profile") && href === "/student/profile")) {
+          link.classList.add("active");
+        }
+      });
+    }
+
+    function openSuggestedIneligibleModal(reasons) {
+      const overlay = document.getElementById("suggested-ineligible-overlay");
+      const list = document.getElementById("suggested-ineligible-list");
+      if (!overlay || !list) return;
+      list.innerHTML = "";
+      const rows = Array.isArray(reasons) ? reasons.filter(Boolean) : [];
+      if (!rows.length) {
+        const li = document.createElement("li");
+        li.textContent = "You do not meet one or more eligibility requirements for this role.";
+        list.appendChild(li);
+      } else {
+        rows.forEach(function (r) {
+          const li = document.createElement("li");
+          li.textContent = r;
+          list.appendChild(li);
+        });
+      }
+      overlay.classList.add("open");
+      overlay.setAttribute("aria-hidden", "false");
+    }
+
+    function closeSuggestedIneligibleModal() {
+      const overlay = document.getElementById("suggested-ineligible-overlay");
+      if (!overlay) return;
+      overlay.classList.remove("open");
+      overlay.setAttribute("aria-hidden", "true");
+    }
+
+    async function loadSuggestedRoles() {
+      const feed = document.getElementById("suggested-roles-feed");
+      const empty = document.getElementById("suggested-roles-empty");
+      if (!feed || !empty) return;
+      try {
+        const res = await fetch("/api/student/suggested-jobs?min_score=50", { credentials: "same-origin" });
+        if (res.status === 401) return;
+        if (!res.ok) {
+          empty.textContent = "Could not load suggestions right now.";
+          feed.style.display = "none";
+          return;
+        }
+        const data = await res.json();
+        const items = data.items || [];
+        if (!items.length) {
+          feed.style.display = "none";
+          empty.style.display = "block";
+          empty.innerHTML =
+            "No suitable roles found.<br>Improve your profile to get better matches.";
+          return;
+        }
+        empty.style.display = "none";
+        feed.style.display = "flex";
+        feed.innerHTML = "";
+        items.forEach((j) => {
+          const tier = j.match_tier || "moderate";
+          const tierClass = tier === "strong" ? "tier-strong" : tier === "good" ? "tier-good" : "tier-moderate";
+          const emoji = tier === "strong" ? "🟢" : tier === "good" ? "🟡" : "🟠";
+          const label =
+            tier === "strong" ? "Strong Match" : tier === "good" ? "Good Match" : "Moderate Match";
+          const alreadyApplied = j.already_applied === true;
+          const applyOk = !alreadyApplied && j.apply_eligible === true;
+          const reasons = j.apply_reasons && j.apply_reasons.length ? j.apply_reasons : j.apply_reasons_detail || [];
+
+          const card = document.createElement("div");
+          card.className = "suggested-role-card";
+
+          const titleEl = document.createElement("p");
+          titleEl.className = "suggested-role-title";
+          titleEl.textContent = (j.title || "Role") + " – " + (j.company || "Company");
+
+          const scoreEl = document.createElement("p");
+          scoreEl.className = "suggested-role-score " + tierClass;
+          scoreEl.textContent =
+            "Match Score: " + String(j.match_score ?? j.final_score ?? "—") + "% " + emoji + " " + label;
+
+          card.appendChild(titleEl);
+          card.appendChild(scoreEl);
+
+          if (j.why && j.why.length) {
+            const whyEl = document.createElement("p");
+            whyEl.className = "suggested-role-why";
+            whyEl.innerHTML = j.why
+              .slice(0, 4)
+              .map(function (h) {
+                return escapeHtml(h);
+              })
+              .join("<br>");
+            card.appendChild(whyEl);
+          }
+
+          const actions = document.createElement("div");
+          actions.className = "suggested-role-actions";
+
+          const jobBase = j.job_source === "alumni" ? "/alumni-jobs/" : "/jobs/";
+          if (alreadyApplied) {
+            const appliedBtn = document.createElement("button");
+            appliedBtn.type = "button";
+            appliedBtn.className = "suggested-applied-btn";
+            appliedBtn.textContent = "Applied";
+            appliedBtn.addEventListener("click", function () {
+              window.location.href = jobBase + encodeURIComponent(j.job_id);
+            });
+            actions.appendChild(appliedBtn);
+          } else if (applyOk) {
+            const applyBtn = document.createElement("button");
+            applyBtn.type = "button";
+            applyBtn.className = "suggested-apply-btn";
+            applyBtn.textContent = "Apply Now";
+            applyBtn.addEventListener("click", function () {
+              window.location.href = jobBase + encodeURIComponent(j.job_id);
+            });
+            actions.appendChild(applyBtn);
+          } else {
+            const blockBtn = document.createElement("button");
+            blockBtn.type = "button";
+            blockBtn.className = "suggested-ineligible-btn";
+            blockBtn.setAttribute("aria-label", "Not eligible — view reasons");
+            blockBtn.textContent = "Not Eligible";
+            blockBtn.addEventListener("click", function () {
+              openSuggestedIneligibleModal(reasons);
+            });
+            actions.appendChild(blockBtn);
+          }
+
+          const links = document.createElement("div");
+          links.className = "suggested-role-links";
+          const aJob = document.createElement("a");
+          aJob.href = jobBase + encodeURIComponent(j.job_id);
+          aJob.textContent = "View job";
+          const aPred = document.createElement("a");
+          aPred.href = "/student/placement-predictor?job_id=" + encodeURIComponent(j.job_id);
+          aPred.textContent = "Full match breakdown";
+          links.appendChild(aJob);
+          links.appendChild(aPred);
+
+          card.appendChild(actions);
+          card.appendChild(links);
+          feed.appendChild(card);
+        });
+      } catch (e) {
+        console.error("Failed to load suggested roles", e);
+        empty.textContent = "Could not load suggestions.";
+        feed.style.display = "none";
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const inelOverlay = document.getElementById("suggested-ineligible-overlay");
+      const inelClose = document.getElementById("suggested-ineligible-close");
+      const inelDialog = inelOverlay && inelOverlay.querySelector(".suggested-ineligible-dialog");
+      if (inelClose) inelClose.addEventListener("click", closeSuggestedIneligibleModal);
+      if (inelOverlay) {
+        inelOverlay.addEventListener("click", function (ev) {
+          if (ev.target === inelOverlay) closeSuggestedIneligibleModal();
+        });
+      }
+      if (inelDialog) {
+        inelDialog.addEventListener("click", function (ev) {
+          ev.stopPropagation();
+        });
+      }
+      document.addEventListener("keydown", function (ev) {
+        if (ev.key === "Escape" && inelOverlay && inelOverlay.classList.contains("open")) {
+          closeSuggestedIneligibleModal();
+        }
+      });
+
+      setActiveNavLink();
+      (function syncMobileBottomNav() {
+        const path = window.location.pathname || "";
+        document.querySelectorAll(".cl-bottom-nav a").forEach((a) => {
+          const href = a.getAttribute("href") || "";
+          let on = false;
+          if (href === "/user/dashboard") on = path === "/user/dashboard" || path === "/";
+          else if (href === "/jobs") on = path.startsWith("/jobs");
+          else if (href === "/student/placement-predictor") on = path.startsWith("/student/placement-predictor");
+          else if (href === "/interviews") on = path.startsWith("/interviews");
+          else if (href === "/announcements") on = path.startsWith("/announcements");
+          a.classList.toggle("cl-bottom-nav--active", on);
+        });
+      })();
+
+      const drawerClose = document.getElementById("cl-mobile-drawer-close");
+      const navOverlay = document.getElementById("cl-mobile-nav-overlay");
+      if (drawerClose) drawerClose.addEventListener("click", () => setMobileNavDrawerOpen(false));
+      if (navOverlay) navOverlay.addEventListener("click", () => setMobileNavDrawerOpen(false));
+      window.addEventListener("resize", () => {
+        if (!isMobileNavDrawerMode()) setMobileNavDrawerOpen(false);
+      });
+      document.addEventListener("keydown", (ev) => {
+        if (ev.key !== "Escape") return;
+        const drawer = document.getElementById("cl-mobile-nav-drawer");
+        if (drawer && drawer.classList.contains("is-open")) setMobileNavDrawerOpen(false);
+      });
+      loadDashboardOverview();
+      loadUnifiedFeed(true);
+      loadAnnouncements();
+      loadNotifications();
+      loadMyApplications();
+      loadSuggestedRoles();
+      if (window.location.hash === "#announcements-feed-anchor") {
+        setTimeout(function () {
+          var el = document.getElementById("announcements-feed-anchor");
+          if (el) el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }, 350);
+      }
+      window.addEventListener("scroll", () => {
+        if (feedLoading || !feedHasMore) return;
+        const threshold = 320;
+        const nearBottom = (window.innerHeight + window.scrollY) >= (document.body.offsetHeight - threshold);
+        if (nearBottom) loadUnifiedFeed(false);
+      });
+    });
+  </script>
+</body>
+</html>
+
+

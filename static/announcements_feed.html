@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Announcements · CampusLink</title>
+  <link rel="stylesheet" href="/static/css/campuslink-mobile-shell.css" />
+  <style>
+    :root {
+      --li: #0a66c2;
+      --bg: #f3f2ef;
+      --card: #fff;
+      --border: #e0e0e0;
+      --text: #191919;
+      --muted: #666;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+    }
+    .top {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+    }
+    .top-left {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .top-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      color: var(--text);
+      text-decoration: none;
+      background: #fff;
+      font-size: 18px;
+    }
+    .top h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+      flex: 1;
+    }
+    .wrap {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 14px 12px 24px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+    }
+    .card h2 {
+      margin: 0 0 8px;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .card p {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.5;
+      color: #38434f;
+      white-space: pre-wrap;
+    }
+    .card img,
+    .card video {
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      border-radius: 10px;
+      margin-top: 10px;
+      object-fit: cover;
+    }
+    .meta {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .empty {
+      text-align: center;
+      color: var(--muted);
+      padding: 40px 16px;
+      font-size: 15px;
+    }
+    .err {
+      color: #b42318;
+      text-align: center;
+      padding: 24px;
+    }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="top-left">
+      <a href="/user/dashboard" id="backLink" class="top-btn" aria-label="Back">←</a>
+      <a href="/user/dashboard" id="homeLink" class="top-btn" aria-label="Home">⌂</a>
+    </div>
+    <h1>📢 Announcements</h1>
+  </header>
+  <main class="wrap" id="main"></main>
+  <script src="/static/js/announcement-media-ui.js"></script>
+  <script>
+    (function () {
+      var main = document.getElementById("main");
+      var home = document.getElementById("homeLink");
+      var back = document.getElementById("backLink");
+      function closeOrReturn(e) {
+        e.preventDefault();
+        if (window.history.length > 1) {
+          window.history.back();
+          return;
+        }
+        try {
+          window.close();
+        } catch (_) {}
+        window.location.href = "/user/dashboard";
+      }
+      if (back) back.addEventListener("click", closeOrReturn);
+      if (home) {
+        home.addEventListener("click", closeOrReturn);
+      }
+      function esc(v) {
+        return String(v || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+      async function load() {
+        try {
+          var res = await fetch("/api/dashboard/important-notices", { credentials: "same-origin" });
+          if (res.status === 401) {
+            window.location.href = "/login";
+            return;
+          }
+          if (!res.ok) throw new Error("load failed");
+          var data = await res.json();
+          var items = data.items || [];
+          if (!items.length) {
+            main.innerHTML = '<div class="empty">No announcements yet.</div>';
+            return;
+          }
+          main.innerHTML = "";
+          items.forEach(function (n) {
+            var card = document.createElement("article");
+            card.className = "card";
+            var h = document.createElement("h2");
+            h.textContent = n.title || "Announcement";
+            card.appendChild(h);
+            var body = (n.description || n.body || "").trim();
+            if (body) {
+              var p = document.createElement("p");
+              p.textContent = body;
+              card.appendChild(p);
+            }
+            var meta = document.createElement("div");
+            meta.className = "meta";
+            var posted = (n.posted_by || n.created_by || "").trim();
+            var when = n.created_at ? new Date(n.created_at).toLocaleString() : "";
+            meta.textContent = [posted && "Posted by " + posted, when].filter(Boolean).join(" · ");
+            if (meta.textContent) card.appendChild(meta);
+            if (window.CampusLinkAnnouncementMediaUI) {
+              window.CampusLinkAnnouncementMediaUI.appendItems(card, n);
+            }
+            main.appendChild(card);
+          });
+        } catch (e) {
+          main.innerHTML = '<div class="err">Could not load announcements.</div>';
+        }
+      }
+      load();
+    })();
+  </script>
+</body>
+</html>

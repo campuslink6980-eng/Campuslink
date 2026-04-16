@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Comments · CampusLink</title>
+  <style>
+    :root {
+      --border: #e5e7eb;
+      --muted: #64748b;
+      --text: #0f172a;
+      --accent: #0a66c2;
+      --bg: #f3f6f8;
+      --card: #fff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.04);
+    }
+    .topbar-back {
+      border: none;
+      background: none;
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+      padding: 6px 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .topbar-back:hover { text-decoration: underline; }
+    .topbar-title {
+      font-weight: 800;
+      font-size: 17px;
+      letter-spacing: -0.02em;
+    }
+    .wrap {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 16px 14px 48px;
+    }
+    .post-snippet {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+    }
+    .post-head {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+    .avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #e2e8f0;
+      color: #334155;
+      display: grid;
+      place-items: center;
+      font-size: 14px;
+      font-weight: 800;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .post-meta .name { font-weight: 800; font-size: 15px; }
+    .post-meta .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .post-body {
+      font-size: 14px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .post-media {
+      margin-top: 10px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .post-media img, .post-media video {
+      width: 100%;
+      max-height: 420px;
+      object-fit: contain;
+      background: #f8fafc;
+      display: block;
+    }
+    .composer {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 18px;
+    }
+    .composer.disabled {
+      opacity: 0.75;
+      pointer-events: none;
+    }
+    .composer label { font-size: 12px; font-weight: 700; color: var(--muted); display: block; margin-bottom: 8px; }
+    .composer-row {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .composer-row textarea {
+      flex: 1;
+      min-height: 44px;
+      max-height: 120px;
+      resize: vertical;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font: inherit;
+      font-size: 14px;
+    }
+    .btn-post {
+      border: none;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 700;
+      padding: 10px 18px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 14px;
+      align-self: flex-end;
+    }
+    .btn-post:disabled { opacity: 0.45; cursor: not-allowed; }
+    .comments-off {
+      text-align: center;
+      color: var(--muted);
+      padding: 24px;
+      font-size: 14px;
+      background: var(--card);
+      border-radius: 12px;
+      border: 1px dashed var(--border);
+    }
+    #thread-root { display: flex; flex-direction: column; gap: 14px; }
+    .c-item {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .c-item .c-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #e2e8f0;
+      font-size: 12px;
+      font-weight: 800;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .c-item .c-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .c-bubble {
+      flex: 1;
+      min-width: 0;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 0 12px 12px 12px;
+      padding: 10px 12px;
+    }
+    .c-name { font-weight: 800; font-size: 14px; }
+    .c-text { font-size: 14px; margin-top: 4px; line-height: 1.45; word-break: break-word; }
+    .c-time { font-size: 12px; color: var(--muted); margin-top: 6px; }
+    .c-actions {
+      display: flex;
+      gap: 14px;
+      margin-top: 8px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .c-actions button {
+      border: none;
+      background: none;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 0;
+      font: inherit;
+      font-weight: 700;
+    }
+    .c-actions button:hover { color: var(--accent); }
+    .c-actions button.liked { color: #e11d48; }
+    .reply-box {
+      margin-top: 10px;
+      padding-left: 8px;
+      border-left: 2px solid #e2e8f0;
+      display: none;
+      gap: 8px;
+      flex-direction: column;
+    }
+    .reply-box.show { display: flex; }
+    .reply-box input {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      font: inherit;
+      font-size: 13px;
+    }
+    .reply-row { display: flex; gap: 8px; align-items: center; }
+    .replies-nested { margin-top: 10px; padding-left: 18px; border-left: 2px solid #eef2f7; display: flex; flex-direction: column; gap: 12px; }
+    .load-more {
+      display: block;
+      width: 100%;
+      margin-top: 16px;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      font-weight: 700;
+      color: var(--accent);
+      cursor: pointer;
+    }
+    .load-more:disabled { opacity: 0.5; cursor: not-allowed; }
+    .err { color: #b91c1c; font-size: 14px; padding: 16px; text-align: center; }
+    .hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <button type="button" class="topbar-back" id="btn-back" aria-label="Back">← Back</button>
+    <span class="topbar-title">Comments</span>
+  </header>
+  <div class="wrap">
+    <div id="err" class="err" style="display:none;"></div>
+    <section class="post-snippet" id="post-snippet">Loading post…</section>
+    <div id="composer-wrap"></div>
+    <div id="thread-root"></div>
+    <button type="button" class="load-more" id="load-more" style="display:none;">Load more comments</button>
+  </div>
+  <script>
+(function () {
+  const pathMatch = location.pathname.match(/\/post\/([^/]+)\/comments\/?/);
+  const postId = pathMatch ? pathMatch[1] : "";
+  let postData = null;
+  let page = 1;
+  const perPage = 25;
+  let hasMore = false;
+  let commentsEnabled = true;
+
+  function esc(s) {
+    return String(s || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function initials(name) {
+    const p = String(name || "U").trim().split(/\s+/);
+    return ((p[0]?.[0] || "") + (p[1]?.[0] || "")).toUpperCase() || "U";
+  }
+
+  function formatTimeAgo(dateStr) {
+    if (!dateStr) return "";
+    const d = new Date(dateStr.endsWith("Z") || dateStr.includes("+") ? dateStr : dateStr + "Z");
+    const mins = Math.floor((Date.now() - d.getTime()) / 60000);
+    if (mins < 1) return "Just now";
+    if (mins < 60) return mins + "m ago";
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return hrs + "h ago";
+    const days = Math.floor(hrs / 24);
+    if (days < 7) return days + "d ago";
+    return d.toLocaleDateString();
+  }
+
+  document.getElementById("btn-back").addEventListener("click", function () {
+    try {
+      if (window.opener) {
+        try { window.opener.focus(); } catch (e) {}
+      }
+      window.close();
+    } catch (e) {}
+    // Fallback when browser blocks close for non-script-opened tabs.
+    if (!window.closed) {
+      if (window.history.length > 1) window.history.back();
+      else window.location.href = "/user/dashboard";
+    }
+  });
+
+  function showErr(msg) {
+    const el = document.getElementById("err");
+    el.textContent = msg;
+    el.style.display = msg ? "block" : "none";
+  }
+
+  async function loadPost() {
+    const res = await fetch("/api/posts/" + encodeURIComponent(postId), { credentials: "same-origin" });
+    if (res.status === 401) {
+      window.location.href = "/login";
+      return;
+    }
+    if (!res.ok) {
+      showErr("Post not found.");
+      document.getElementById("post-snippet").textContent = "";
+      return;
+    }
+    const data = await res.json();
+    postData = data.post || {};
+    const st = postData.settings || {};
+    commentsEnabled = st.comments_enabled !== false;
+
+    const author = postData.author || {};
+    const mediaItems = Array.isArray(postData.media) ? postData.media : [];
+    let mediaHtml = "";
+    if (mediaItems.length) {
+      const m = mediaItems[0];
+      if (m && m.url) {
+        const t = String(m.type || "").toLowerCase();
+        mediaHtml = t === "video"
+          ? `<div class="post-media"><video src="${esc(m.url)}" controls playsinline></video></div>`
+          : `<div class="post-media"><img src="${esc(m.url)}" alt=""></div>`;
+      }
+    } else if (postData.media_url) {
+      const u = postData.media_url;
+      mediaHtml = u.toLowerCase().endsWith(".mp4")
+        ? `<div class="post-media"><video src="${esc(u)}" controls playsinline></video></div>`
+        : `<div class="post-media"><img src="${esc(u)}" alt=""></div>`;
+    }
+
+    const av = postData.author_profile_photo
+      ? `<div class="avatar"><img src="${esc(postData.author_profile_photo)}" alt=""></div>`
+      : `<div class="avatar">${esc(initials(author.name))}</div>`;
+
+    document.getElementById("post-snippet").innerHTML = `
+      <div class="post-head">
+        ${av}
+        <div class="post-meta">
+          <div class="name">${esc(author.name || "User")}</div>
+          <div class="sub">${esc(String(author.role || "Member"))} · ${formatTimeAgo(postData.created_at)}</div>
+        </div>
+      </div>
+      <div class="post-body">${esc(postData.content || "")}</div>
+      ${mediaHtml}
+    `;
+
+    const cw = document.getElementById("composer-wrap");
+    if (!commentsEnabled) {
+      cw.innerHTML = `<div class="comments-off">Comments are turned off for this post.</div>`;
+      return;
+    }
+    cw.innerHTML = `
+      <div class="composer" id="composer">
+        <label for="main-comment-input">Add a comment</label>
+        <div class="composer-row">
+          <textarea id="main-comment-input" placeholder="Write a comment… Use @First Last to mention someone." rows="2"></textarea>
+          <button type="button" class="btn-post" id="main-comment-submit">Post</button>
+        </div>
+        <p class="hint">Mentions match the person’s display name (e.g. @Jane Doe).</p>
+      </div>
+    `;
+    document.getElementById("main-comment-submit").addEventListener("click", postMainComment);
+  }
+
+  async function postMainComment() {
+    const ta = document.getElementById("main-comment-input");
+    const text = (ta && ta.value || "").trim();
+    if (!text) return;
+    const res = await fetch("/add-comment/" + encodeURIComponent(postId), {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: text }),
+    });
+    if (res.status === 401) { window.location.href = "/login"; return; }
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}));
+      alert(e.error || "Could not post comment");
+      return;
+    }
+    ta.value = "";
+    page = 1;
+    await loadCommentsPage(true);
+  }
+
+  function renderCommentNode(c, depth, rootThreadId) {
+    const root = rootThreadId || c.id;
+    const wrap = document.createElement("div");
+    wrap.className = "c-item";
+    wrap.dataset.cid = c.id || "";
+
+    const av = document.createElement("div");
+    av.className = "c-avatar";
+    if (c.author_profile_photo) {
+      av.innerHTML = `<img src="${esc(c.author_profile_photo)}" alt="">`;
+    } else {
+      av.textContent = initials(c.author_name);
+    }
+
+    const bubble = document.createElement("div");
+    bubble.className = "c-bubble";
+
+    const name = document.createElement("div");
+    name.className = "c-name";
+    name.textContent = c.author_name || "User";
+
+    const text = document.createElement("div");
+    text.className = "c-text";
+    text.textContent = c.text || "";
+
+    const time = document.createElement("div");
+    time.className = "c-time";
+    time.textContent = formatTimeAgo(c.timestamp);
+
+    const actions = document.createElement("div");
+    actions.className = "c-actions";
+
+    const likeBtn = document.createElement("button");
+    likeBtn.type = "button";
+    likeBtn.className = c.liked ? "liked" : "";
+    likeBtn.textContent = (c.liked ? "❤️" : "🤍") + " Like" + (c.likes_count ? " · " + c.likes_count : "");
+    likeBtn.addEventListener("click", async function () {
+      if (!c.id) return;
+      const res = await fetch("/toggle-comment-like/" + encodeURIComponent(c.id), {
+        method: "POST",
+        credentials: "same-origin",
+      });
+      if (!res.ok) return;
+      const d = await res.json();
+      c.liked = d.liked;
+      c.likes_count = d.likes_count;
+      likeBtn.classList.toggle("liked", !!d.liked);
+      likeBtn.textContent = (d.liked ? "❤️" : "🤍") + " Like" + (d.likes_count ? " · " + d.likes_count : "");
+    });
+
+    const replyBtn = document.createElement("button");
+    replyBtn.type = "button";
+    replyBtn.textContent = "Reply";
+
+    const replyBox = document.createElement("div");
+    replyBox.className = "reply-box";
+    const replyIn = document.createElement("input");
+    replyIn.type = "text";
+    replyIn.placeholder = "Write a reply…";
+    const replySend = document.createElement("button");
+    replySend.type = "button";
+    replySend.textContent = "Reply";
+    replySend.style.cssText = "border:none;background:var(--accent);color:#fff;font-weight:700;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px;";
+    const replyRow = document.createElement("div");
+    replyRow.className = "reply-row";
+    replyRow.appendChild(replyIn);
+    replyRow.appendChild(replySend);
+    replyBox.appendChild(replyRow);
+
+    replyBtn.addEventListener("click", function () {
+      replyBox.classList.toggle("show");
+      if (replyBox.classList.contains("show")) replyIn.focus();
+    });
+    replySend.addEventListener("click", async function () {
+      const t = (replyIn.value || "").trim();
+      if (!t || !root) return;
+      const res = await fetch("/add-reply/" + encodeURIComponent(root), {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: t }),
+      });
+      if (res.status === 401) { window.location.href = "/login"; return; }
+      if (!res.ok) {
+        const e = await res.json().catch(() => ({}));
+        alert(e.error || "Could not reply");
+        return;
+      }
+      replyIn.value = "";
+      replyBox.classList.remove("show");
+      page = 1;
+      await loadCommentsPage(true);
+    });
+
+    actions.appendChild(likeBtn);
+    actions.appendChild(replyBtn);
+
+    bubble.appendChild(name);
+    bubble.appendChild(text);
+    bubble.appendChild(time);
+    bubble.appendChild(actions);
+    bubble.appendChild(replyBox);
+
+    wrap.appendChild(av);
+    wrap.appendChild(bubble);
+
+    if (Array.isArray(c.replies) && c.replies.length && depth < 4) {
+      const nested = document.createElement("div");
+      nested.className = "replies-nested";
+      const topRoot = rootThreadId || c.id;
+      c.replies.forEach(function (r) {
+        nested.appendChild(renderCommentNode(r, depth + 1, topRoot));
+      });
+      bubble.appendChild(nested);
+    }
+
+    return wrap;
+  }
+
+  let threadEl = null;
+
+  async function loadCommentsPage(reset) {
+    if (!postId) return;
+    threadEl = document.getElementById("thread-root");
+    const res = await fetch(
+      "/comments/" + encodeURIComponent(postId) + "?page=" + page + "&per_page=" + perPage,
+      { credentials: "same-origin" }
+    );
+    if (res.status === 401) {
+      window.location.href = "/login";
+      return;
+    }
+    if (!res.ok) {
+      threadEl.innerHTML = "<p class=\"err\">Could not load comments.</p>";
+      return;
+    }
+    const data = await res.json();
+    hasMore = !!data.has_more;
+    const list = data.comments || [];
+    const lm = document.getElementById("load-more");
+    lm.style.display = hasMore ? "block" : "none";
+    lm.disabled = false;
+
+    if (reset) threadEl.innerHTML = "";
+
+    if (!list.length && page === 1) {
+      threadEl.innerHTML = `<div class="comments-off" style="border-style:solid;">No comments yet. Be the first to comment.</div>`;
+      return;
+    }
+
+    list.forEach(function (c) {
+      threadEl.appendChild(renderCommentNode(c, 0, null));
+    });
+  }
+
+  document.getElementById("load-more").addEventListener("click", async function () {
+    if (!hasMore) return;
+    this.disabled = true;
+    page += 1;
+    await loadCommentsPage(false);
+    this.disabled = !hasMore;
+  });
+
+  async function boot() {
+    if (!postId) {
+      showErr("Invalid link.");
+      return;
+    }
+    await loadPost();
+    if (commentsEnabled) {
+      page = 1;
+      await loadCommentsPage(true);
+    } else {
+      document.getElementById("thread-root").innerHTML = "";
+      document.getElementById("load-more").style.display = "none";
+    }
+  }
+
+  boot();
+})();
+  </script>
+</body>
+</html>

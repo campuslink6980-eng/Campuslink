@@ -1,0 +1,1948 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CampusLink · Edit Profile</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <style>
+    :root {
+      --bg: #F3F6F8;
+      --card: #ffffff;
+      --panel: rgba(10,102,194,0.08);
+      --muted: #6B7280;
+      --text: #000000;
+      --input: #ffffff;
+      --ring: #0A66C2;
+      --danger: #D93025;
+      --success: #0A7D4F;
+      --border: #E0E0E0;
+    }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 22px 14px 60px; }
+    .top {
+      display:flex; justify-content:space-between; align-items:flex-start; gap:12px;
+      margin-bottom: 14px;
+    }
+    .title h1 { margin:0; font-size:22px; }
+    .title p { margin:6px 0 0; color: var(--muted); font-size: 13px; }
+    .chips { display:flex; gap:10px; flex-wrap: wrap; align-items:center; justify-content:flex-end; }
+    .chip {
+      display:inline-flex; gap:8px; align-items:center;
+      padding: 8px 10px; border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      font-size: 12px; color: #374151;
+    }
+    .btn {
+      border: 1px solid var(--border);
+      background: #fff;
+      color: #0A66C2;
+      padding: 8px 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 12px;
+      transition: background .15s ease, border-color .15s ease, transform .06s ease;
+    }
+    .btn:hover { background: #F2F8FF; border-color: #CFE3FF; }
+    .btn:active { transform: translateY(1px); }
+    .btn.primary {
+      border: none;
+      background: #0A66C2;
+      color: #fff;
+    }
+    .btn.view-profile {
+      border: none;
+      background: #0A66C2;
+      color: #fff;
+    }
+    .btn.resume-icon-btn {
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      min-width: 42px;
+    }
+    .profile-flash-toast {
+      position: fixed;
+      left: 50%;
+      bottom: 28px;
+      transform: translateX(-50%) translateY(20px);
+      max-width: min(420px, calc(100vw - 32px));
+      padding: 10px 16px;
+      border-radius: 10px;
+      background: rgba(15, 23, 42, 0.92);
+      color: #f8fafc;
+      font-size: 13px;
+      line-height: 1.4;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+      z-index: 9999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+    .profile-flash-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    .grid { display:grid; gap: 12px; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 1px 2px rgba(16,24,40,0.08);
+    }
+    .card-head {
+      padding: 14px 16px;
+      display:flex; justify-content:space-between; align-items:center; gap: 10px;
+      border-bottom: 1px solid var(--border);
+      background: #fff;
+    }
+    .card-head strong { font-size: 14px; }
+    .card-body { padding: 14px 16px; }
+    .empty { color: var(--muted); font-size: 13px; padding: 10px 0; }
+    .item {
+      padding: 12px 12px;
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 12px;
+      display:flex; justify-content:space-between; gap: 12px; align-items:flex-start;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 0 rgba(16,24,40,0.03);
+    }
+    .item:last-child { margin-bottom: 0; }
+    .item h4 { margin: 0 0 6px; font-size: 14px; font-weight: 700; }
+    .li-subline { font-size: 12px; color: var(--muted); line-height: 1.45; }
+    .item-actions { display:flex; gap: 8px; align-items:flex-start; }
+    .icon-btn {
+      border: none;
+      background: transparent;
+      color: #6B7280;
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      cursor: pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      transition: background .15s ease, color .15s ease;
+      font-size: 14px;
+      line-height: 1;
+    }
+    .icon-btn:hover { background: #F3F6F8; color: #0A66C2; }
+    .icon-btn.danger:hover { background: rgba(217,48,37,0.08); color: var(--danger); }
+    
+    /* Profile Photo */
+    .profile-photo-section {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .profile-photo-preview {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: 700;
+      color: white;
+      overflow: hidden;
+    }
+    .profile-photo-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .photo-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    /* Tag Input */
+    .tag-input-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #fff;
+      min-height: 44px;
+    }
+    .tag-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 16px;
+      background: rgba(10, 102, 194, 0.12);
+      color: #0A66C2;
+      font-size: 12px;
+    }
+    .tag-remove {
+      cursor: pointer;
+      opacity: 0.7;
+    }
+    .tag-remove:hover { opacity: 1; }
+    .tag-input {
+      border: none;
+      background: transparent;
+      color: var(--text);
+      outline: none;
+      min-width: 100px;
+      flex: 1;
+    }
+    
+    /* Status Select */
+    .status-select {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: #111827;
+      font-size: 14px;
+    }
+    .status-select option {
+      background: #fff;
+      color: #111827;
+    }
+    
+    /* Verification status styles */
+    .chip.verified {
+      background: rgba(5, 118, 66, 0.08);
+      border-color: rgba(5, 118, 66, 0.25);
+      color: #0A7D4F;
+    }
+    .chip.pending {
+      background: rgba(245, 158, 11, 0.12);
+      border-color: rgba(245, 158, 11, 0.26);
+      color: #B45309;
+    }
+    .chip.rejected {
+      background: rgba(217,48,37,0.08);
+      border-color: rgba(217,48,37,0.22);
+      color: var(--danger);
+    }
+    .verification-info {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 8px;
+      padding: 8px 12px;
+      background: rgba(10,102,194,0.04);
+      border-radius: 8px;
+      line-height: 1.5;
+    }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.35);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+      z-index: 50;
+    }
+    .modal {
+      width: 100%;
+      max-width: 640px;
+      border-radius: 16px;
+      background: #fff;
+      border: 1px solid var(--border);
+      box-shadow: 0 30px 80px rgba(0,0,0,0.18);
+      overflow: hidden;
+    }
+    .modal-head {
+      padding: 12px 14px;
+      display:flex; justify-content:space-between; align-items:center;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-head strong { font-size: 14px; color: #111827; }
+    .modal-body { padding: 14px; display:grid; gap: 10px; }
+    .row { display:grid; gap:10px; grid-template-columns: 1fr 1fr; }
+    @media (max-width: 700px) { .row { grid-template-columns: 1fr; } }
+    #modalBody label { font-size: 13px; color: #374151; font-weight: 700; display:block; margin: 0 0 6px; }
+    #modalBody label[style*="display:flex"] { margin: 0; font-weight: 600; }
+    input, textarea, select {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--input);
+      color: #111827;
+      outline: none;
+      transition: box-shadow .15s ease, border-color .15s ease;
+    }
+    input:focus, textarea:focus, select:focus {
+      border-color: rgba(10,102,194,0.6);
+      box-shadow: 0 0 0 4px rgba(10,102,194,0.18);
+    }
+    textarea { min-height: 90px; resize: vertical; }
+    input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--ring); cursor:pointer; }
+    .modal-foot {
+      padding: 12px 14px;
+      display:flex; justify-content:flex-end; gap: 10px;
+      border-top: 1px solid var(--border);
+    }
+    .state { margin-top: 10px; font-size: 13px; color: var(--muted); }
+    .state.error { color: #ffb4b4; }
+
+    /* Date range layout (side-by-side) */
+    .date-range {
+      display:flex;
+      gap: 12px;
+      align-items:flex-start;
+      margin-top: 2px;
+    }
+    .date-pair {
+      flex: 1;
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .date-end-fields {
+      flex: 1;
+      overflow: hidden;
+      transition: max-width .18s ease, opacity .18s ease, transform .18s ease, padding .18s ease;
+      max-width: 340px;
+      opacity: 1;
+      transform: translateX(0);
+    }
+    .date-end-fields.collapsed {
+      max-width: 0px;
+      opacity: 0;
+      transform: translateX(-8px);
+      padding: 0 !important;
+      pointer-events: none;
+    }
+    @media (max-width: 700px) {
+      .date-range { flex-direction: column; }
+      .date-end-fields { max-width: none; }
+      .date-end-fields.collapsed { max-width: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="title">
+        <h1>Edit Your Profile</h1>
+        <p>Build your LinkedIn-style profile. Save anytime—completion updates automatically.</p>
+      </div>
+      <div class="chips">
+        <span class="chip" id="chipVerification">Verification: —</span>
+        <span class="chip" id="chipCompletion">Completion: —</span>
+        <button class="btn view-profile" type="button" id="viewProfileBtn">View Profile</button>
+        <a href="/resume-preview" target="_blank" rel="noopener" class="btn resume-icon-btn" title="Generate Resume (PDF)" aria-label="Generate Resume (PDF)">📄</a>
+        <button class="btn" type="button" onclick="window.location.href='/user/dashboard'">Back</button>
+      </div>
+    </div>
+
+    <div id="verificationInfo" class="verification-info" style="display:none;"></div>
+    <div id="pageState" class="state">Loading profile…</div>
+
+    <div class="grid" id="profileGrid" style="display:none;">
+      <!-- Profile Photo & Basic Info -->
+      <section class="card" data-section="photo">
+        <div class="card-head">
+          <strong>Profile Photo</strong>
+        </div>
+        <div class="card-body">
+          <div class="profile-photo-section">
+            <div class="profile-photo-preview" id="photoPreview">?</div>
+            <div class="photo-actions">
+              <input type="file" id="photoFile" accept="image/*" style="display:none;" />
+              <button class="btn primary" type="button" id="uploadPhotoBtn">Upload Photo</button>
+              <button class="btn" type="button" id="removePhotoBtn" style="display:none;">Remove</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" data-section="basic">
+        <div class="card-head">
+          <strong>Basic Info</strong>
+          <button class="btn primary" type="button" data-open="basic">Edit</button>
+        </div>
+        <div class="card-body">
+          <div id="basicSummary" class="empty">—</div>
+        </div>
+      </section>
+
+      <!-- Current Status -->
+      <section class="card" data-section="status">
+        <div class="card-head">
+          <strong>Current Status</strong>
+        </div>
+        <div class="card-body">
+          <select class="status-select" id="statusSelect" onchange="saveStatus()">
+            <option value="Intern">Intern</option>
+            <option value="Placed">Placed</option>
+            <option value="Looking for opportunities">Looking for opportunities</option>
+          </select>
+        </div>
+      </section>
+
+      <!-- About Section -->
+      <section class="card" data-section="about">
+        <div class="card-head">
+          <strong>About</strong>
+          <button class="btn primary" type="button" data-open="about">Edit</button>
+        </div>
+        <div class="card-body">
+          <div id="aboutSummary" class="empty">Add a summary about yourself...</div>
+        </div>
+      </section>
+
+      <section class="card" data-section="education">
+        <div class="card-head">
+          <strong>Education</strong>
+          <button class="btn primary" type="button" data-add="education">+ Add</button>
+        </div>
+        <div class="card-body" id="educationList"></div>
+      </section>
+
+      <section class="card" data-section="skills">
+        <div class="card-head">
+          <strong>Skills</strong>
+          <button class="btn primary" type="button" data-add="skills">+ Add</button>
+        </div>
+        <div class="card-body" id="skillsList"></div>
+      </section>
+
+      <section class="card" data-section="projects">
+        <div class="card-head">
+          <strong>Projects</strong>
+          <button class="btn primary" type="button" data-add="projects">+ Add</button>
+        </div>
+        <div class="card-body" id="projectsList"></div>
+      </section>
+
+      <section class="card" data-section="internships">
+        <div class="card-head">
+          <strong>Experience / Internships</strong>
+          <button class="btn primary" type="button" data-add="internships">+ Add</button>
+        </div>
+        <div class="card-body" id="internshipsList"></div>
+      </section>
+
+      <!-- Certifications -->
+      <section class="card" data-section="certifications">
+        <div class="card-head">
+          <strong>Certifications</strong>
+          <button class="btn primary" type="button" data-add="certifications">+ Add</button>
+        </div>
+        <div class="card-body" id="certificationsList"></div>
+      </section>
+
+      <!-- Achievements -->
+      <section class="card" data-section="achievements">
+        <div class="card-head">
+          <strong>Achievements & Awards</strong>
+          <button class="btn primary" type="button" data-add="achievements">+ Add</button>
+        </div>
+        <div class="card-body" id="achievementsList"></div>
+      </section>
+
+      <section class="card" data-section="clubs">
+        <div class="card-head">
+          <strong>Clubs / Extra-curricular</strong>
+          <button class="btn primary" type="button" data-add="clubs">+ Add</button>
+        </div>
+        <div class="card-body" id="clubsList"></div>
+      </section>
+
+      <!-- Languages -->
+      <section class="card" data-section="languages">
+        <div class="card-head">
+          <strong>Languages</strong>
+        </div>
+        <div class="card-body">
+          <div class="tag-input-container" id="languagesContainer">
+            <div class="row" style="width:100%; gap:10px; display:flex; flex-wrap:wrap; margin-bottom:8px;">
+              <select id="languageProficiencySelect" style="flex:1; min-width:220px;">
+                <option value="">Select proficiency</option>
+                <option value="Elementary proficiency">Elementary proficiency</option>
+                <option value="Limited working proficiency">Limited working proficiency</option>
+                <option value="Professional working proficiency">Professional working proficiency</option>
+                <option value="Full professional proficiency">Full professional proficiency</option>
+                <option value="Native or bilingual proficiency">Native or bilingual proficiency</option>
+              </select>
+            </div>
+            <input type="text" class="tag-input" id="languageInput" placeholder="Type language and press Enter to add..." />
+          </div>
+        </div>
+      </section>
+
+      <!-- Interests removed (no longer part of Edit Profile) -->
+
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true">
+    <div class="modal">
+      <div class="modal-head">
+        <strong id="modalTitle">Edit</strong>
+        <button class="btn" type="button" id="closeModalBtn">Close</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-foot">
+        <button class="btn" type="button" id="modalCancelBtn">Cancel</button>
+        <button class="btn primary" type="button" id="modalSaveBtn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const stateEl = document.getElementById('pageState');
+    const gridEl = document.getElementById('profileGrid');
+    const chipVerification = document.getElementById('chipVerification');
+    const chipCompletion = document.getElementById('chipCompletion');
+
+    let profileData = null;
+    let modalCtx = null; // { section, mode, itemId }
+    let currentUserId = null;
+    let languages = [];
+
+    function setState(msg, isError=false) {
+      stateEl.textContent = msg;
+      stateEl.className = 'state' + (isError ? ' error' : '');
+    }
+
+    async function api(path, opts={}) {
+      const res = await fetch(path, {
+        method: opts.method || 'GET',
+        headers: opts.headers || (opts.body ? {'Content-Type':'application/json'} : undefined),
+        body: opts.body ? JSON.stringify(opts.body) : undefined,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 401) { window.location.href = '/login'; return; }
+      if (!res.ok) throw new Error(data.error || 'Request failed');
+      return data;
+    }
+
+    function showProfileFlash(message) {
+      if (!message) return;
+      let t = document.getElementById('profileFlashToast');
+      if (!t) {
+        t = document.createElement('div');
+        t.id = 'profileFlashToast';
+        t.className = 'profile-flash-toast';
+        document.body.appendChild(t);
+      }
+      t.textContent = message;
+      t.classList.add('show');
+      clearTimeout(t._hideTimer);
+      t._hideTimer = setTimeout(function () { t.classList.remove('show'); }, 4200);
+    }
+
+    function renderList(section, items, containerId, titleField, subtitleBuilder) {
+      const el = document.getElementById(containerId);
+      el.innerHTML = '';
+      if (!items || !items.length) {
+        el.innerHTML = `<div class="empty">No records yet.</div>`;
+        return;
+      }
+      items.forEach((it) => {
+        const title = it[titleField] || it.school || it.company || it.name || it.role || 'Entry';
+        const sub = subtitleBuilder(it);
+        const subLines = (Array.isArray(sub) ? sub : String(sub || '—').split(' · ')).map(x => String(x).trim()).filter(Boolean);
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.innerHTML = `
+          <div>
+            <h4>${escapeHtml(title)}</h4>
+            ${subLines.length ? subLines.map(line => `<div class="li-subline">${escapeHtml(line)}</div>`).join('') : `<div class="li-subline">—</div>`}
+          </div>
+          <div class="item-actions">
+            <button class="icon-btn" type="button" title="Edit" aria-label="Edit" data-edit="${section}" data-id="${it.id}">&#9998;</button>
+            <button class="icon-btn danger" type="button" title="Delete" aria-label="Delete" data-del="${section}" data-id="${it.id}">&#128465;</button>
+          </div>
+        `;
+        el.appendChild(div);
+      });
+    }
+
+    function escapeHtml(s) {
+      return String(s || '')
+        .replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')
+        .replaceAll('"','&quot;').replaceAll("'","&#039;");
+    }
+
+    function formatDateInputValue(dateStr, yearStr) {
+      const date = (dateStr || '').trim();
+      if (date && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        return date;
+      }
+      const year = (yearStr || '').trim();
+      if (year && /^\d{4}$/.test(year)) {
+        return `${year}-01-01`;
+      }
+      return '';
+    }
+
+    const MONTH_LABELS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+    function monthNumToLabel(monthStr) {
+      if (!monthStr) return '';
+      const m = parseInt(String(monthStr), 10);
+      if (!m || m < 1 || m > 12) return '';
+      return MONTH_LABELS[m - 1];
+    }
+
+    function renderMonthOptions(selectedMonth) {
+      const sel = selectedMonth ? String(selectedMonth).padStart(2, '0') : '';
+      return MONTH_LABELS.map((label, idx) => {
+        const value = String(idx + 1).padStart(2, '0');
+        const isSel = sel === value ? 'selected' : '';
+        return `<option value="${value}" ${isSel}>${label}</option>`;
+      }).join('');
+    }
+
+    function renderYearOptions(selectedYear) {
+      const nowYear = (new Date()).getFullYear();
+      const sel = selectedYear ? String(selectedYear).slice(0, 4) : '';
+      let opts = '';
+      for (let y = nowYear; y >= 1990; y--) {
+        const isSel = sel && String(y) === sel ? 'selected' : '';
+        opts += `<option value="${y}" ${isSel}>${y}</option>`;
+      }
+      return opts;
+    }
+
+    function ymToISO(monthStr, yearStr) {
+      if (!monthStr || !yearStr) return '';
+      const mm = parseInt(String(monthStr), 10);
+      const yy = parseInt(String(yearStr).slice(0, 4), 10);
+      if (!mm || mm < 1 || mm > 12) return '';
+      if (!yy || yy < 1900 || yy > 3000) return '';
+      const m2 = String(mm).padStart(2, '0');
+      return `${yy}-${m2}-01`;
+    }
+
+    function updateChips() {
+      const verificationStatus = (profileData.verification_status || 'PENDING').toUpperCase();
+      chipVerification.textContent = `Verification: ${verificationStatus}`;
+      
+      // Add appropriate class based on status
+      chipVerification.classList.remove('verified', 'pending', 'rejected');
+      if (verificationStatus === 'VERIFIED') {
+        chipVerification.classList.add('verified');
+      } else if (verificationStatus === 'REJECTED') {
+        chipVerification.classList.add('rejected');
+      } else {
+        chipVerification.classList.add('pending');
+      }
+      
+      chipCompletion.textContent = `Completion: ${profileData.profile_completion ?? '—'}%`;
+    }
+
+    function getInitials(name) {
+      if (!name) return '?';
+      const parts = name.split(' ');
+      return parts.map(p => p.charAt(0).toUpperCase()).slice(0, 2).join('');
+    }
+
+    function renderAll() {
+      updateChips();
+      gridEl.style.display = 'grid';
+      setState('');
+      
+      // Show verification info
+      const verificationInfo = document.getElementById('verificationInfo');
+      const verificationStatus = (profileData.verification_status || 'PENDING').toUpperCase();
+      
+      if (verificationStatus === 'PENDING') {
+        verificationInfo.innerHTML = `
+          <strong>&#128712; Profile Verification Pending</strong><br>
+          Your profile is awaiting verification by faculty in your department (same branch). 
+          Once verified, you'll be able to apply for jobs and internships. 
+          Complete your profile to speed up the verification process.
+        `;
+        verificationInfo.style.display = 'block';
+      } else if (verificationStatus === 'REJECTED') {
+        verificationInfo.innerHTML = `
+          <strong>&#9888; Profile Verification Rejected</strong><br>
+          Your profile verification was rejected. Please update your profile information; faculty in your branch can re-verify after you submit updates.
+        `;
+        verificationInfo.style.display = 'block';
+        verificationInfo.style.background = 'rgba(220, 53, 69, 0.1)';
+      } else if (verificationStatus === 'VERIFIED') {
+        verificationInfo.innerHTML = `
+          <strong>&#9989; Profile Verified</strong><br>
+          Your profile has been verified. You can now apply for jobs and internships.
+        `;
+        verificationInfo.style.display = 'block';
+        verificationInfo.style.background = 'rgba(5, 118, 66, 0.1)';
+      } else {
+        verificationInfo.style.display = 'none';
+      }
+
+      const p = profileData.profile || {};
+      const basic = p.basic || {};
+      const basicUser = profileData.basic_user || {};
+      
+      // Update View Profile button
+      if (basicUser.email) {
+        // Get user ID for profile link
+        currentUserId = profileData.user_id;
+      }
+      
+      // Profile Photo
+      const photoPreview = document.getElementById('photoPreview');
+      const removePhotoBtn = document.getElementById('removePhotoBtn');
+      const profilePhotoUrl = p.profile_photo?.secure_url || (p.profile_photo?.stored_name ? `/uploads/profile_photos/${p.profile_photo.stored_name}` : null);
+      if (profilePhotoUrl) {
+        photoPreview.innerHTML = `<img src="${profilePhotoUrl}" alt="Profile">`;
+        removePhotoBtn.style.display = 'inline-flex';
+      } else {
+        const initials = getInitials(basicUser.full_name);
+        photoPreview.innerHTML = initials;
+        removePhotoBtn.style.display = 'none';
+      }
+      
+      // Current Status
+      const statusSelect = document.getElementById('statusSelect');
+      if (p.current_status) {
+        statusSelect.value = p.current_status;
+      }
+      
+      // About
+      const aboutSummary = document.getElementById('aboutSummary');
+      if (p.about) {
+        aboutSummary.textContent = p.about;
+        aboutSummary.className = '';
+      } else {
+        aboutSummary.textContent = 'Add a summary about yourself...';
+        aboutSummary.className = 'empty';
+      }
+
+      const basicSummary = [
+        basic.headline ? `Headline: ${basic.headline}` : null,
+        basic.location ? `Location: ${basic.location}` : null,
+        (basic.open_to && basic.open_to.length)
+          ? `Open to: ${basic.open_to.map(v => {
+              const s = String(v || '').trim();
+              const lc = s.toLowerCase();
+              if (!s) return '';
+              if (lc === 'internships' || lc === 'internship') return 'Internships';
+              if (lc === 'full-time' || lc === 'full_time' || lc === 'full time') return 'Full-time';
+              if (lc === 'projects' || lc === 'project') return 'Projects';
+              if (lc === 'part-time' || lc === 'part_time' || lc === 'part time') return 'Part-time';
+              if (lc === 'freelance') return 'Freelance';
+              return s;
+            }).filter(Boolean).join(', ')}`
+          : null,
+      ].filter(Boolean).join(' · ') || 'No basic info yet.';
+      document.getElementById('basicSummary').textContent = basicSummary;
+
+      renderList('education', p.education || [], 'educationList', 'degree', (it) =>
+        (() => {
+          const degree = it.degree || '';
+          const isBoardDegree = ['SSC', 'HSC', 'Intermediate'].includes(degree);
+          const secondary = (isBoardDegree ? (it.board || it.field) : (it.field_of_study || it.field)) || '';
+          const dateRange = formatRange(it.start_month, it.start_year, it.end_month, it.end_year, !!it.current);
+          const parts = [
+            it.school,
+            secondary,
+            dateRange,
+            it.cgpa ? `CGPA: ${it.cgpa}` : ''
+          ].filter(Boolean);
+          return parts.join(' · ') || '—';
+        })()
+      );
+      renderList('internships', p.experience || [], 'internshipsList', 'role', (it) =>
+        (() => {
+          const loc = [it.location_type, it.location].filter(Boolean).join(' ');
+          const dateRange = formatRange(it.start_month, it.start_year, it.end_month, it.end_year, !!it.current);
+          const descShort = it.description ? String(it.description).slice(0, 140) : '';
+          const parts = [
+            it.company,
+            it.employment_type,
+            loc,
+            dateRange,
+            descShort
+          ].filter(Boolean);
+          return parts.join(' · ') || '—';
+        })()
+      );
+      renderList('projects', p.projects || [], 'projectsList', 'name', (it) =>
+        [it.tech_stack, it.link].filter(Boolean).join(' · ') || (it.description || '—')
+      );
+      renderList('skills', p.skills || [], 'skillsList', 'name', (it) =>
+        [it.level].filter(Boolean).join(' · ') || '—'
+      );
+      renderList('clubs', p.clubs || [], 'clubsList', 'role', (it) =>
+        (() => {
+          const descShort = it.description ? String(it.description).slice(0, 140) : '';
+          const sport = it.sport_name ? `Sport: ${it.sport_name}` : '';
+          const dateRange = formatRange(it.start_month, it.start_year, it.end_month, it.end_year, !!it.current);
+          const parts = [
+            it.name,
+            it.type,
+            sport,
+            dateRange,
+            descShort
+          ].filter(Boolean);
+          return parts.join(' · ') || '—';
+        })()
+      );
+      renderList('certifications', p.certifications || [], 'certificationsList', 'name', (it) =>
+        (() => {
+          const issue = formatMonthYear(it.issue_month, it.issue_year) || it.issue_date || '';
+          const expiry = it.expiry_month || it.expiry_year ? formatMonthYear(it.expiry_month, it.expiry_year) : '';
+          const parts = [it.issuer, issue].filter(Boolean);
+          if (expiry) parts.push(`Expiry: ${expiry}`);
+          return parts.join(' · ') || '—';
+        })()
+      );
+      renderList('achievements', p.achievements || [], 'achievementsList', 'title', (it) =>
+        (() => {
+          const assoc = it.associated_with || it.issuer || '';
+          const issue = formatMonthYear(it.issue_month, it.issue_year) || it.date || '';
+          const parts = [assoc, issue].filter(Boolean);
+          return parts.join(' · ') || (it.description || '—');
+        })()
+      );
+
+      // Languages
+      languages = (p.languages || []).map(l => (
+        (typeof l === 'string')
+          ? { language: l, proficiency: 'Limited working proficiency' }
+          : l
+      ));
+      renderTags('languagesContainer', languages, 'languageInput');
+    }
+
+    function renderTags(containerId, tags, inputId) {
+      const container = document.getElementById(containerId);
+      const input = document.getElementById(inputId);
+      
+      // Remove existing tags
+      container.querySelectorAll('.tag-item').forEach(el => el.remove());
+      
+      // Add tags before input
+      tags.forEach((tag, idx) => {
+        const tagEl = document.createElement('span');
+        tagEl.className = 'tag-item';
+        const label = (typeof tag === 'string')
+          ? tag
+          : `${tag.language || ''}${tag.proficiency ? ` - ${tag.proficiency}` : ''}`;
+        tagEl.innerHTML = `${escapeHtml(label)} <span class="tag-remove" data-idx="${idx}">&times;</span>`;
+        container.insertBefore(tagEl, input);
+      });
+    }
+
+    function formatMonthYear(monthStr, yearStr) {
+      const month = monthNumToLabel(monthStr);
+      const year = yearStr ? String(yearStr).trim() : '';
+      if (!month && !year) return '';
+      if (!month) return year;
+      if (!year) return month;
+      return `${month} ${year}`;
+    }
+
+    function formatRange(startMonth, startYear, endMonth, endYear, isCurrent) {
+      const start = formatMonthYear(startMonth, startYear);
+      if (isCurrent) return start ? `${start} - Present` : 'Present';
+      const end = formatMonthYear(endMonth, endYear);
+      if (start && end) return `${start} - ${end}`;
+      return start || end || '';
+    }
+
+    async function saveStatus() {
+      const status = document.getElementById('statusSelect').value;
+      try {
+        await api('/api/student/profile/status', { method: 'PUT', body: { status } });
+      } catch (e) {
+        alert(e.message || 'Failed to save status');
+      }
+    }
+
+    async function saveLanguages() {
+      try {
+        await api('/api/student/profile/languages', { method: 'PUT', body: { languages } });
+      } catch (e) {
+        alert(e.message || 'Failed to save languages');
+      }
+    }
+
+    async function load() {
+      setState('Loading profile…');
+      gridEl.style.display = 'none';
+      try {
+        profileData = await api('/api/student/profile');
+        renderAll();
+        
+        // Set up View Profile button
+        document.getElementById('viewProfileBtn').onclick = () => {
+          // Navigate to public profile view
+          const userId = profileData.basic_user && profileData.basic_user.id;
+          window.location.href = userId ? `/profile/${userId}` : '/profile/me';
+        };
+      } catch (e) {
+        setState(e.message || 'Failed to load profile', true);
+      }
+    }
+
+    // Modal helpers
+    const backdrop = document.getElementById('modalBackdrop');
+    const modalBody = document.getElementById('modalBody');
+    const modalTitle = document.getElementById('modalTitle');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const modalCancelBtn = document.getElementById('modalCancelBtn');
+    const modalSaveBtn = document.getElementById('modalSaveBtn');
+
+    function openModal(ctx) {
+      modalCtx = ctx;
+      backdrop.style.display = 'flex';
+      modalBody.innerHTML = '';
+
+      const section = ctx.section;
+      const mode = ctx.mode;
+      const item = ctx.item || {};
+
+      if (section === 'basic') {
+        modalTitle.textContent = 'Edit Basic Info';
+        const openToNorm = (item.open_to || []).map(v => {
+          const s = String(v || '').trim();
+          if (!s) return '';
+          const lc = s.toLowerCase();
+          if (lc === 'internships' || lc === 'internship') return 'Internships';
+          if (lc === 'full-time' || lc === 'full_time' || lc === 'full time') return 'Full-time';
+          if (lc === 'projects' || lc === 'project') return 'Projects';
+          if (lc === 'part-time' || lc === 'part_time' || lc === 'part time') return 'Part-time';
+          if (lc === 'freelance') return 'Freelance';
+          return s;
+        }).filter(Boolean);
+        modalBody.innerHTML = `
+          <div class="row">
+            <div>
+              <label>Headline</label>
+              <input id="f_headline" value="${escapeHtml(item.headline || '')}" placeholder="e.g., Data Science Student | Aspiring Analyst" />
+            </div>
+            <div>
+              <label>Location</label>
+              <input id="f_location" value="${escapeHtml(item.location || '')}" placeholder="e.g., Mumbai, India" />
+            </div>
+          </div>
+          <div>
+            <label>Open to</label>
+            <div id="f_open_to" style="border:1px solid var(--border); border-radius:10px; padding:10px 12px; background:#fff; display:grid; gap:8px;">
+              <label style="display:flex; align-items:center; gap:10px; margin:0;">
+                <input class="f-open-to-opt" type="checkbox" value="Internships" ${openToNorm.includes('Internships') ? 'checked' : ''} />
+                Internships
+              </label>
+              <label style="display:flex; align-items:center; gap:10px; margin:0;">
+                <input class="f-open-to-opt" type="checkbox" value="Full-time" ${openToNorm.includes('Full-time') ? 'checked' : ''} />
+                Full-time
+              </label>
+              <label style="display:flex; align-items:center; gap:10px; margin:0;">
+                <input class="f-open-to-opt" type="checkbox" value="Projects" ${openToNorm.includes('Projects') ? 'checked' : ''} />
+                Projects
+              </label>
+              <label style="display:flex; align-items:center; gap:10px; margin:0;">
+                <input class="f-open-to-opt" type="checkbox" value="Part-time" ${openToNorm.includes('Part-time') ? 'checked' : ''} />
+                Part-time
+              </label>
+              <label style="display:flex; align-items:center; gap:10px; margin:0;">
+                <input class="f-open-to-opt" type="checkbox" value="Freelance" ${openToNorm.includes('Freelance') ? 'checked' : ''} />
+                Freelance
+              </label>
+            </div>
+            <div style="font-size:12px; color:#6B7280; margin-top:6px;">Select one or more options.</div>
+          </div>
+        `;
+        return;
+      }
+
+      if (section === 'about') {
+        modalTitle.textContent = 'Edit About';
+        const p = profileData.profile || {};
+        modalBody.innerHTML = `
+          <div>
+            <label>About</label>
+            <textarea id="f_about" style="min-height: 150px;" placeholder="Write a professional summary about yourself...">${escapeHtml(p.about || '')}</textarea>
+          </div>
+        `;
+        return;
+      }
+
+      const isEdu = section === 'education';
+      const isInt = section === 'internships';
+      const isProj = section === 'projects';
+      const isSkill = section === 'skills';
+      const isClub = section === 'clubs';
+      const isCert = section === 'certifications';
+      const isAch = section === 'achievements';
+
+      const sectionTitle = section === 'internships' ? 'Experience' : section.replace(/^\w/, c => c.toUpperCase());
+      modalTitle.textContent = (mode === 'add' ? 'Add ' : 'Edit ') + sectionTitle;
+
+      if (isEdu) {
+        const eduStartMonth = item.start_month || (item.start_date ? item.start_date.slice(5, 7) : '');
+        const eduStartYear = item.start_year || (item.start_date ? item.start_date.slice(0, 4) : '');
+        const eduEndMonth = item.end_month || (item.end_date ? item.end_date.slice(5, 7) : '');
+        const eduEndYear = item.end_year || (item.end_date ? item.end_date.slice(0, 4) : '');
+        const eduCurrent = !!item.current || (!item.end_date && !item.end_year);
+        const eduDegreeRaw = item.degree || '';
+        const eduDegreeLc = String(eduDegreeRaw || '').toLowerCase();
+        let eduDegree = eduDegreeRaw || '';
+        if (eduDegreeLc.includes('ssc')) eduDegree = 'SSC';
+        else if (eduDegreeLc.includes('hsc')) eduDegree = 'HSC';
+        else if (eduDegreeLc.includes('intermediate')) eduDegree = 'Intermediate';
+        else if (eduDegreeLc.includes('diploma')) eduDegree = 'Diploma';
+        else if (eduDegreeLc.includes('btech') || eduDegreeLc.includes('b.tech') || eduDegreeLc.includes('b.e') || eduDegreeLc.includes('b.e /') || eduDegreeLc.includes('b.e')) eduDegree = 'Btech';
+        else if (eduDegreeLc.includes('m.tech') || eduDegreeLc.includes('m.e')) eduDegree = 'Btech';
+        // (no-op fallback)
+
+        const eduBoardVal = item.board || item.field || '';
+        const eduFieldVal = item.field_of_study || item.field || '';
+
+        modalBody.innerHTML = `
+          <div class="row">
+            <div><label>School / College / University Name</label><input id="f_school" value="${escapeHtml(item.school || '')}" /></div>
+            <div>
+              <label>Degree</label>
+              <select id="f_degree">
+                <option value="SSC" ${eduDegree === 'SSC' ? 'selected' : ''}>Secondary School Certificate (SSC)</option>
+                <option value="HSC" ${eduDegree === 'HSC' ? 'selected' : ''}>Higher Secondary Certificate (HSC)</option>
+                <option value="Intermediate" ${eduDegree === 'Intermediate' ? 'selected' : ''}>Intermediate</option>
+                <option value="Diploma" ${eduDegree === 'Diploma' ? 'selected' : ''}>Diploma</option>
+                <option value="Btech" ${eduDegree === 'Btech' ? 'selected' : ''}>Btech</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row" id="eduBoardWrap" style="display:${['SSC','HSC','Intermediate'].includes(eduDegree) ? 'flex' : 'none'};">
+            <div><label>Board</label><input id="f_board" value="${escapeHtml(eduBoardVal || '')}" /></div>
+          </div>
+
+          <div class="row" id="eduFieldWrap" style="display:${['Diploma','Btech'].includes(eduDegree) ? 'flex' : 'none'};">
+            <div><label>Field of Study</label><input id="f_field_of_study" value="${escapeHtml(eduFieldVal || '')}" /></div>
+          </div>
+
+          <div class="row">
+            <div><label>CGPA or Percentage</label><input id="f_cgpa" value="${escapeHtml(item.cgpa || '')}" /></div>
+            <div style="display:flex; flex-direction:column; justify-content:flex-end;">
+              <label style="margin-bottom:6px;">Duration</label>
+              <label style="display:flex; align-items:center; gap:8px;">
+                <input id="f_edu_current" type="checkbox" ${eduCurrent ? 'checked' : ''} />
+                I am currently studying here
+              </label>
+            </div>
+          </div>
+
+          <div class="date-range">
+            <div class="date-pair">
+              <div>
+                <label>Start Month</label>
+                <select id="f_start_month">${renderMonthOptions(eduStartMonth)}</select>
+              </div>
+              <div>
+                <label>Start Year</label>
+                <select id="f_start_year">${renderYearOptions(eduStartYear)}</select>
+              </div>
+            </div>
+
+            <div id="eduEndWrap" class="date-end-fields ${eduCurrent ? 'collapsed' : ''}">
+              <div class="date-pair">
+                <div>
+                  <label>End Month</label>
+                  <select id="f_end_month">${renderMonthOptions(eduEndMonth)}</select>
+                </div>
+                <div>
+                  <label>End Year</label>
+                  <select id="f_end_year">${renderYearOptions(eduEndYear)}</select>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        const degreeSelect = document.getElementById('f_degree');
+        const boardWrap = document.getElementById('eduBoardWrap');
+        const fieldWrap = document.getElementById('eduFieldWrap');
+        const eduCurrentEl = document.getElementById('f_edu_current');
+        const eduEndWrap = document.getElementById('eduEndWrap');
+
+        function syncEduDegreeFields() {
+          const d = degreeSelect.value;
+          const showBoard = ['SSC', 'HSC', 'Intermediate'].includes(d);
+          const showField = ['Diploma', 'Btech'].includes(d);
+          if (boardWrap) boardWrap.style.display = showBoard ? 'flex' : 'none';
+          if (fieldWrap) fieldWrap.style.display = showField ? 'flex' : 'none';
+        }
+
+        function syncEduEndFields() {
+          if (!eduEndWrap) return;
+          eduEndWrap.classList.toggle('collapsed', eduCurrentEl.checked);
+        }
+
+        degreeSelect.addEventListener('change', syncEduDegreeFields);
+        eduCurrentEl.addEventListener('change', syncEduEndFields);
+        syncEduDegreeFields();
+        syncEduEndFields();
+      } else if (isInt) {
+        const expStartMonth = item.start_month || (item.start_date ? item.start_date.slice(5, 7) : '');
+        const expStartYear = item.start_year || (item.start_date ? item.start_date.slice(0, 4) : '');
+        const expEndMonth = item.end_month || (item.end_date ? item.end_date.slice(5, 7) : '');
+        const expEndYear = item.end_year || (item.end_date ? item.end_date.slice(0, 4) : '');
+        const expCurrent = !!item.current || (!item.end_date && !item.end_year);
+        const expEmployment = item.employment_type || '';
+        const expLocationType = item.location_type || '';
+        const expSkillsVal = Array.isArray(item.skills) ? item.skills.join(', ') : (item.skills || '');
+
+        modalBody.innerHTML = `
+          <div class="row">
+            <div><label>Company Name</label><input id="f_company" value="${escapeHtml(item.company || '')}" /></div>
+            <div><label>Role / Title</label><input id="f_role" value="${escapeHtml(item.role || '')}" /></div>
+          </div>
+
+          <div style="margin-top:4px;">
+            <label style="display:flex; align-items:center; gap:10px;">
+              <input id="f_current_role" type="checkbox" ${expCurrent ? 'checked' : ''} />
+              I am currently working in this role
+            </label>
+          </div>
+
+          <div class="row">
+            <div>
+              <label>Employment Type</label>
+              <select id="f_employment_type">
+                <option value="">Select</option>
+                <option value="Full-time" ${expEmployment === 'Full-time' ? 'selected' : ''}>Full-time</option>
+                <option value="Part-time" ${expEmployment === 'Part-time' ? 'selected' : ''}>Part-time</option>
+                <option value="Self-employed" ${expEmployment === 'Self-employed' ? 'selected' : ''}>Self-employed</option>
+                <option value="Freelance" ${expEmployment === 'Freelance' ? 'selected' : ''}>Freelance</option>
+                <option value="Internship" ${expEmployment === 'Internship' ? 'selected' : ''}>Internship</option>
+                <option value="Apprenticeship" ${expEmployment === 'Apprenticeship' ? 'selected' : ''}>Apprenticeship</option>
+              </select>
+            </div>
+            <div>
+              <label>Location Type</label>
+              <select id="f_location_type">
+                <option value="">Select</option>
+                <option value="On-site" ${expLocationType === 'On-site' ? 'selected' : ''}>On-site</option>
+                <option value="Hybrid" ${expLocationType === 'Hybrid' ? 'selected' : ''}>Hybrid</option>
+                <option value="Remote" ${expLocationType === 'Remote' ? 'selected' : ''}>Remote</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="date-range" style="margin-top:10px;">
+            <div class="date-pair">
+              <div>
+                <label>Start Month</label>
+                <select id="f_start_month">${renderMonthOptions(expStartMonth)}</select>
+              </div>
+              <div>
+                <label>Start Year</label>
+                <select id="f_start_year">${renderYearOptions(expStartYear)}</select>
+              </div>
+            </div>
+
+            <div id="expEndWrap" class="date-end-fields ${expCurrent ? 'collapsed' : ''}">
+              <div class="date-pair">
+                <div>
+                  <label>End Month</label>
+                  <select id="f_end_month">${renderMonthOptions(expEndMonth)}</select>
+                </div>
+                <div>
+                  <label>End Year</label>
+                  <select id="f_end_year">${renderYearOptions(expEndYear)}</select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:10px;">
+            <div><label>Location</label><input id="f_exp_location" value="${escapeHtml(item.location || '')}" /></div>
+          </div>
+
+          <div style="margin-top:10px;">
+            <label>Description (0–1000 characters)</label>
+            <textarea id="f_exp_description" maxlength="1000" placeholder="Describe your responsibilities and achievements...">${escapeHtml(item.description || '')}</textarea>
+          </div>
+
+          <div style="margin-top:10px;">
+            <label>Skills (comma separated)</label>
+            <input id="f_exp_skills" value="${escapeHtml(expSkillsVal || '')}" placeholder="e.g., Python, React, MongoDB" />
+          </div>
+
+          <div class="row" style="margin-top:10px;">
+            <div>
+              <label>Offer Letter (optional, jpg/png, max 5MB)</label>
+              <input id="f_offer_letter" type="file" accept=".jpg,.jpeg,.png" />
+            </div>
+            <div>
+              <label>Completion Certificate (optional, jpg/png, max 5MB)</label>
+              <input id="f_completion_certificate" type="file" accept=".jpg,.jpeg,.png" />
+            </div>
+          </div>
+        `;
+
+        const currentRoleEl = document.getElementById('f_current_role');
+        const expEndWrap = document.getElementById('expEndWrap');
+        currentRoleEl.addEventListener('change', () => {
+          expEndWrap.classList.toggle('collapsed', currentRoleEl.checked);
+        });
+      } else if (isProj) {
+        modalBody.innerHTML = `
+          <div class="row">
+            <div><label>Project Name</label><input id="f_name" value="${escapeHtml(item.name || '')}" /></div>
+            <div><label>Tech Stack</label><input id="f_tech_stack" value="${escapeHtml(item.tech_stack || '')}" placeholder="e.g., Python, React, MongoDB" /></div>
+          </div>
+          <div class="row">
+            <div><label>Link</label><input id="f_link" value="${escapeHtml(item.link || '')}" placeholder="GitHub or live demo URL" /></div>
+            <div><label>Your Role</label><input id="f_proj_role" value="${escapeHtml(item.role || '')}" placeholder="e.g., Lead Developer" /></div>
+          </div>
+          <div><label>Description</label><textarea id="f_description" placeholder="Describe the project and your contributions...">${escapeHtml(item.description || '')}</textarea></div>
+          <div class="row" style="margin-top:10px;">
+            <label>Project image (optional, jpg/png, max 5MB)</label>
+            <input id="f_project_image" type="file" accept=".jpg,.jpeg,.png" />
+          </div>
+          <div class="row" style="margin-top:6px;">
+            <label>Project demo video (optional, mp4, max 50MB)</label>
+            <input id="f_project_video" type="file" accept=".mp4" />
+          </div>
+        `;
+      } else if (isSkill) {
+        const skillLevel = item.level || '';
+        modalBody.innerHTML = `
+          <div class="row">
+            <div><label>Skill</label><input id="f_name" value="${escapeHtml(item.name || '')}" placeholder="e.g., Python, Data Analysis" /></div>
+            <div>
+              <label>Level</label>
+              <select id="f_level">
+                <option value="">Select level</option>
+                <option value="Beginner" ${skillLevel === 'Beginner' ? 'selected' : ''}>Beginner</option>
+                <option value="Intermediate" ${skillLevel === 'Intermediate' ? 'selected' : ''}>Intermediate</option>
+                <option value="Advanced" ${skillLevel === 'Advanced' ? 'selected' : ''}>Advanced</option>
+              </select>
+            </div>
+          </div>
+        `;
+      } else if (isClub) {
+        const clubCurrent = !!item.current || (!item.end_date && !item.end_year);
+        const clubStartMonth = item.start_month || (item.start_date ? item.start_date.slice(5, 7) : '');
+        const clubStartYear = item.start_year || (item.start_date ? item.start_date.slice(0, 4) : '');
+        const clubEndMonth = item.end_month || (item.end_date ? item.end_date.slice(5, 7) : '');
+        const clubEndYear = item.end_year || (item.end_date ? item.end_date.slice(0, 4) : '');
+
+        const COUNCILS = ["IEEE", "CSI", "TPC", "E-cell", "IIC", "Alumni Committee", "ACM", "Sports Council", "Student Council", "GDG", "Other"];
+        const CLUBS = ["Writer's Club", "Theatre Club", "Singing Club", "Sports Club", "Dancing Club"];
+
+        const inferredName = item.name || '';
+        const inferredType = item.type || (
+          COUNCILS.includes(inferredName) ? 'Councils' :
+          CLUBS.includes(inferredName) ? 'Clubs' :
+          'Organisation'
+        );
+
+        const councilSel = COUNCILS.includes(inferredName) ? inferredName : 'Other';
+        const clubSel = CLUBS.includes(inferredName) ? inferredName : "Writer's Club";
+        const clubSportName = item.sport_name || '';
+
+        const orgName = inferredType === 'Organisation' ? inferredName : '';
+        const councilOtherName = inferredType === 'Councils' && councilSel === 'Other' ? inferredName : '';
+
+        modalBody.innerHTML = `
+          <div class="row">
+            <div>
+              <label>Type</label>
+              <select id="f_club_type">
+                <option value="Clubs" ${inferredType === 'Clubs' ? 'selected' : ''}>Clubs</option>
+                <option value="Councils" ${inferredType === 'Councils' ? 'selected' : ''}>Councils</option>
+                <option value="Organisation" ${inferredType === 'Organisation' ? 'selected' : ''}>Organisation</option>
+              </select>
+            </div>
+            <div><label>Role</label><input id="f_club_role" value="${escapeHtml(item.role || '')}" placeholder="e.g., Core Member, Secretary" /></div>
+          </div>
+
+          <div id="f_council_wrap" class="row" style="display:${inferredType === 'Councils' ? 'flex' : 'none'};">
+            <div style="width:100%;">
+              <label>Council</label>
+              <select id="f_council_option">
+                ${COUNCILS.map(opt => `<option value="${opt}" ${councilSel === opt ? 'selected' : ''}>${opt}</option>`).join('')}
+              </select>
+              <div id="f_council_other_wrap" style="margin-top:10px; display:${councilSel === 'Other' ? 'block' : 'none'};">
+                <label>Other council name</label>
+                <input id="f_council_other_name" value="${escapeHtml(councilOtherName || '')}" />
+              </div>
+            </div>
+          </div>
+
+          <div id="f_club_option_wrap" class="row" style="display:${inferredType === 'Clubs' ? 'flex' : 'none'};">
+            <div style="width:100%;">
+              <label>Club</label>
+              <select id="f_club_option">
+                ${CLUBS.map(opt => `<option value="${opt}" ${clubSel === opt ? 'selected' : ''}>${opt}</option>`).join('')}
+              </select>
+              <div id="f_sport_name_wrap" style="margin-top:10px; display:${item.sport_name && clubSel === 'Sports Club' ? 'block' : 'none'};">
+                <label>Sport name</label>
+                <input id="f_sport_name" value="${escapeHtml(clubSportName || '')}" placeholder="e.g., Cricket" />
+              </div>
+            </div>
+          </div>
+
+          <div id="f_org_wrap" class="row" style="display:${inferredType === 'Organisation' ? 'flex' : 'none'};">
+            <div style="width:100%;">
+              <label>Organisation Name</label>
+              <input id="f_org_name" value="${escapeHtml(orgName || '')}" placeholder="e.g., IEEE Student Branch" />
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:10px;">
+            <div style="display:flex; flex-direction:column; justify-content:flex-end;">
+              <label style="margin-bottom:6px;">Duration</label>
+              <label style="display:flex; align-items:center; gap:10px;">
+                <input id="f_club_current" type="checkbox" ${clubCurrent ? 'checked' : ''} />
+                I am currently in this role
+              </label>
+            </div>
+
+            <div class="date-range" style="margin-top:0;">
+              <div class="date-pair">
+                <div>
+                  <label>Start Month</label>
+                  <select id="f_club_start_month">${renderMonthOptions(clubStartMonth)}</select>
+                </div>
+                <div>
+                  <label>Start Year</label>
+                  <select id="f_club_start_year">${renderYearOptions(clubStartYear)}</select>
+                </div>
+              </div>
+
+              <div id="clubEndWrap" class="date-end-fields ${clubCurrent ? 'collapsed' : ''}">
+                <div class="date-pair">
+                  <div>
+                    <label>End Month</label>
+                    <select id="f_club_end_month">${renderMonthOptions(clubEndMonth)}</select>
+                  </div>
+                  <div>
+                    <label>End Year</label>
+                    <select id="f_club_end_year">${renderYearOptions(clubEndYear)}</select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:10px;">
+            <label>Description</label>
+            <textarea id="f_club_description" placeholder="Describe your contribution...">${escapeHtml(item.description || '')}</textarea>
+          </div>
+        `;
+
+        const typeEl = document.getElementById('f_club_type');
+        const councilWrap = document.getElementById('f_council_wrap');
+        const clubOptWrap = document.getElementById('f_club_option_wrap');
+        const orgWrap = document.getElementById('f_org_wrap');
+        const currentEl = document.getElementById('f_club_current');
+        const clubEndWrap = document.getElementById('clubEndWrap');
+        const councilOptEl = document.getElementById('f_council_option');
+        const councilOtherWrap = document.getElementById('f_council_other_wrap');
+        const clubOptEl = document.getElementById('f_club_option');
+        const sportNameWrap = document.getElementById('f_sport_name_wrap');
+
+        function syncType() {
+          const v = typeEl.value;
+          councilWrap.style.display = v === 'Councils' ? 'flex' : 'none';
+          clubOptWrap.style.display = v === 'Clubs' ? 'flex' : 'none';
+          orgWrap.style.display = v === 'Organisation' ? 'flex' : 'none';
+        }
+        function syncCouncilOther() {
+          const v = councilOptEl.value;
+          councilOtherWrap.style.display = v === 'Other' ? 'block' : 'none';
+        }
+        function syncSportWrap() {
+          const v = clubOptEl.value;
+          sportNameWrap.style.display = v === 'Sports Club' ? 'block' : 'none';
+        }
+        function syncEnd() {
+          clubEndWrap.classList.toggle('collapsed', currentEl.checked);
+        }
+
+        typeEl.addEventListener('change', () => { syncType(); });
+        councilOptEl.addEventListener('change', () => { syncCouncilOther(); });
+        clubOptEl.addEventListener('change', () => { syncSportWrap(); });
+        currentEl.addEventListener('change', () => { syncEnd(); });
+
+        syncType();
+        syncCouncilOther();
+        syncSportWrap();
+        syncEnd();
+      } else if (isCert) {
+        const issueMonth = item.issue_month || (item.issue_date ? item.issue_date.slice(5, 7) : '');
+        const issueYear = item.issue_year || (item.issue_date ? item.issue_date.slice(0, 4) : '');
+        const hasExpiry = !!item.expiry_month || !!item.expiry_year || !!item.expiry_date;
+        const expiryMonth = item.expiry_month || (item.expiry_date ? item.expiry_date.slice(5, 7) : '');
+        const expiryYear = item.expiry_year || (item.expiry_date ? item.expiry_date.slice(0, 4) : '');
+
+        modalBody.innerHTML = `
+          <div class="row">
+            <div><label>Certification Name</label><input id="f_name" value="${escapeHtml(item.name || '')}" /></div>
+            <div><label>Issuing Organization</label><input id="f_issuer" value="${escapeHtml(item.issuer || '')}" placeholder="e.g., Coursera, Microsoft" /></div>
+          </div>
+
+          <div class="row" style="margin-top:10px;">
+            <div>
+              <label>Issue Month</label>
+              <select id="f_issue_month">${renderMonthOptions(issueMonth)}</select>
+            </div>
+            <div>
+              <label>Issue Year</label>
+              <select id="f_issue_year">${renderYearOptions(issueYear)}</select>
+            </div>
+          </div>
+
+          <div style="margin-top:10px;">
+            <label style="display:flex; align-items:center; gap:10px;">
+              <input id="f_has_expiry" type="checkbox" ${hasExpiry ? 'checked' : ''} />
+              Expiry Date (optional)
+            </label>
+          </div>
+
+          <div id="expiryWrap" style="margin-top:10px; display:${hasExpiry ? 'block' : 'none'};">
+            <div class="row">
+              <div>
+                <label>Expiry Month</label>
+                <select id="f_expiry_month">${renderMonthOptions(expiryMonth)}</select>
+              </div>
+              <div>
+                <label>Expiry Year</label>
+                <select id="f_expiry_year">${renderYearOptions(expiryYear)}</select>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:10px;">
+            <label>Credential URL (optional)</label>
+            <input id="f_credential_url" value="${escapeHtml(item.credential_url || '')}" placeholder="Link to verify credential" />
+          </div>
+
+          <div style="margin-top:10px;">
+            <label>Description</label>
+            <textarea id="f_cert_description" maxlength="1000" placeholder="What you learned or achieved (shown on your profile and used when sharing as a post)">${escapeHtml(item.description || '')}</textarea>
+          </div>
+
+          <div class="row" style="margin-top:10px;">
+            <div>
+              <label>Certificate photo (optional, jpg/png, max 5MB)</label>
+              <input id="f_certificate_photo" type="file" accept=".jpg,.jpeg,.png" />
+            </div>
+          </div>
+        `;
+
+        const hasExpiryEl = document.getElementById('f_has_expiry');
+        const expiryWrap = document.getElementById('expiryWrap');
+        hasExpiryEl.addEventListener('change', () => {
+          expiryWrap.style.display = hasExpiryEl.checked ? 'block' : 'none';
+        });
+      } else if (isAch) {
+        const eduOpts = (profileData.profile.education || []).map(e => e.school).filter(Boolean);
+        const expOpts = (profileData.profile.experience || []).map(x => x.company).filter(Boolean);
+        const clubOpts = (profileData.profile.clubs || []).map(c => c.name).filter(Boolean);
+        const assocOptions = Array.from(new Set([...eduOpts, ...expOpts, ...clubOpts]));
+
+        const selectedAssoc = item.associated_with || item.issuer || (assocOptions[0] || 'Other');
+        const issueMonth = item.issue_month || (item.date ? item.date.slice(5, 7) : '');
+        const issueYear = item.issue_year || (item.date ? item.date.slice(0, 4) : '');
+
+        modalBody.innerHTML = `
+          <div class="row">
+            <div><label>Achievement Title</label><input id="f_title" value="${escapeHtml(item.title || '')}" placeholder="e.g., Winner of Hackathon 2025" /></div>
+            <div>
+              <label>Associated With</label>
+              <select id="f_associated_with">
+                ${assocOptions.map(opt => {
+                  const optVal = String(opt).replace(/"/g, '&quot;');
+                  return `<option value="${optVal}" ${selectedAssoc === opt ? 'selected' : ''}>${escapeHtml(opt)}</option>`;
+                }).join('')}
+                <option value="Other" ${selectedAssoc === 'Other' ? 'selected' : ''}>Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:10px;">
+            <div>
+              <label>Issue Month</label>
+              <select id="f_issue_month">${renderMonthOptions(issueMonth)}</select>
+            </div>
+            <div>
+              <label>Issue Year</label>
+              <select id="f_issue_year">${renderYearOptions(issueYear)}</select>
+            </div>
+          </div>
+
+          <div style="margin-top:10px;">
+            <label>Description</label>
+            <textarea id="f_description" placeholder="Describe the achievement...">${escapeHtml(item.description || '')}</textarea>
+          </div>
+
+          <div class="row" style="margin-top:10px;">
+            <div>
+              <label>Media upload (photo proof, optional)</label>
+              <input id="f_achievement_photo" type="file" accept=".jpg,.jpeg,.png" />
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function closeModal() {
+      backdrop.style.display = 'none';
+      modalCtx = null;
+    }
+
+    closeModalBtn.addEventListener('click', closeModal);
+    modalCancelBtn.addEventListener('click', closeModal);
+    backdrop.addEventListener('click', (e) => { if (e.target === backdrop) closeModal(); });
+
+    modalSaveBtn.addEventListener('click', async () => {
+      if (!modalCtx) return;
+      try {
+        const section = modalCtx.section;
+        if (section === 'basic') {
+          const headline = document.getElementById('f_headline').value;
+          const location = document.getElementById('f_location').value;
+          const open_to = Array.from(document.querySelectorAll('#f_open_to .f-open-to-opt:checked')).map(o => o.value);
+          const out = await api('/api/student/profile/basic', { method:'PUT', body:{ basic:{ headline, location, open_to } }});
+          profileData.profile_completion = out.profile_completion;
+          await load();
+          closeModal();
+          return;
+        }
+
+        if (section === 'about') {
+          const about = document.getElementById('f_about').value.trim();
+          await api('/api/student/profile/about', { method:'PUT', body:{ about }});
+          await load();
+          closeModal();
+          return;
+        }
+
+        function buildItem() {
+          const s = section;
+          if (s === 'education') {
+            const school = document.getElementById('f_school').value.trim();
+            const degree = document.getElementById('f_degree').value.trim();
+            const cgpa = document.getElementById('f_cgpa').value.trim();
+            const current = !!document.getElementById('f_edu_current').checked;
+
+            const start_month = document.getElementById('f_start_month').value;
+            const start_year = document.getElementById('f_start_year').value;
+            const start_date = ymToISO(start_month, start_year);
+
+            const isBoardDegree = ['SSC', 'HSC', 'Intermediate'].includes(degree);
+            const board = isBoardDegree ? (document.getElementById('f_board')?.value || '').trim() : null;
+            const field_of_study = !isBoardDegree ? (document.getElementById('f_field_of_study')?.value || '').trim() : null;
+
+            let end_month = null;
+            let end_year = null;
+            let end_date = null;
+            if (!current) {
+              end_month = document.getElementById('f_end_month').value;
+              end_year = document.getElementById('f_end_year').value;
+              end_date = ymToISO(end_month, end_year);
+            }
+
+            return {
+              school,
+              degree,
+              board,
+              field_of_study,
+              field: isBoardDegree ? board : field_of_study, // legacy/display fallback
+              cgpa,
+              current,
+              start_month,
+              start_year,
+              start_date,
+              end_month,
+              end_year,
+              end_date,
+            };
+          }
+          if (s === 'internships') {
+            const company = document.getElementById('f_company').value.trim();
+            const role = document.getElementById('f_role').value.trim();
+            const employment_type = document.getElementById('f_employment_type').value;
+            const current = !!document.getElementById('f_current_role').checked;
+            const start_month = document.getElementById('f_start_month').value;
+            const start_year = document.getElementById('f_start_year').value;
+            const start_date = ymToISO(start_month, start_year);
+
+            let end_month = null;
+            let end_year = null;
+            let end_date = null;
+            if (!current) {
+              end_month = document.getElementById('f_end_month').value;
+              end_year = document.getElementById('f_end_year').value;
+              end_date = ymToISO(end_month, end_year);
+            }
+
+            const location = document.getElementById('f_exp_location').value.trim();
+            const location_type = document.getElementById('f_location_type').value;
+            const description = document.getElementById('f_exp_description').value.trim();
+
+            const skillsRaw = document.getElementById('f_exp_skills').value || '';
+            const skills = skillsRaw
+              .split(',')
+              .map(s => s.trim())
+              .filter(Boolean);
+
+            return {
+              company,
+              role,
+              employment_type,
+              current,
+              start_month,
+              start_year,
+              start_date,
+              end_month,
+              end_year,
+              end_date,
+              location,
+              location_type,
+              skills,
+              description,
+            };
+          }
+          if (s === 'projects') return {
+            name: document.getElementById('f_name').value.trim(),
+            tech_stack: document.getElementById('f_tech_stack').value.trim(),
+            link: document.getElementById('f_link').value.trim(),
+            role: document.getElementById('f_proj_role').value.trim(),
+            description: document.getElementById('f_description').value.trim(),
+          };
+          if (s === 'skills') return {
+            name: document.getElementById('f_name').value.trim(),
+            level: document.getElementById('f_level').value.trim(),
+          };
+          if (s === 'clubs') {
+            const type = document.getElementById('f_club_type').value;
+            let name = '';
+            let sport_name = null;
+            if (type === 'Councils') {
+              const councilOpt = document.getElementById('f_council_option').value;
+              if (councilOpt === 'Other') name = document.getElementById('f_council_other_name').value.trim();
+              else name = councilOpt;
+            } else if (type === 'Clubs') {
+              const clubOpt = document.getElementById('f_club_option').value;
+              if (clubOpt === 'Sports Club') {
+                name = 'Sports Club';
+                sport_name = document.getElementById('f_sport_name').value.trim();
+              } else {
+                name = clubOpt;
+              }
+            } else {
+              name = document.getElementById('f_org_name').value.trim();
+            }
+
+            const role = document.getElementById('f_club_role').value.trim();
+            const current = !!document.getElementById('f_club_current').checked;
+
+            const start_month = document.getElementById('f_club_start_month').value;
+            const start_year = document.getElementById('f_club_start_year').value;
+            const start_date = ymToISO(start_month, start_year);
+
+            let end_month = null;
+            let end_year = null;
+            let end_date = null;
+            if (!current) {
+              end_month = document.getElementById('f_club_end_month').value;
+              end_year = document.getElementById('f_club_end_year').value;
+              end_date = ymToISO(end_month, end_year);
+            }
+
+            const description = document.getElementById('f_club_description').value.trim();
+
+            return {
+              type,
+              name,
+              role,
+              sport_name,
+              current,
+              start_month,
+              start_year,
+              start_date,
+              end_month,
+              end_year,
+              end_date,
+              description,
+            };
+          }
+          if (s === 'certifications') {
+            const name = document.getElementById('f_name').value.trim();
+            const issuer = document.getElementById('f_issuer').value.trim();
+            const issue_month = document.getElementById('f_issue_month').value;
+            const issue_year = document.getElementById('f_issue_year').value;
+            const issue_date = ymToISO(issue_month, issue_year);
+
+            const hasExpiry = !!document.getElementById('f_has_expiry').checked;
+            const expiry_month = hasExpiry ? (document.getElementById('f_expiry_month')?.value || '') : '';
+            const expiry_year = hasExpiry ? (document.getElementById('f_expiry_year')?.value || '') : '';
+            const expiry_date = hasExpiry ? ymToISO(expiry_month, expiry_year) : '';
+
+            const credential_url = document.getElementById('f_credential_url').value.trim();
+            const descEl = document.getElementById('f_cert_description');
+            const description = descEl ? descEl.value.trim() : '';
+
+            return { name, issuer, issue_month, issue_year, issue_date, expiry_month, expiry_year, expiry_date, credential_url, description };
+          }
+          if (s === 'achievements') {
+            const title = document.getElementById('f_title').value.trim();
+            const associated_with = document.getElementById('f_associated_with').value;
+            const issue_month = document.getElementById('f_issue_month').value;
+            const issue_year = document.getElementById('f_issue_year').value;
+            const issue_date = ymToISO(issue_month, issue_year);
+            const description = document.getElementById('f_description').value.trim();
+
+            return { title, associated_with, issuer: associated_with, issue_month, issue_year, issue_date, description };
+          }
+          return {};
+        }
+
+        const item = buildItem();
+        const map = {
+          education: { base:'/api/student/profile/education' },
+          internships: { base:'/api/student/profile/internships' },
+          projects: { base:'/api/student/profile/projects' },
+          skills: { base:'/api/student/profile/skills' },
+          clubs: { base:'/api/student/profile/clubs' },
+          certifications: { base:'/api/student/profile/certifications' },
+          achievements: { base:'/api/student/profile/achievements' },
+        };
+        const base = map[section].base;
+        if (['certifications', 'achievements', 'internships', 'projects'].includes(section)) {
+          let hasFile = false;
+          const fd = new FormData();
+          if (section === 'certifications') {
+            const certPhoto = document.getElementById('f_certificate_photo');
+            if (certPhoto && certPhoto.files && certPhoto.files[0]) hasFile = true;
+            fd.append('name', item.name || '');
+            fd.append('issuer', item.issuer || '');
+            fd.append('issue_month', item.issue_month || '');
+            fd.append('issue_year', item.issue_year || '');
+            fd.append('issue_date', item.issue_date || '');
+            fd.append('expiry_month', item.expiry_month || '');
+            fd.append('expiry_year', item.expiry_year || '');
+            fd.append('expiry_date', item.expiry_date || '');
+            fd.append('credential_url', item.credential_url || '');
+            fd.append('description', item.description || '');
+            if (hasFile) fd.append('certificate_photo', certPhoto.files[0]);
+          } else if (section === 'achievements') {
+            const achPhoto = document.getElementById('f_achievement_photo');
+            if (achPhoto && achPhoto.files && achPhoto.files[0]) hasFile = true;
+            fd.append('title', item.title || '');
+            fd.append('associated_with', item.associated_with || item.issuer || '');
+            fd.append('issue_month', item.issue_month || '');
+            fd.append('issue_year', item.issue_year || '');
+            fd.append('issue_date', item.issue_date || '');
+            // legacy keys for older backend behavior / compatibility
+            fd.append('issuer', item.associated_with || item.issuer || '');
+            fd.append('date', item.issue_date || '');
+            fd.append('description', item.description || '');
+            if (hasFile) fd.append('photo', achPhoto.files[0]);
+          } else if (section === 'internships') {
+            const offerLetter = document.getElementById('f_offer_letter');
+            const completionCertificate = document.getElementById('f_completion_certificate');
+            const offerFile = offerLetter && offerLetter.files ? offerLetter.files[0] : null;
+            const completionFile = completionCertificate && completionCertificate.files ? completionCertificate.files[0] : null;
+            if (offerFile || completionFile) hasFile = true;
+
+            fd.append('company', item.company || '');
+            fd.append('role', item.role || '');
+            fd.append('employment_type', item.employment_type || '');
+            fd.append('current', item.current ? 'true' : '');
+            fd.append('start_month', item.start_month || '');
+            fd.append('start_year', item.start_year || '');
+            fd.append('start_date', item.start_date || '');
+            fd.append('end_month', item.end_month || '');
+            fd.append('end_year', item.end_year || '');
+            fd.append('end_date', item.end_date || '');
+            fd.append('location', item.location || '');
+            fd.append('location_type', item.location_type || '');
+            fd.append('skills', JSON.stringify(item.skills || []));
+            fd.append('description', item.description || '');
+
+            if (offerFile) fd.append('offer_letter', offerFile);
+            if (completionFile) fd.append('completion_certificate', completionFile);
+          } else if (section === 'projects') {
+            const projImg = document.getElementById('f_project_image');
+            const projVid = document.getElementById('f_project_video');
+            if ((projImg && projImg.files && projImg.files[0]) || (projVid && projVid.files && projVid.files[0])) hasFile = true;
+            fd.append('name', item.name); fd.append('tech_stack', item.tech_stack); fd.append('link', item.link);
+            fd.append('role', item.role); fd.append('description', item.description);
+            if (projImg && projImg.files[0]) fd.append('project_image', projImg.files[0]);
+            if (projVid && projVid.files[0]) fd.append('project_video', projVid.files[0]);
+          }
+          if (hasFile) {
+            const isEdit = modalCtx.mode !== 'add';
+            const url = isEdit ? `${base}/${modalCtx.itemId}` : base;
+            const method = isEdit ? 'PUT' : 'POST';
+            const res = await fetch(url, { method, body: fd });
+            const data = await res.json().catch(() => ({}));
+            if (res.status === 401) { window.location.href = '/login'; return; }
+            if (!res.ok) throw new Error(data.error || 'Save failed');
+            if (data.feed_post_message) showProfileFlash(data.feed_post_message);
+            await load();
+            closeModal();
+            return;
+          }
+        }
+        let saved;
+        if (modalCtx.mode === 'add') {
+          saved = await api(base, { method:'POST', body:{ item }});
+        } else {
+          saved = await api(`${base}/${modalCtx.itemId}`, { method:'PUT', body:{ item }});
+        }
+        if (saved && saved.feed_post_message) showProfileFlash(saved.feed_post_message);
+        await load();
+        closeModal();
+      } catch (e) {
+        alert(e.message || 'Save failed');
+      }
+    });
+
+    // Page events
+    document.addEventListener('click', async (e) => {
+      const add = e.target.getAttribute('data-add');
+      const open = e.target.getAttribute('data-open');
+      const edit = e.target.getAttribute('data-edit');
+      const del = e.target.getAttribute('data-del');
+      const id = e.target.getAttribute('data-id');
+      
+      // Tag removal
+      if (e.target.classList.contains('tag-remove')) {
+        const idx = parseInt(e.target.getAttribute('data-idx'));
+        const container = e.target.closest('.tag-input-container');
+        if (container.id === 'languagesContainer') {
+          languages.splice(idx, 1);
+          renderTags('languagesContainer', languages, 'languageInput');
+          saveLanguages();
+        }
+        return;
+      }
+
+      if (open === 'basic') {
+        const p = profileData.profile || {};
+        openModal({ section:'basic', mode:'edit', item: (p.basic || {}) });
+        return;
+      }
+      if (open === 'about') {
+        openModal({ section:'about', mode:'edit', item:{} });
+        return;
+      }
+      if (add) {
+        openModal({ section:add, mode:'add', item:{} });
+        return;
+      }
+      if (edit && id) {
+        const p = profileData.profile || {};
+        const arr = (edit === 'internships') ? (p.experience || []) : (p[edit] || []);
+        const item = arr.find(x => String(x.id) === String(id)) || {};
+        openModal({ section:edit, mode:'edit', itemId:id, item });
+        return;
+      }
+      if (del && id) {
+        if (!confirm('Delete this item?')) return;
+        const map = {
+          education: '/api/student/profile/education',
+          internships: '/api/student/profile/internships',
+          projects: '/api/student/profile/projects',
+          skills: '/api/student/profile/skills',
+          clubs: '/api/student/profile/clubs',
+          certifications: '/api/student/profile/certifications',
+          achievements: '/api/student/profile/achievements',
+        };
+        try {
+          await api(`${map[del]}/${id}`, { method:'DELETE' });
+          await load();
+        } catch (err) {
+          alert(err.message || 'Delete failed');
+        }
+      }
+    });
+    
+    // Language input
+    document.getElementById('languageInput').addEventListener('keydown', async (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const val = e.target.value.trim();
+        const prof = document.getElementById('languageProficiencySelect').value;
+        if (val) {
+          const profCan = prof || 'Limited working proficiency';
+          const existingIdx = languages.findIndex(l => (typeof l === 'string' ? l === val : l.language === val));
+          if (existingIdx >= 0) {
+            languages[existingIdx] = (typeof languages[existingIdx] === 'string')
+              ? { language: val, proficiency: profCan }
+              : { ...languages[existingIdx], proficiency: profCan };
+          } else {
+            languages.push({ language: val, proficiency: profCan });
+          }
+          renderTags('languagesContainer', languages, 'languageInput');
+          e.target.value = '';
+          saveLanguages();
+        }
+      }
+    });
+    
+    // Photo upload
+    document.getElementById('uploadPhotoBtn').addEventListener('click', () => {
+      document.getElementById('photoFile').click();
+    });
+    
+    document.getElementById('photoFile').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      const fd = new FormData();
+      fd.append('file', file);
+      
+      try {
+        const res = await fetch('/api/student/profile/photo', { method: 'POST', body: fd });
+        const data = await res.json().catch(() => ({}));
+        if (res.status === 401) { window.location.href = '/login'; return; }
+        if (!res.ok) { alert(data.error || 'Upload failed'); return; }
+        await load();
+      } catch (err) {
+        alert(err.message || 'Upload failed');
+      }
+    });
+    
+    document.getElementById('removePhotoBtn').addEventListener('click', async () => {
+      if (!confirm('Remove your profile photo?')) return;
+      try {
+        await api('/api/student/profile/photo', { method: 'DELETE' });
+        await load();
+      } catch (err) {
+        alert(err.message || 'Failed to remove photo');
+      }
+    });
+
+    document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+    document.getElementById('modalCancelBtn').addEventListener('click', closeModal);
+
+    document.addEventListener('DOMContentLoaded', load);
+  </script>
+</body>
+</html>
+

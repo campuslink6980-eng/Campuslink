@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile · CampusLink</title>
+  <style>
+    :root {
+      --linkedin-blue: #0a66c2;
+      --linkedin-blue-hover: #004182;
+      --card-bg: rgba(255, 255, 255, 0.05);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --text-primary: #ffffff;
+      --text-secondary: rgba(255, 255, 255, 0.7);
+      --text-muted: rgba(255, 255, 255, 0.5);
+      --success: #057642;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: linear-gradient(135deg, #0a0f1a 0%, #1a1f2e 50%, #0d1117 100%);
+      min-height: 100vh;
+      color: var(--text-primary);
+    }
+    .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+    .nav-bar {
+      background: rgba(10, 15, 26, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 12px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-content { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+    .nav-logo { font-size: 24px; font-weight: 700; color: var(--linkedin-blue); text-decoration: none; }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    .card-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--card-border);
+      font-size: 18px;
+      font-weight: 600;
+    }
+    .card-body { padding: 20px; }
+    .profile-header { position: relative; }
+    .cover-photo {
+      height: 200px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    .profile-header-content { padding: 0 20px 20px; position: relative; }
+    .profile-photo-container { position: absolute; top: -75px; left: 20px; }
+    .profile-photo {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      border: 4px solid #0a0f1a;
+      background: linear-gradient(135deg, #0a66c2 0%, #004182 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      font-weight: 700;
+      color: white;
+    }
+    .profile-info { padding-top: 85px; }
+    .profile-name { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+    .profile-headline { font-size: 16px; color: var(--text-secondary); margin-bottom: 8px; }
+    .profile-meta { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 12px; font-size: 14px; color: var(--text-muted); }
+    .profile-badges { display: flex; flex-wrap: wrap; gap: 8px; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .badge-student { background: rgba(10, 102, 194, 0.2); color: #5eb1ff; }
+    .badge-alumni { background: rgba(10, 102, 194, 0.2); color: #5eb1ff; }
+    .badge-placed { background: rgba(5, 118, 66, 0.2); color: #5dc983; }
+    .badge-mentorship { background: rgba(5, 118, 66, 0.2); color: #5dc983; }
+    .about-text { font-size: 15px; line-height: 1.6; color: var(--text-secondary); white-space: pre-wrap; }
+    .skills-wrap { display: flex; flex-wrap: wrap; gap: 8px; }
+    .skill-tag {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 14px;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-secondary);
+      border: 1px solid var(--card-border);
+    }
+    .project-card {
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      background: rgba(0, 0, 0, 0.2);
+    }
+    .project-card:last-child { margin-bottom: 0; }
+    .project-card h3 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+    .project-card p { font-size: 14px; color: var(--text-secondary); line-height: 1.5; margin: 0; }
+    .project-card .tech { font-size: 13px; color: var(--text-muted); margin-top: 8px; }
+    .cert-item {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--card-border);
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+    .cert-item:last-child { border-bottom: none; }
+    .profile-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-right: 20px;
+      margin-bottom: 10px;
+      color: var(--linkedin-blue);
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 600;
+    }
+    .profile-link:hover { text-decoration: underline; color: #5eb1ff; }
+    .loading, .error-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--text-muted);
+    }
+    .error-state { color: #f87171; }
+    @media (max-width: 600px) {
+      .container { padding: 16px 12px; }
+      .profile-name { font-size: 22px; }
+      .profile-photo { width: 120px; height: 120px; font-size: 36px; }
+      .profile-photo-container { top: -60px; }
+      .profile-info { padding-top: 70px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="nav-bar">
+    <div class="nav-content">
+      <a href="/main" class="nav-logo">CampusLink</a>
+    </div>
+  </header>
+  <main class="container">
+    <div id="loading" class="loading">Loading profile…</div>
+    <div id="error" class="error-state" style="display:none;">Profile not found.</div>
+    <div id="content" style="display:none;"></div>
+  </main>
+  <script>
+    (function() {
+      var path = window.location.pathname || "";
+      var parts = path.split("/").filter(Boolean);
+      var slug = parts[parts.indexOf("profile") + 1];
+      function el(id) { return document.getElementById(id); }
+      function esc(s) {
+        if (s == null || s === undefined) return "";
+        return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+      }
+      function initials(name) {
+        if (!name || !name.trim()) return "?";
+        var parts = name.trim().split(/\s+/);
+        if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+        return name.trim().substring(0, 2).toUpperCase();
+      }
+      if (!slug) {
+        el("loading").style.display = "none";
+        el("error").style.display = "block";
+        el("error").textContent = "Invalid profile link.";
+        return;
+      }
+      fetch("/api/public-profile/" + encodeURIComponent(slug))
+        .then(function(r) {
+          if (r.status === 404) return null;
+          return r.json();
+        })
+        .then(function(data) {
+          el("loading").style.display = "none";
+          if (!data || data.error) {
+            el("error").style.display = "block";
+            return;
+          }
+          var name = (data.name || "").trim() || "Profile";
+          var roleLabel = data.role === "ALUMNI" ? "Alumni" : "Student";
+          var html = "";
+
+          html += "<div class=\"card profile-header\">";
+          html += "<div class=\"cover-photo\"></div>";
+          html += "<div class=\"profile-header-content\">";
+          html += "<div class=\"profile-photo-container\"><div class=\"profile-photo\" id=\"profile-initials\">" + esc(initials(name)) + "</div></div>";
+          html += "<div class=\"profile-info\">";
+          html += "<h1 class=\"profile-name\">" + esc(name) + "</h1>";
+
+          if (data.role === "STUDENT") {
+            var sub = esc(data.branch || "");
+            if (data.cgpa != null) sub += (sub ? " · " : "") + "CGPA " + esc(String(data.cgpa));
+            html += "<p class=\"profile-headline\">" + sub + "</p>";
+            html += "<div class=\"profile-badges\"><span class=\"badge badge-student\">" + esc(roleLabel) + "</span>";
+            if (data.placement_status === "PLACED") html += "<span class=\"badge badge-placed\">Placed</span>";
+            html += "</div>";
+          } else {
+            var sub = [data.company, data.designation].filter(Boolean).join(" · ");
+            html += "<p class=\"profile-headline\">" + esc(sub) + "</p>";
+            html += "<div class=\"profile-badges\"><span class=\"badge badge-alumni\">" + esc(roleLabel) + "</span>";
+            if (data.mentorship_availability) html += "<span class=\"badge badge-mentorship\">Open to mentorship</span>";
+            html += "</div>";
+          }
+          html += "</div></div></div>";
+
+          if (data.about) {
+            html += "<div class=\"card\"><div class=\"card-header\">About</div><div class=\"card-body\"><p class=\"about-text\">" + esc(data.about) + "</p></div></div>";
+          }
+          if (data.skills && data.skills.length) {
+            html += "<div class=\"card\"><div class=\"card-header\">Skills</div><div class=\"card-body\"><div class=\"skills-wrap\">";
+            data.skills.forEach(function(s) { html += "<span class=\"skill-tag\">" + esc(s) + "</span>"; });
+            html += "</div></div></div>";
+          }
+          if (data.role === "STUDENT" && data.projects && data.projects.length) {
+            html += "<div class=\"card\"><div class=\"card-header\">Projects</div><div class=\"card-body\">";
+            data.projects.forEach(function(p) {
+              var title = (typeof p === "object" && (p.title || p.name)) ? (p.title || p.name) : String(p);
+              var desc = typeof p === "object" ? (p.description || "") : "";
+              var tech = typeof p === "object" && p.tech_stack ? (Array.isArray(p.tech_stack) ? p.tech_stack.join(", ") : p.tech_stack) : "";
+              html += "<div class=\"project-card\"><h3>" + esc(title) + "</h3>" + (desc ? "<p>" + esc(desc) + "</p>" : "") + (tech ? "<p class=\"tech\">" + esc(tech) + "</p>" : "") + "</div>";
+            });
+            html += "</div></div>";
+          }
+          if (data.role === "STUDENT" && data.certifications && data.certifications.length) {
+            html += "<div class=\"card\"><div class=\"card-header\">Certifications</div><div class=\"card-body\">";
+            data.certifications.forEach(function(c) {
+              var title = typeof c === "object" ? (c.name || c.title || "") : String(c);
+              html += "<div class=\"cert-item\">" + esc(title) + "</div>";
+            });
+            html += "</div></div>";
+          }
+          if (data.linkedin_url || (data.portfolio_url && data.role === "STUDENT")) {
+            html += "<div class=\"card\"><div class=\"card-header\">Links</div><div class=\"card-body\">";
+            if (data.linkedin_url) html += "<a href=\"" + esc(data.linkedin_url) + "\" target=\"_blank\" rel=\"noopener\" class=\"profile-link\">LinkedIn</a>";
+            if (data.portfolio_url && data.role === "STUDENT") html += "<a href=\"" + esc(data.portfolio_url) + "\" target=\"_blank\" rel=\"noopener\" class=\"profile-link\">GitHub / Portfolio</a>";
+            html += "</div></div>";
+          }
+
+          el("content").innerHTML = html || "<div class=\"card\"><div class=\"card-body\"><p class=\"about-text\" style=\"color:var(--text-muted);\">No additional information shared.</p></div></div>";
+          el("content").style.display = "block";
+          document.title = (name !== "Profile" ? name + " · " : "") + "Profile · CampusLink";
+        })
+        .catch(function() {
+          el("loading").style.display = "none";
+          el("error").style.display = "block";
+        });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampusLink · Choose Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 48px;
+            max-width: 600px;
+            width: 100%;
+            animation: slideUp 0.4s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 8px;
+        }
+
+        .header .welcome {
+            font-size: 16px;
+            color: #4a5568;
+            margin-bottom: 4px;
+        }
+
+        .header .user-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .header .subtitle {
+            font-size: 14px;
+            color: #718096;
+            margin-top: 16px;
+        }
+
+        .divider {
+            height: 1px;
+            background: #e2e8f0;
+            margin: 32px 0;
+        }
+
+        .role-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .role-button {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 20px 24px;
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .role-button:hover {
+            background: #edf2f7;
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        }
+
+        .role-button:active {
+            transform: translateY(0);
+        }
+
+        .role-icon {
+            font-size: 32px;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border-radius: 10px;
+            flex-shrink: 0;
+        }
+
+        .role-button.admin .role-icon {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .role-button.student .role-icon {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .role-button.coordinator .role-icon {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .role-content {
+            flex: 1;
+        }
+
+        .role-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a202c;
+            margin-bottom: 4px;
+        }
+
+        .role-description {
+            font-size: 14px;
+            color: #718096;
+        }
+
+        .role-arrow {
+            font-size: 20px;
+            color: #a0aec0;
+            transition: transform 0.2s ease;
+        }
+
+        .role-button:hover .role-arrow {
+            transform: translateX(4px);
+            color: #667eea;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+            font-size: 14px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .error-message {
+            display: none;
+            background: #fed7d7;
+            color: #c53030;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+
+        .error-message.active {
+            display: block;
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                padding: 32px 24px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .role-button {
+                padding: 16px 20px;
+            }
+
+            .role-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Welcome to CampusLink</h1>
+            <div class="welcome">Welcome back,</div>
+            <div class="user-name" id="userName">Loading...</div>
+            <div class="subtitle">Choose how you want to continue</div>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+
+        <div class="loading" id="loading">Loading your roles...</div>
+
+        <div class="role-buttons" id="roleButtons">
+            <!-- Role buttons will be dynamically inserted here -->
+        </div>
+    </div>
+
+    <script>
+        // Get user info and available roles
+        async function init() {
+            const userNameEl = document.getElementById('userName');
+            const roleButtonsEl = document.getElementById('roleButtons');
+            const loadingEl = document.getElementById('loading');
+            const errorEl = document.getElementById('errorMessage');
+
+            try {
+                // Fetch user info and roles from API
+                const response = await fetch('/api/auth/me', {
+                    credentials: 'same-origin'
+                });
+
+                if (!response.ok) {
+                    // If /api/auth/me fails, try to get from localStorage
+                    const email = localStorage.getItem('user_email') || 'User';
+                    const name = localStorage.getItem('user_name') || email;
+                    userNameEl.textContent = name;
+                    
+                    // Try to get roles from localStorage
+                    const roles = getRolesFromStorage();
+                    if (!roles || roles.length === 0) {
+                        errorEl.textContent = 'No roles found. Please log in again.';
+                        errorEl.classList.add('active');
+                        setTimeout(() => {
+                            window.location.href = '/login';
+                        }, 2000);
+                        return;
+                    }
+                    
+                    loadingEl.classList.remove('active');
+                    renderRoleButtons(roles);
+                    return;
+                }
+
+                const data = await response.json();
+                userNameEl.textContent = data.name || data.email || 'User';
+
+                // Get roles from API response or localStorage
+                const roles = data.roles || getRolesFromStorage() || [];
+
+                if (roles.length === 0) {
+                    errorEl.textContent = 'No roles found. Please log in again.';
+                    errorEl.classList.add('active');
+                    setTimeout(() => {
+                        window.location.href = '/login';
+                    }, 2000);
+                    return;
+                }
+
+                loadingEl.classList.remove('active');
+
+                // Render role buttons
+                renderRoleButtons(roles);
+
+            } catch (error) {
+                console.error('Error initializing:', error);
+                errorEl.textContent = 'Failed to load dashboard options. Please try again.';
+                errorEl.classList.add('active');
+                loadingEl.classList.remove('active');
+            }
+        }
+
+        function getRolesFromStorage() {
+            // Try to get roles from localStorage (set during login)
+            const rolesStr = localStorage.getItem('user_roles');
+            if (rolesStr) {
+                try {
+                    return JSON.parse(rolesStr);
+                } catch (e) {
+                    return null;
+                }
+            }
+            return null;
+        }
+
+        function renderRoleButtons(roles) {
+            const roleButtonsEl = document.getElementById('roleButtons');
+            roleButtonsEl.innerHTML = '';
+
+            const roleConfig = {
+                admin: {
+                    title: 'Go to Admin Dashboard',
+                    description: 'Requires password verification for security',
+                    icon: '👨‍💼',
+                    route: '/admin/verify'
+                },
+                student: {
+                    title: 'Go to Student Dashboard',
+                    description: 'Open the main student area (no extra login)',
+                    icon: '🎓',
+                    route: '/main'
+                }
+            };
+
+            roles.forEach(role => {
+                const config = roleConfig[role.toLowerCase()];
+                if (!config) return;
+
+                const button = document.createElement('button');
+                button.className = `role-button ${role.toLowerCase()}`;
+                button.type = 'button';
+                button.onclick = () => selectRole(role.toLowerCase());
+
+                button.innerHTML = `
+                    <div class="role-icon">${config.icon}</div>
+                    <div class="role-content">
+                        <div class="role-title">${config.title}</div>
+                        <div class="role-description">${config.description}</div>
+                    </div>
+                    <div class="role-arrow">→</div>
+                `;
+
+                roleButtonsEl.appendChild(button);
+            });
+
+            if (roleButtonsEl.children.length === 0) {
+                roleButtonsEl.innerHTML = '<p style="text-align: center; color: #718096; padding: 20px;">No dashboards available.</p>';
+            }
+        }
+
+        async function selectRole(role) {
+            const loadingEl = document.getElementById('loading');
+            const errorEl = document.getElementById('errorMessage');
+
+            loadingEl.classList.add('active');
+            errorEl.classList.remove('active');
+
+            if (role === 'student') {
+                loadingEl.classList.remove('active');
+                window.location.href = '/main';
+                return;
+            }
+            if (role === 'admin') {
+                loadingEl.classList.remove('active');
+                window.location.href = '/admin/verify';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/auth/select-role', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({ role })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to select role');
+                }
+
+                localStorage.setItem('selected_role', role);
+                if (data.redirect) {
+                    window.location.href = data.redirect;
+                } else {
+                    window.location.href = '/main';
+                }
+
+            } catch (error) {
+                console.error('Error selecting role:', error);
+                errorEl.textContent = error.message || 'Failed to select role. Please try again.';
+                errorEl.classList.add('active');
+                loadingEl.classList.remove('active');
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

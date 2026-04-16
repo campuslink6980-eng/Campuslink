@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CampusLink Post</title>
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; background: #f3f6f8; color: #111827; }
+    .wrap { max-width: 760px; margin: 30px auto; padding: 0 14px; }
+    .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 14px; box-shadow: 0 6px 20px rgba(0,0,0,0.06); }
+    .head { display: flex; gap: 10px; align-items: center; }
+    .avatar { width: 42px; height: 42px; border-radius: 999px; background: #0A66C2; color: #fff; display: grid; place-items: center; font-weight: 700; }
+    .name { font-weight: 700; }
+    .meta { font-size: 12px; color: #6b7280; }
+    .content { margin-top: 10px; line-height: 1.5; white-space: pre-wrap; }
+    .media { margin-top: 10px; border-radius: 10px; overflow: hidden; }
+    .media img, .media video { width: 100%; max-height: 520px; object-fit: contain; background: #f8fafc; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card" id="post-card">Loading post...</div>
+  </div>
+  <script>
+    function getInitials(name) {
+      const p = String(name || "U").trim().split(/\s+/);
+      return ((p[0]?.[0] || "") + (p[1]?.[0] || "")).toUpperCase() || "U";
+    }
+    function formatTimeAgo(dateStr) {
+      if (!dateStr) return "";
+      const d = new Date(dateStr.endsWith("Z") ? dateStr : (dateStr + "Z"));
+      const mins = Math.floor((Date.now() - d.getTime()) / 60000);
+      if (mins < 1) return "Just now";
+      if (mins < 60) return mins + "m ago";
+      const hrs = Math.floor(mins / 60);
+      if (hrs < 24) return hrs + "h ago";
+      const days = Math.floor(hrs / 24);
+      return days + "d ago";
+    }
+    async function loadPost() {
+      const card = document.getElementById("post-card");
+      const id = location.pathname.split("/").pop();
+      const res = await fetch("/api/posts/" + encodeURIComponent(id), { credentials: "same-origin" });
+      if (!res.ok) { card.textContent = "Post not found."; return; }
+      const data = await res.json();
+      const p = data.post || {};
+      const media = p.media_url
+        ? (p.media_url.toLowerCase().endsWith(".mp4")
+          ? `<div class="media"><video src="${p.media_url}" controls></video></div>`
+          : `<div class="media"><img src="${p.media_url}" alt="Post media"></div>`)
+        : "";
+      card.innerHTML = `
+        <div class="head">
+          <div class="avatar">${getInitials(p.author?.name)}</div>
+          <div>
+            <div class="name">${p.author?.name || "Post"}</div>
+            <div class="meta">${(p.author?.role || "Student")} · ${formatTimeAgo(p.created_at)}</div>
+          </div>
+        </div>
+        <div class="content">${(p.content || "").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+        ${media}
+      `;
+    }
+    loadPost();
+  </script>
+</body>
+</html>

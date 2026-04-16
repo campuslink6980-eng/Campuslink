@@ -1,0 +1,2184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile - CampusLink</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    :root {
+      --linkedin-blue: #0A66C2;
+      --linkedin-blue-hover: #004182;
+      --bg: #F3F6F8;
+      --card-bg: #FFFFFF;
+      --card-border: #E0E0E0;
+      --text-primary: #000000;
+      --text-secondary: #666666;
+      --text-muted: #6B7280;
+      --success: #057642;
+      --warning: #b24020;
+      --shadow: 0 1px 2px rgba(16,24,40,0.08);
+      --shadow-lg: 0 18px 50px rgba(16,24,40,0.18);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      color: var(--text-primary);
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    /* Navigation */
+    .nav-bar {
+      background: var(--linkedin-blue);
+      border-bottom: 1px solid var(--card-border);
+      padding: 12px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .nav-logo {
+      font-size: 24px;
+      font-weight: 700;
+      color: #fff;
+      text-decoration: none;
+    }
+
+    .nav-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .nav-btn {
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .nav-btn-outline {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.65);
+      color: #fff;
+    }
+
+    .nav-btn-outline:hover {
+      background: rgba(255,255,255,0.14);
+    }
+
+    /* Card Styles */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      margin-bottom: 16px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .card-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .card-body {
+      padding: 20px;
+    }
+
+    /* Profile Header */
+    .profile-header {
+      position: relative;
+    }
+
+    .cover-photo {
+      height: 120px;
+      background: linear-gradient(135deg, rgba(10, 102, 194, 0.20) 0%, rgba(10, 102, 194, 0.06) 100%);
+      position: relative;
+      cursor: pointer;
+    }
+    .cover-photo.has-image {
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+    .cover-photo::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: transparent;
+      transition: background .15s ease;
+    }
+    .cover-photo:hover::after { background: rgba(0,0,0,0.04); }
+
+    .profile-header-content {
+      padding: 0 20px 20px;
+      position: relative;
+    }
+
+    .profile-photo-container {
+      position: absolute;
+      top: -56px;
+      left: 20px;
+    }
+
+    .profile-photo {
+      width: 112px;
+      height: 112px;
+      border-radius: 50%;
+      border: 4px solid #fff;
+      background: linear-gradient(135deg, rgba(10, 102, 194, 0.35) 0%, rgba(10, 102, 194, 0.14) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      font-weight: 700;
+      color: white;
+      object-fit: cover;
+      box-shadow: 0 6px 24px rgba(16,24,40,0.14);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .profile-photo img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    /* Photo popup menu */
+    .photo-menu {
+      position: fixed;
+      min-width: 190px;
+      background: #fff;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      box-shadow: 0 18px 50px rgba(16,24,40,0.18);
+      padding: 6px;
+      z-index: 2500;
+      opacity: 0;
+      transform: translateY(-4px);
+      pointer-events: none;
+      transition: opacity .14s ease, transform .14s ease;
+    }
+    .photo-menu.active {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    .photo-menu button {
+      width: 100%;
+      text-align: left;
+      border: none;
+      background: transparent;
+      padding: 10px 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 13px;
+      color: #111827;
+      display:flex;
+      align-items:center;
+      gap: 10px;
+    }
+    .photo-menu button:hover { background: rgba(10,102,194,0.06); color: var(--linkedin-blue); }
+    .photo-menu .hint {
+      font-size: 11px;
+      color: var(--text-muted);
+      padding: 8px 10px 6px;
+    }
+
+    .profile-info {
+      padding-top: 66px;
+    }
+
+    .profile-name {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .profile-headline {
+      font-size: 16px;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+    .profile-detail-lines {
+      display: grid;
+      gap: 4px;
+      margin-bottom: 10px;
+      color: #666666;
+      font-size: 14px;
+    }
+    .profile-detail-line {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      line-height: 1.35;
+    }
+
+    .profile-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 12px;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .profile-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .profile-status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 12px;
+    }
+
+    .status-student {
+      background: rgba(10, 102, 194, 0.10);
+      color: var(--linkedin-blue);
+    }
+
+    .status-intern {
+      background: rgba(5, 118, 66, 0.10);
+      color: var(--success);
+    }
+
+    .status-placed {
+      background: rgba(178, 64, 32, 0.10);
+      color: var(--warning);
+    }
+
+    .profile-verified-badge,
+    .profile-pending-badge,
+    .profile-rejected-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: 8px;
+      margin-bottom: 12px;
+    }
+    .profile-verified-badge {
+      background: rgba(5, 118, 66, 0.12);
+      color: var(--success);
+    }
+    .profile-pending-badge {
+      background: rgba(245, 158, 11, 0.12);
+      color: #B45309;
+    }
+    .profile-rejected-badge {
+      background: rgba(217, 48, 37, 0.10);
+      color: #D93025;
+    }
+
+    .profile-connections {
+      font-size: 14px;
+      color: var(--linkedin-blue);
+      cursor: pointer;
+      margin-bottom: 16px;
+    }
+
+    .profile-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border-radius: 24px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid transparent;
+    }
+
+    .btn-primary {
+      background: var(--linkedin-blue);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--linkedin-blue-hover);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--linkedin-blue);
+      color: var(--linkedin-blue);
+    }
+
+    .btn-outline:hover {
+      background: rgba(10, 102, 194, 0.1);
+    }
+
+    .btn-secondary {
+      background: #fff;
+      border: 1px solid var(--card-border);
+      color: var(--text-primary);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(10, 102, 194, 0.06);
+    }
+
+    /* About Section */
+    .about-text {
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      white-space: pre-wrap;
+    }
+
+    /* About / Post main tabs */
+    .profile-tabs-wrap {
+      margin-top: 2px;
+    }
+    .profile-main-tabs {
+      display: flex;
+      gap: 4px;
+      border-bottom: 1px solid var(--card-border);
+      margin-bottom: 16px;
+      background: var(--card-bg);
+      border-radius: 8px 8px 0 0;
+      padding: 0 4px;
+    }
+    .profile-tab-btn {
+      padding: 14px 20px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      font-family: inherit;
+    }
+    .profile-tab-btn:hover {
+      color: var(--text-secondary);
+      background: rgba(10, 102, 194, 0.04);
+      border-radius: 8px 8px 0 0;
+    }
+    .profile-tab-btn.active {
+      color: var(--linkedin-blue);
+      border-bottom-color: var(--linkedin-blue);
+    }
+    .profile-tab-panel {
+      display: none;
+    }
+    .profile-tab-panel.active {
+      display: block;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 30px;
+      color: var(--text-muted);
+    }
+
+    .empty-state-icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+      opacity: 0.5;
+    }
+
+    .add-cta {
+      color: var(--linkedin-blue);
+      cursor: pointer;
+      margin-top: 8px;
+      display: inline-block;
+    }
+
+    /* Activity Section */
+    .activity-tabs {
+      display: flex;
+      gap: 4px;
+      border-bottom: 1px solid var(--card-border);
+      padding: 0 20px;
+    }
+
+    .activity-tab {
+      padding: 12px 16px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .activity-tab:hover {
+      color: var(--text-secondary);
+    }
+
+    .activity-tab.active {
+      color: var(--text-primary);
+      border-bottom-color: var(--linkedin-blue);
+    }
+
+    .activity-item {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--card-border);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .activity-item:hover {
+      background: rgba(10, 102, 194, 0.04);
+    }
+
+    .activity-item:last-child {
+      border-bottom: none;
+    }
+
+    .activity-content {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .activity-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .activity-type-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      margin-right: 8px;
+    }
+
+    .badge-post { background: rgba(10, 102, 194, 0.2); color: #5eb1ff; }
+    .badge-comment { background: rgba(5, 118, 66, 0.2); color: #5dc983; }
+    .badge-reaction { background: rgba(178, 64, 32, 0.2); color: #e87c5c; }
+    .badge-application { background: rgba(138, 43, 226, 0.2); color: #b57edc; }
+
+    /* Education, Experience, Projects */
+    .section-item {
+      padding: 16px 0;
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      gap: 16px;
+    }
+
+    .section-item:last-child {
+      border-bottom: none;
+    }
+
+    .item-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      background: rgba(10, 102, 194, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    .item-content {
+      flex: 1;
+    }
+
+    .item-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .item-subtitle {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+
+    .item-meta {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .item-description {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+
+    .item-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .item-btn {
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      border: 1px solid var(--card-border);
+      background: transparent;
+      color: var(--text-secondary);
+      transition: all 0.2s;
+    }
+
+    .item-btn:hover {
+      background: rgba(10, 102, 194, 0.06);
+      border-color: rgba(10, 102, 194, 0.22);
+      color: var(--linkedin-blue);
+    }
+
+    /* Skills */
+    .skills-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .skill-tag {
+      padding: 8px 16px;
+      border-radius: 20px;
+      background: rgba(10, 102, 194, 0.12);
+      color: var(--linkedin-blue);
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .skill-level {
+      font-size: 11px;
+      opacity: 0.7;
+      margin-left: 4px;
+    }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.40);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .modal-backdrop.active {
+      display: flex;
+    }
+
+    .modal {
+      background: #fff;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+      border: 1px solid var(--card-border);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .modal-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 24px;
+    }
+
+    .modal-body {
+      padding: 20px;
+    }
+
+    .modal-footer {
+      padding: 16px 20px;
+      border-top: 1px solid var(--card-border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+
+    /* Form Elements */
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: var(--text-secondary);
+    }
+
+    .form-input, .form-textarea {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--card-border);
+      background: #fff;
+      color: var(--text-primary);
+      font-size: 14px;
+      transition: border-color 0.2s;
+    }
+
+    .form-input:focus, .form-textarea:focus {
+      outline: none;
+      border-color: var(--linkedin-blue);
+    }
+
+    .form-textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    /* Message Box */
+    .message-box {
+      padding: 20px;
+    }
+
+    .message-input-container {
+      display: flex;
+      gap: 12px;
+    }
+
+    .message-input {
+      flex: 1;
+      padding: 12px 16px;
+      border-radius: 24px;
+      border: 1px solid var(--card-border);
+      background: #fff;
+      color: var(--text-primary);
+      font-size: 14px;
+    }
+
+    /* LinkedIn-like layout helpers */
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    .header-grid {
+      display: grid;
+      grid-template-columns: 112px 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+    @media (max-width: 768px) {
+      .header-grid { grid-template-columns: 1fr; }
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: flex-start;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    @media (max-width: 768px) {
+      .header-actions { justify-content: flex-start; }
+    }
+
+    .meta-line {
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px 14px;
+      color: var(--text-muted);
+      font-size: 14px;
+      margin: 10px 0 12px;
+    }
+    .meta-line span { display:inline-flex; gap:6px; align-items:center; }
+
+    .divider {
+      height: 1px;
+      background: var(--card-border);
+      margin: 14px 0;
+    }
+
+    /* Media thumbs */
+    .media-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .media-thumb {
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      overflow: hidden;
+      background: #fff;
+      cursor: pointer;
+      box-shadow: 0 1px 0 rgba(16,24,40,0.03);
+      transition: transform .12s ease, box-shadow .12s ease;
+    }
+    .media-thumb:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(16,24,40,0.12); }
+    .media-thumb img, .media-thumb video {
+      width: 100%;
+      height: 110px;
+      object-fit: cover;
+      display:block;
+      background: #F3F6F8;
+    }
+    .media-thumb .cap {
+      padding: 8px 10px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Fullscreen media viewer */
+    .media-viewer {
+      position: fixed;
+      inset: 0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index: 3000;
+      background: rgba(0,0,0,0.55);
+      padding: 18px;
+    }
+    .media-viewer.active { display:flex; }
+    .media-viewer .frame {
+      width: min(920px, 96vw);
+      max-height: 92vh;
+      background: #fff;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.18);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+    }
+    .media-viewer .bar {
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--card-border);
+    }
+    .media-viewer .bar strong { font-size: 14px; }
+    .media-viewer .bar .x {
+      border:none;
+      background: transparent;
+      font-size: 22px;
+      cursor:pointer;
+      color: var(--text-secondary);
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+    }
+    .media-viewer .bar .x:hover { background: rgba(10,102,194,0.06); color: var(--linkedin-blue); }
+    .media-viewer .body {
+      padding: 14px;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      background: #F3F6F8;
+    }
+    .media-viewer img, .media-viewer video {
+      max-width: 100%;
+      max-height: 76vh;
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    /* Loading */
+    .loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--card-border);
+      border-top-color: var(--linkedin-blue);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Show All Link */
+    .show-all {
+      display: block;
+      text-align: center;
+      padding: 16px;
+      color: var(--text-muted);
+      font-size: 14px;
+      cursor: pointer;
+      border-top: 1px solid var(--card-border);
+      transition: all 0.2s;
+    }
+
+    .show-all:hover {
+      color: var(--linkedin-blue);
+      background: rgba(10, 102, 194, 0.05);
+    }
+
+    /* Additional Info Tags */
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .info-tag {
+      padding: 6px 14px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-secondary);
+      font-size: 13px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container {
+        padding: 10px 12px 72px;
+      }
+
+      .nav-bar {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+
+      .profile-photo {
+        width: 104px;
+        height: 104px;
+        font-size: 32px;
+      }
+
+      .profile-photo-container {
+        top: -52px;
+        left: 50%;
+        transform: translateX(-50%);
+        right: auto;
+      }
+
+      .profile-info {
+        padding-top: 58px;
+        text-align: center;
+      }
+
+      .profile-detail-lines {
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .profile-name {
+        font-size: 22px;
+      }
+
+      .cover-photo {
+        height: 140px;
+      }
+
+      .profile-actions {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
+    /* Toast Notifications */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 14px 20px;
+      background: #1a1f2e;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-size: 14px;
+      z-index: 2000;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast.success {
+      border-left: 4px solid #057642;
+    }
+
+    .toast.error {
+      border-left: 4px solid #b24020;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="nav-bar">
+    <div class="nav-content">
+      <a href="/user/dashboard" class="nav-logo">CampusLink</a>
+      <div class="nav-actions">
+        <button class="nav-btn nav-btn-outline" onclick="window.location.href='/user/dashboard'">Dashboard</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container" id="profileContainer">
+    <div class="loading" id="loadingState">
+      <div class="spinner"></div>
+    </div>
+  </div>
+
+  <!-- Edit About Modal -->
+  <div class="modal-backdrop" id="aboutModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Edit About</h3>
+        <button class="modal-close" onclick="closeModal('aboutModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">About</label>
+          <textarea class="form-textarea" id="aboutInput" placeholder="Write a summary about yourself..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('aboutModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveAbout()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Message Modal -->
+  <div class="modal-backdrop" id="messageModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Send Message</h3>
+        <button class="modal-close" onclick="closeModal('messageModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Message</label>
+          <textarea class="form-textarea" id="messageInput" placeholder="Write your message..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <a href="#" id="viewConversationLink" class="btn btn-outline" style="margin-right: auto;">View Full Conversation</a>
+        <button class="btn btn-secondary" onclick="closeModal('messageModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="sendMessage()">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Media Viewer -->
+  <div class="media-viewer" id="mediaViewer" role="dialog" aria-modal="true" aria-label="Media viewer">
+    <div class="frame">
+      <div class="bar">
+        <strong id="mediaViewerTitle">Preview</strong>
+        <button class="x" type="button" id="mediaViewerClose" aria-label="Close">&times;</button>
+      </div>
+      <div class="body" id="mediaViewerBody"></div>
+    </div>
+  </div>
+
+  <!-- Photo Menu (cover/profile) -->
+  <div class="photo-menu" id="photoMenu" role="menu" aria-label="Photo options">
+    <div class="hint" id="photoMenuHint">Photo options</div>
+    <button type="button" id="photoMenuKeepBlank" role="menuitem">Keep Blank</button>
+    <button type="button" id="photoMenuChange" role="menuitem">Change Photo</button>
+  </div>
+
+  <script>
+    let profileData = null;
+    let currentUserId = null;
+    let activeActivityTab = 'posts';
+
+    // Cover photo now persists via backend; localStorage is fallback for legacy data.
+    const coverStorageKey = (uid) => `campuslink:view_profile:cover:${uid}`;
+    const profileBlankKey = (uid) => `campuslink:view_profile:profile_blank:${uid}`;
+
+    function getStoredCover(uid) {
+      try { return localStorage.getItem(coverStorageKey(uid)) || ''; } catch (e) { return ''; }
+    }
+    function setStoredCover(uid, dataUrl) {
+      try {
+        if (!dataUrl) localStorage.removeItem(coverStorageKey(uid));
+        else localStorage.setItem(coverStorageKey(uid), dataUrl);
+      } catch (e) {}
+    }
+    function getProfileBlank(uid) {
+      try { return localStorage.getItem(profileBlankKey(uid)) === '1'; } catch (e) { return false; }
+    }
+    function setProfileBlank(uid, isBlank) {
+      try {
+        if (isBlank) localStorage.setItem(profileBlankKey(uid), '1');
+        else localStorage.removeItem(profileBlankKey(uid));
+      } catch (e) {}
+    }
+
+    // Photo menu state
+    const photoMenu = document.getElementById('photoMenu');
+    const photoMenuHint = document.getElementById('photoMenuHint');
+    const photoMenuKeepBlank = document.getElementById('photoMenuKeepBlank');
+    const photoMenuChange = document.getElementById('photoMenuChange');
+    let photoMenuCtx = null; // { kind: 'cover' | 'profile', userId, isOwn }
+
+    function closePhotoMenu() {
+      photoMenu.classList.remove('active');
+      photoMenuCtx = null;
+    }
+
+    function openPhotoMenu({ kind, userId, anchorRect, hasImage = false }) {
+      photoMenuCtx = { kind, userId, hasImage };
+      photoMenuHint.textContent = kind === 'cover' ? 'Cover photo' : 'Profile photo';
+      if (kind === 'cover') {
+        photoMenuKeepBlank.textContent = hasImage ? 'Remove Cover' : 'Keep Blank';
+      } else {
+        photoMenuKeepBlank.textContent = 'Keep Blank';
+      }
+      photoMenuChange.textContent = 'Change Photo';
+
+      // Position below-left of anchor, keep inside viewport
+      const pad = 10;
+      const menuW = 210;
+      const menuH = 120;
+      const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+      const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+
+      let left = Math.min(anchorRect.left, vw - menuW - pad);
+      left = Math.max(pad, left);
+      let top = anchorRect.bottom + 8;
+      if (top + menuH > vh - pad) top = Math.max(pad, anchorRect.top - menuH - 8);
+
+      photoMenu.style.left = `${left}px`;
+      photoMenu.style.top = `${top}px`;
+      photoMenu.classList.add('active');
+    }
+
+    document.addEventListener('click', (e) => {
+      if (!photoMenu.classList.contains('active')) return;
+      const inside = e.target.closest('#photoMenu');
+      if (inside) return;
+      closePhotoMenu();
+    }, true);
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closePhotoMenu();
+    });
+
+    // Get user ID from URL
+    const pathParts = window.location.pathname.split('/');
+    const userId = pathParts[pathParts.length - 1];
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      loadProfile();
+    });
+
+    async function api(path, opts = {}) {
+      const res = await fetch(path, {
+        method: opts.method || 'GET',
+        headers: opts.headers || (opts.body ? { 'Content-Type': 'application/json' } : undefined),
+        body: opts.body ? JSON.stringify(opts.body) : undefined,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 401) {
+        window.location.href = '/login';
+        return;
+      }
+      if (!res.ok) throw new Error(data.error || 'Request failed');
+      return data;
+    }
+
+    async function loadProfile() {
+      try {
+        profileData = await api(`/api/users/${userId}/profile`);
+        currentUserId = userId;
+        renderProfile();
+      } catch (e) {
+        showToast(e.message || 'Failed to load profile', 'error');
+        document.getElementById('loadingState').innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">&#128577;</div>
+            <p>Failed to load profile</p>
+          </div>
+        `;
+      }
+    }
+
+    function renderProfile() {
+      const container = document.getElementById('profileContainer');
+      const user = profileData.user;
+      const profile = profileData.profile;
+      const isOwn = profileData.is_own_profile;
+      const isAlumniProfile = String(user.user_type || '').toLowerCase() === 'alumni';
+      const connStatus = profileData.connection_status;
+      const connId = profileData.connection_id;
+      const isRequester = profileData.is_connection_requester;
+
+      const initials = getInitials(user.name || 'U');
+      const storedBlank = getProfileBlank(userId);
+      const photoUrl = (!storedBlank && user.profile_photo)
+        ? (user.profile_photo.secure_url || (user.profile_photo.stored_name ? `/uploads/profile_photos/${user.profile_photo.stored_name}` : null))
+        : null;
+      const coverUrl = (profile?.cover_photo && (profile.cover_photo.secure_url || profile.cover_photo.url))
+        || (user.cover_photo && (user.cover_photo.secure_url || user.cover_photo.url))
+        || getStoredCover(userId);
+
+      let verificationBadgeHtml = '';
+      const vStatus = (user.verification_status || '').toUpperCase();
+      if (vStatus === 'VERIFIED') {
+        verificationBadgeHtml = '<span class="profile-verified-badge" title="Profile verified by faculty">&#10004; Verified</span>';
+      } else if (vStatus === 'REJECTED') {
+        verificationBadgeHtml = '<span class="profile-rejected-badge" title="Verification rejected">Verification rejected</span>';
+      } else if (user.verification_status !== undefined && user.verification_status !== null && user.verification_status !== '') {
+        verificationBadgeHtml = '<span class="profile-pending-badge" title="Awaiting verification">Verification pending</span>';
+      }
+
+      // Build connection buttons based on status
+      let connectionButtons = '';
+      if (connStatus === 'ACCEPTED') {
+        connectionButtons = `
+          <button class="btn btn-secondary" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+            </svg>
+            Connected
+          </button>
+        `;
+      } else {
+        connectionButtons = `
+          <button class="btn btn-primary" onclick="sendConnectionRequest()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
+            Connect
+          </button>
+        `;
+      }
+
+      const headline = user.headline || profile?.basic?.headline || 'CampusLink Student';
+      const locationLine = profile?.location || user.location || profile?.basic?.location || '';
+      const branchLine = profile?.branch || user.branch || '';
+      const statusLine = profile?.current_status || user.current_status || '';
+
+      const MONTH_LABELS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+      function formatMonthYear(monthStr, yearStr) {
+        const y = yearStr ? String(yearStr).slice(0, 4) : '';
+        const m = monthStr ? parseInt(String(monthStr), 10) : 0;
+        const ml = (m >= 1 && m <= 12) ? MONTH_LABELS[m - 1] : '';
+        if (!ml && !y) return '';
+        if (!ml) return y;
+        if (!y) return ml;
+        return `${ml} ${y}`;
+      }
+      function formatRange(startMonth, startYear, endMonth, endYear, isCurrent) {
+        const start = formatMonthYear(startMonth, startYear) || (startYear ? String(startYear).slice(0, 4) : '');
+        if (isCurrent) return start ? `${start} - Present` : 'Present';
+        const end = formatMonthYear(endMonth, endYear) || (endYear ? String(endYear).slice(0, 4) : '');
+        if (start && end) return `${start} - ${end}`;
+        return start || end || '';
+      }
+
+      const normalizeLanguages = (profile.languages || []).map(l => (
+        typeof l === 'string'
+          ? { language: l, proficiency: '' }
+          : { language: l.language || l.name || '', proficiency: l.proficiency || '' }
+      )).filter(x => x.language);
+
+      function ymKey(it, prefix) {
+        const y = parseInt(String(it?.[`${prefix}_year`] || '').slice(0, 4), 10) || 0;
+        const m = parseInt(String(it?.[`${prefix}_month`] || ''), 10) || 0;
+        return y * 100 + m;
+      }
+      function sortByTimeline(arr, { currentKey = 'current', endPrefix = 'end', startPrefix = 'start' } = {}) {
+        return (arr || []).slice().sort((a, b) => {
+          const ac = !!a?.[currentKey];
+          const bc = !!b?.[currentKey];
+          if (ac !== bc) return ac ? -1 : 1;
+          const ae = ymKey(a, endPrefix) || ymKey(a, startPrefix);
+          const be = ymKey(b, endPrefix) || ymKey(b, startPrefix);
+          if (ae !== be) return be - ae;
+          const as = ymKey(a, startPrefix);
+          const bs = ymKey(b, startPrefix);
+          return bs - as;
+        });
+      }
+
+      const experience = sortByTimeline(profile.experience || [], { currentKey: 'current' });
+      const education = sortByTimeline(profile.education || [], { currentKey: 'current' });
+      const certifications = (profile.certifications || []).slice().sort((a, b) => {
+        const ak = ymKey(a, 'issue');
+        const bk = ymKey(b, 'issue');
+        return bk - ak;
+      });
+      const achievements = (profile.achievements || []).slice().sort((a, b) => {
+        const ak = ymKey(a, 'issue') || (a?.date ? Date.parse(a.date) : 0);
+        const bk = ymKey(b, 'issue') || (b?.date ? Date.parse(b.date) : 0);
+        return (bk || 0) - (ak || 0);
+      });
+
+      const resumeBtn = isOwn ? `
+        <a class="btn btn-outline" href="/resume-preview" target="_blank" rel="noopener">
+          Download Resume
+        </a>
+      ` : '';
+
+      const mentoringMeta = (() => {
+        const ma = profileData.mentoring_availability;
+        if (!ma || profileData.user?.user_type !== 'alumni') return '';
+        if (ma.slots_full) return 'Mentee slots: Full';
+        if (typeof ma.remaining_slots === 'number') return `Mentee slots: ${ma.remaining_slots}`;
+        return 'Mentoring available';
+      })();
+
+      const mentoringActionHtml = (() => {
+        const ma = profileData.mentoring_availability;
+        if (!ma || isOwn) return '';
+        if (ma.can_request) {
+          return `<button class="btn btn-outline" type="button" id="startMentoringBtn">Request mentorship</button>`;
+        }
+        if (ma.has_pending) {
+          return `<button class="btn btn-outline" type="button" disabled aria-disabled="true">Mentorship request pending</button>`;
+        }
+        if (ma.slots_full) {
+          return `<button class="btn btn-outline" type="button" disabled aria-disabled="true">Mentor slots full</button>`;
+        }
+        if (ma.has_mentor) {
+          return `<button class="btn btn-outline" type="button" disabled aria-disabled="true">You already have a mentor</button>`;
+        }
+        if (ma.accepting_requests === false) {
+          return `<button class="btn btn-outline" type="button" disabled aria-disabled="true">Not accepting mentorship requests</button>`;
+        }
+        return '';
+      })();
+
+      container.innerHTML = `
+        <div class="layout">
+          <!-- Header -->
+          <div class="card profile-header">
+            <div class="cover-photo ${coverUrl ? 'has-image' : ''}" id="coverPhoto" style="${coverUrl ? `background-image:url('${escapeHtml(coverUrl)}')` : ''}"></div>
+            <div class="profile-header-content">
+              <div class="header-grid">
+                <div>
+                  <div class="profile-photo" id="profilePhoto" title="${isOwn ? 'Click for photo options' : ''}">
+                    ${photoUrl ? `<img src="${photoUrl}" alt="${escapeHtml(user.name || 'User')}">` : initials}
+                  </div>
+                  ${isOwn ? `
+                    <input type="file" id="photoInput" accept="image/*" style="display:none" onchange="handlePhotoUpload(event)">
+                    <input type="file" id="coverInput" accept="image/*" style="display:none">
+                  ` : ''}
+                </div>
+
+                <div>
+                  <h1 class="profile-name">${escapeHtml(user.name || 'User')}</h1>
+                  <div class="profile-headline">${escapeHtml(headline)}</div>
+                  ${[locationLine, branchLine, statusLine].some(Boolean) ? `
+                    <div class="profile-detail-lines">
+                      ${locationLine ? `<div class="profile-detail-line"><span>&#128205;</span><span>${escapeHtml(locationLine)}</span></div>` : ''}
+                      ${branchLine ? `<div class="profile-detail-line"><span>&#127891;</span><span>${escapeHtml(branchLine)}</span></div>` : ''}
+                      ${statusLine ? `<div class="profile-detail-line"><span>&#9679;</span><span>${escapeHtml(statusLine)}</span></div>` : ''}
+                    </div>
+                  ` : ''}
+                  <div class="profile-connections">
+                    ${(user.connection_count || 0)} connection${user.connection_count !== 1 ? 's' : ''}
+                    ${mentoringMeta ? ` · ${escapeHtml(mentoringMeta)}` : ''}
+                  </div>
+                  ${verificationBadgeHtml ? `<div style="margin-bottom:8px;">${verificationBadgeHtml}</div>` : ''}
+                  <div class="header-actions">
+                  ${isOwn ? `
+                    <button class="btn btn-primary" onclick="window.location.href='/student/profile'">Edit Profile</button>
+                    <button type="button" class="btn btn-secondary" onclick="if(typeof showProfileMainTab==='function')showProfileMainTab('post');">Posts</button>
+                    ${resumeBtn}
+                    <button class="btn btn-outline" type="button" onclick="window.location.href='/student/settings'">Settings</button>
+                  ` : `
+                    ${connectionButtons}
+                    <button type="button" class="btn btn-secondary" onclick="if(typeof showProfileMainTab==='function')showProfileMainTab('post');">Posts</button>
+                    <button class="btn btn-outline" onclick="openModal('messageModal')">Message</button>
+                    ${mentoringActionHtml}
+                  `}
+                </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="profile-tabs-wrap">
+            <div class="profile-main-tabs" role="tablist">
+              <button type="button" class="profile-tab-btn active" data-profile-tab="about" role="tab" aria-selected="true">About</button>
+              <button type="button" class="profile-tab-btn" data-profile-tab="post" role="tab" aria-selected="false">Post</button>
+              ${isAlumniProfile ? `<button type="button" class="profile-tab-btn" data-profile-tab="resources" role="tab" aria-selected="false">Resources</button>` : ''}
+            </div>
+            <div id="profileTabAbout" class="profile-tab-panel active" role="tabpanel" data-profile-tab="about">
+
+          <!-- About -->
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">About</h2>
+              ${isOwn ? `<button class="item-btn" onclick="openModal('aboutModal')">Edit</button>` : ''}
+            </div>
+            <div class="card-body">
+              ${profile.about ? `<p class="about-text">${escapeHtml(profile.about)}</p>` : `
+                <div class="empty-state">
+                  <p>No summary added yet.</p>
+                  ${isOwn ? `<span class="add-cta" onclick="openModal('aboutModal')">+ Add About</span>` : ''}
+                </div>
+              `}
+            </div>
+          </div>
+
+          <!-- Experience -->
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Experience</h2>
+              ${isOwn ? `<button class="item-btn" onclick="window.location.href='/student/profile'">+ Add</button>` : ''}
+            </div>
+            <div class="card-body">
+              ${experience && experience.length > 0 ? experience.map(exp => `
+                <div class="section-item">
+                  <div class="item-icon">&#128188;</div>
+                  <div class="item-content">
+                    <h3 class="item-title">${escapeHtml(exp.role || 'Role')}</h3>
+                    <div class="item-subtitle">${escapeHtml(exp.company || 'Company')}</div>
+                    <div class="item-meta">
+                      ${(exp.duration || '').trim() ? escapeHtml(exp.duration) : escapeHtml(formatRange(exp.start_month, exp.start_year, exp.end_month, exp.end_year, !!exp.current))}
+                      ${(exp.location_type || exp.location) ? ` · ${escapeHtml([exp.location_type, exp.location].filter(Boolean).join(' '))}` : ''}
+                    </div>
+                    ${exp.description ? `<div class="item-description">${escapeHtml(exp.description)}</div>` : ''}
+                    ${(exp.offer_letter_url || exp.completion_certificate_url || exp.media_url) ? `
+                      <div class="media-grid">
+                        ${exp.offer_letter_url ? `
+                          <div class="media-thumb" data-media-url="${escapeHtml(exp.offer_letter_url)}" data-media-title="Offer Letter">
+                            <img src="${escapeHtml(exp.offer_letter_url)}" alt="Offer Letter" loading="lazy">
+                            <div class="cap">Offer Letter</div>
+                          </div>` : ''
+                        }
+                        ${exp.completion_certificate_url ? `
+                          <div class="media-thumb" data-media-url="${escapeHtml(exp.completion_certificate_url)}" data-media-title="Completion Certificate">
+                            <img src="${escapeHtml(exp.completion_certificate_url)}" alt="Completion Certificate" loading="lazy">
+                            <div class="cap">Completion Certificate</div>
+                          </div>` : ''
+                        }
+                        ${exp.media_url ? `
+                          <div class="media-thumb" data-media-url="${escapeHtml(exp.media_url)}" data-media-title="Document">
+                            <img src="${escapeHtml(exp.media_url)}" alt="Document" loading="lazy">
+                            <div class="cap">Document</div>
+                          </div>` : ''
+                        }
+                      </div>
+                    ` : ''}
+                  </div>
+                </div>
+              `).join('') : `
+                <div class="empty-state">
+                  <div class="empty-state-icon">&#128188;</div>
+                  <p>No experience added yet.</p>
+                  ${isOwn ? `<span class="add-cta" onclick="window.location.href='/student/profile'">+ Add Experience</span>` : ''}
+                </div>
+              `}
+            </div>
+          </div>
+
+          <!-- Education -->
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Education</h2>
+              ${isOwn ? `<button class="item-btn" onclick="window.location.href='/student/profile'">+ Add</button>` : ''}
+            </div>
+            <div class="card-body">
+              ${education && education.length > 0 ? education.map(edu => `
+                <div class="section-item">
+                  <div class="item-icon">&#127891;</div>
+                  <div class="item-content">
+                    <h3 class="item-title">${escapeHtml(edu.degree || 'Education')}</h3>
+                    <div class="item-subtitle">${escapeHtml(edu.school || 'Institution')}</div>
+                    <div class="item-meta">
+                      ${escapeHtml(formatRange(edu.start_month, edu.start_year, edu.end_month, edu.end_year, !!edu.current))}
+                      ${edu.cgpa ? ` · CGPA: ${escapeHtml(edu.cgpa)}` : ''}
+                    </div>
+                    ${(edu.board || edu.field_of_study || edu.field) ? `<div class="item-description">${escapeHtml(edu.board || edu.field_of_study || edu.field)}</div>` : ''}
+                  </div>
+                </div>
+              `).join('') : `
+                <div class="empty-state">
+                  <div class="empty-state-icon">&#127891;</div>
+                  <p>No education added yet.</p>
+                  ${isOwn ? `<span class="add-cta" onclick="window.location.href='/student/profile'">+ Add Education</span>` : ''}
+                </div>
+              `}
+            </div>
+          </div>
+
+          <!-- Skills -->
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Skills</h2>
+              ${isOwn ? `<button class="item-btn" onclick="window.location.href='/student/profile'">+ Add</button>` : ''}
+            </div>
+            <div class="card-body">
+              ${profile.skills && profile.skills.length > 0 ? `
+                <div class="skills-grid">
+                  ${profile.skills.map(skill => `
+                    <span class="skill-tag">
+                      ${escapeHtml(typeof skill === 'string' ? skill : skill.name || 'Skill')}
+                      ${skill.level ? `<span class="skill-level">· ${escapeHtml(skill.level)}</span>` : ''}
+                    </span>
+                  `).join('')}
+                </div>
+              ` : `
+                <div class="empty-state">
+                  <div class="empty-state-icon">&#128736;</div>
+                  <p>No skills added yet.</p>
+                  ${isOwn ? `<span class="add-cta" onclick="window.location.href='/student/profile'">+ Add Skills</span>` : ''}
+                </div>
+              `}
+            </div>
+          </div>
+
+          <!-- Projects -->
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Projects</h2>
+              ${isOwn ? `<button class="item-btn" onclick="window.location.href='/student/profile'">+ Add</button>` : ''}
+            </div>
+            <div class="card-body">
+              ${profile.projects && profile.projects.length > 0 ? profile.projects.map(proj => `
+                <div class="section-item">
+                  <div class="item-icon">&#128187;</div>
+                  <div class="item-content">
+                    <h3 class="item-title">${escapeHtml(proj.name || 'Project')}</h3>
+                    ${proj.tech_stack ? `<div class="item-subtitle">${escapeHtml(proj.tech_stack)}</div>` : ''}
+                    ${proj.description ? `<div class="item-description">${escapeHtml(proj.description)}</div>` : ''}
+                    ${proj.link ? `<a href="${escapeHtml(proj.link)}" target="_blank" rel="noopener" class="add-cta">View Project &#8599;</a>` : ''}
+                    ${(proj.media_urls && proj.media_urls.length) || proj.project_video_url ? `
+                      <div class="media-grid">
+                        ${(proj.media_urls || []).map((u, idx) => `
+                          <div class="media-thumb" data-media-url="${escapeHtml(u)}" data-media-title="Project media ${idx + 1}">
+                            <img src="${escapeHtml(u)}" alt="Project media" loading="lazy">
+                            <div class="cap">Image ${idx + 1}</div>
+                          </div>
+                        `).join('')}
+                        ${proj.project_video_url ? `
+                          <div class="media-thumb" data-media-url="${escapeHtml(proj.project_video_url)}" data-media-type="video" data-media-title="Project video">
+                            <video src="${escapeHtml(proj.project_video_url)}" muted preload="metadata"></video>
+                            <div class="cap">Video</div>
+                          </div>
+                        ` : ''}
+                      </div>
+                    ` : ''}
+                  </div>
+                </div>
+              `).join('') : `
+                <div class="empty-state">
+                  <div class="empty-state-icon">&#128187;</div>
+                  <p>No projects added yet.</p>
+                  ${isOwn ? `<span class="add-cta" onclick="window.location.href='/student/profile'">+ Add Project</span>` : ''}
+                </div>
+              `}
+            </div>
+          </div>
+
+          <!-- Certifications -->
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Certifications</h2>
+              ${isOwn ? `<button class="item-btn" onclick="window.location.href='/student/profile'">+ Add</button>` : ''}
+            </div>
+            <div class="card-body">
+              ${certifications && certifications.length > 0 ? certifications.map(cert => `
+                <div class="section-item">
+                  <div class="item-icon">&#127942;</div>
+                  <div class="item-content">
+                    <h3 class="item-title">${escapeHtml(cert.name || 'Certification')}</h3>
+                    <div class="item-subtitle">${escapeHtml(cert.issuer || '')}</div>
+                    <div class="item-meta">${escapeHtml([
+                      formatMonthYear(cert.issue_month, cert.issue_year) || cert.issue_date || '',
+                      (cert.expiry_month || cert.expiry_year) ? `Expiry: ${formatMonthYear(cert.expiry_month, cert.expiry_year)}` : ''
+                    ].filter(Boolean).join(' · '))}</div>
+                    ${cert.credential_url ? `<a href="${escapeHtml(cert.credential_url)}" target="_blank" rel="noopener" class="add-cta">Show credential &#8599;</a>` : ''}
+                    ${cert.media_url ? `
+                      <div class="media-grid">
+                        <div class="media-thumb" data-media-url="${escapeHtml(cert.media_url)}" data-media-title="Certificate">
+                          <img src="${escapeHtml(cert.media_url)}" alt="Certificate" loading="lazy">
+                          <div class="cap">Certificate</div>
+                        </div>
+                      </div>
+                    ` : ''}
+                  </div>
+                </div>
+              `).join('') : `
+                <div class="empty-state">
+                  <div class="empty-state-icon">&#127942;</div>
+                  <p>No certifications added yet.</p>
+                  ${isOwn ? `<span class="add-cta" onclick="window.location.href='/student/profile'">+ Add</span>` : ''}
+                </div>
+              `}
+            </div>
+          </div>
+
+          <!-- Achievements -->
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Achievements</h2>
+              ${isOwn ? `<button class="item-btn" onclick="window.location.href='/student/profile'">+ Add</button>` : ''}
+            </div>
+            <div class="card-body">
+              ${achievements && achievements.length > 0 ? achievements.map(ach => `
+                <div class="section-item">
+                  <div class="item-icon">&#127941;</div>
+                  <div class="item-content">
+                    <h3 class="item-title">${escapeHtml(ach.title || 'Achievement')}</h3>
+                    <div class="item-subtitle">${escapeHtml(ach.associated_with || ach.issuer || '')}</div>
+                    <div class="item-meta">${escapeHtml(formatMonthYear(ach.issue_month, ach.issue_year) || ach.date || '')}</div>
+                    ${ach.description ? `<div class="item-description">${escapeHtml(ach.description)}</div>` : ''}
+                    ${ach.media_url ? `
+                      <div class="media-grid">
+                        <div class="media-thumb" data-media-url="${escapeHtml(ach.media_url)}" data-media-title="Achievement proof">
+                          <img src="${escapeHtml(ach.media_url)}" alt="Achievement" loading="lazy">
+                          <div class="cap">Proof</div>
+                        </div>
+                      </div>
+                    ` : ''}
+                  </div>
+                </div>
+              `).join('') : `
+                <div class="empty-state">
+                  <div class="empty-state-icon">&#127941;</div>
+                  <p>No achievements added yet.</p>
+                  ${isOwn ? `<span class="add-cta" onclick="window.location.href='/student/profile'">+ Add</span>` : ''}
+                </div>
+              `}
+            </div>
+          </div>
+
+          <!-- Languages -->
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Languages</h2>
+            </div>
+            <div class="card-body">
+              ${normalizeLanguages.length ? `
+                <div class="skills-grid">
+                  ${normalizeLanguages.map(l => `
+                    <span class="skill-tag">
+                      ${escapeHtml(l.language)}
+                      ${l.proficiency ? `<span class="skill-level">· ${escapeHtml(l.proficiency)}</span>` : ''}
+                    </span>
+                  `).join('')}
+                </div>
+              ` : `
+                <div class="empty-state">
+                  <div class="empty-state-icon">&#127758;</div>
+                  <p>No languages added yet.</p>
+                </div>
+              `}
+            </div>
+          </div>
+            </div>
+            <div id="profileTabPost" class="profile-tab-panel" role="tabpanel" data-profile-tab="post">
+              <div class="card">
+                <div class="card-header">
+                  <h2 class="card-title">Posts</h2>
+                </div>
+                <div class="card-body" id="profilePostsPreview">
+                  <div class="empty-state"><p>Loading posts...</p></div>
+                </div>
+              </div>
+            </div>
+            ${isAlumniProfile ? `
+              <div id="profileTabResources" class="profile-tab-panel" role="tabpanel" data-profile-tab="resources">
+                <div class="card">
+                  <div class="card-header">
+                    <h2 class="card-title">Resources</h2>
+                  </div>
+                  <div class="card-body">
+                    ${Array.isArray(profile.student_resources) && profile.student_resources.length ? profile.student_resources.map((r, idx) => {
+                      const links = Array.isArray(r.links) ? r.links.filter(Boolean) : [];
+                      const media = Array.isArray(r.media_urls) ? r.media_urls.filter(Boolean) : [];
+                      const hasAny = links.length || media.length || (r.description || '').trim();
+                      if (!hasAny) return '';
+                      return `
+                        <div class="section-item">
+                          <div class="item-icon">&#128218;</div>
+                          <div class="item-content">
+                            <h3 class="item-title">Resource ${idx + 1}</h3>
+                            ${r.description ? `<div class="item-description">${escapeHtml(r.description)}</div>` : ''}
+                            ${links.length ? `
+                              <div class="item-meta" style="margin-top:8px;">Links</div>
+                              <div style="display:grid;gap:6px;">
+                                ${links.map((u) => `<a href="${escapeHtml(u)}" target="_blank" rel="noopener" download class="add-cta">Download/Open link &#8599;</a>`).join('')}
+                              </div>
+                            ` : ''}
+                            ${media.length ? `
+                              <div class="item-meta" style="margin-top:10px;">Files</div>
+                              <div style="display:grid;gap:6px;">
+                                ${media.map((u) => `<a href="${escapeHtml(u)}" target="_blank" rel="noopener" download class="add-cta">Download resource &#8595;</a>`).join('')}
+                              </div>
+                            ` : ''}
+                          </div>
+                        </div>
+                      `;
+                    }).join('') : `
+                      <div class="empty-state">
+                        <p>No resources shared yet.</p>
+                      </div>
+                    `}
+                  </div>
+                </div>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      `;
+
+      // Load activities
+      // Activity UI intentionally removed from the LinkedIn-style profile layout.
+      var startMentoringBtn = document.getElementById('startMentoringBtn');
+      if (startMentoringBtn) {
+        startMentoringBtn.addEventListener('click', async function() {
+          startMentoringBtn.disabled = true;
+          try {
+            var res = await fetch('/request-mentorship/' + encodeURIComponent(userId), { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' } });
+            var data = await res.json().catch(function() { return {}; });
+            if (res.status === 401) { window.location.href = '/login'; return; }
+            if (!res.ok) { showToast(data.error || 'Request failed', 'error'); startMentoringBtn.disabled = false; return; }
+            showToast('Mentorship request sent.', 'success');
+            startMentoringBtn.textContent = 'Request sent';
+          } catch (e) { showToast(e.message || 'Failed', 'error'); startMentoringBtn.disabled = false; }
+        });
+      }
+
+      // Photo interactions (own profile only)
+      const coverEl = document.getElementById('coverPhoto');
+      const profilePhotoEl = document.getElementById('profilePhoto');
+      const coverInput = document.getElementById('coverInput');
+
+      function onCoverClick(e) {
+        if (!isOwn) return;
+        e.preventDefault();
+        e.stopPropagation();
+        openPhotoMenu({
+          kind: 'cover',
+          userId,
+          anchorRect: coverEl.getBoundingClientRect(),
+          hasImage: coverEl.classList.contains('has-image'),
+        });
+      }
+      function onProfileClick(e) {
+        if (!isOwn) return;
+        e.preventDefault();
+        e.stopPropagation();
+        openPhotoMenu({ kind: 'profile', userId, anchorRect: profilePhotoEl.getBoundingClientRect() });
+      }
+
+      if (coverEl) coverEl.addEventListener('click', onCoverClick);
+      if (profilePhotoEl) profilePhotoEl.addEventListener('click', onProfileClick);
+
+      if (coverInput) {
+        coverInput.addEventListener('change', async (ev) => {
+          const file = ev.target.files && ev.target.files[0];
+          if (!file) return;
+          const fd = new FormData();
+          fd.append('file', file);
+          try {
+            const res = await fetch('/api/student/profile/cover-photo', {
+              method: 'POST',
+              credentials: 'same-origin',
+              body: fd,
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data.error || 'Cover upload failed');
+            loadProfile();
+          } catch (e) {
+            showToast(e.message || 'Failed to upload cover photo', 'error');
+          } finally {
+            ev.target.value = '';
+          }
+        });
+      }
+
+      (function initProfileTabs() {
+        const buttons = document.querySelectorAll('.profile-tab-btn');
+        const panels = {
+          about: document.getElementById('profileTabAbout'),
+          post: document.getElementById('profileTabPost'),
+          resources: document.getElementById('profileTabResources'),
+        };
+        function setTab(tab) {
+          buttons.forEach((b) => {
+            const on = b.getAttribute('data-profile-tab') === tab;
+            b.classList.toggle('active', on);
+            b.setAttribute('aria-selected', on ? 'true' : 'false');
+          });
+          if (panels.about) panels.about.classList.toggle('active', tab === 'about');
+          if (panels.post) panels.post.classList.toggle('active', tab === 'post');
+          if (panels.resources) panels.resources.classList.toggle('active', tab === 'resources');
+        }
+        buttons.forEach((btn) => {
+          btn.addEventListener('click', () => setTab(btn.getAttribute('data-profile-tab')));
+        });
+        window.showProfileMainTab = setTab;
+      })();
+
+      loadProfilePostsPreview();
+    }
+
+    // Media viewer (click-to-preview)
+    const mediaViewer = document.getElementById('mediaViewer');
+    const mediaViewerTitle = document.getElementById('mediaViewerTitle');
+    const mediaViewerBody = document.getElementById('mediaViewerBody');
+    document.getElementById('mediaViewerClose').addEventListener('click', () => closeMediaViewer());
+    mediaViewer.addEventListener('click', (e) => { if (e.target === mediaViewer) closeMediaViewer(); });
+
+    function openMediaViewer({ url, type, title }) {
+      if (!url) return;
+      mediaViewerTitle.textContent = title || 'Preview';
+      mediaViewerBody.innerHTML = '';
+      const isVideo = type === 'video' || /\.(mp4|webm|ogg)(\?|#|$)/i.test(url);
+      if (isVideo) {
+        const v = document.createElement('video');
+        v.src = url;
+        v.controls = true;
+        v.autoplay = true;
+        mediaViewerBody.appendChild(v);
+      } else {
+        const img = document.createElement('img');
+        img.src = url;
+        img.alt = title || 'Preview';
+        img.loading = 'eager';
+        img.onerror = () => { window.open(url, '_blank', 'noopener'); closeMediaViewer(); };
+        mediaViewerBody.appendChild(img);
+      }
+      mediaViewer.classList.add('active');
+    }
+
+    function closeMediaViewer() {
+      mediaViewer.classList.remove('active');
+      mediaViewerBody.innerHTML = '';
+    }
+
+    async function loadProfilePostsPreview() {
+      const container = document.getElementById('profilePostsPreview');
+      if (!container) return;
+      try {
+        const data = await api(`/api/users/${userId}/posts?limit=50`);
+        const posts = data.posts || [];
+        if (!posts.length) {
+          container.innerHTML = `<div class="empty-state"><p>No posts yet.</p></div>`;
+          return;
+        }
+        container.innerHTML = posts.map((p) => {
+          const author = p.author || {};
+          const media = Array.isArray(p.media) ? p.media : [];
+          const imgs = media.filter(m => (m.type || '').toLowerCase() !== 'video').slice(0, 5);
+          const vid = media.find(m => (m.type || '').toLowerCase() === 'video');
+          const mediaHtml = `
+            ${vid ? `<div class="media-thumb" data-media-url="${escapeHtml(vid.url)}" data-media-type="video" data-media-title="Post video"><video src="${escapeHtml(vid.url)}" muted></video><div class="cap">Video</div></div>` : ''}
+            ${imgs.map((im, idx) => `<div class="media-thumb" data-media-url="${escapeHtml(im.url)}" data-media-type="image" data-media-title="Image ${idx + 1}"><img src="${escapeHtml(im.url)}" alt="Post image" loading="lazy"><div class="cap">Image ${idx + 1}</div></div>`).join('')}
+          `;
+          return `
+            <div class="section-item">
+              <div class="item-icon" style="${p.author_profile_photo ? `background-image:url('${escapeHtml(p.author_profile_photo)}');background-size:cover;background-position:center;color:transparent;` : ''}">${getInitials(author.name || 'U')}</div>
+              <div class="item-content">
+                <h3 class="item-title">${escapeHtml(author.name || 'User')}</h3>
+                <div class="item-meta">${formatDate(p.created_at)}</div>
+                ${p.content ? `<div class="item-description">${escapeHtml(p.content)}</div>` : ''}
+                ${mediaHtml ? `<div class="media-grid">${mediaHtml}</div>` : ''}
+                <div class="item-actions" style="margin-top:10px;">
+                  <button class="item-btn" type="button">Like ${p.likes_count || 0}</button>
+                  <button class="item-btn" type="button">Comment ${p.comments_count || 0}</button>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+        container.querySelectorAll('.media-thumb').forEach((el) => {
+          el.addEventListener('click', () => {
+            openMediaViewer({
+              url: el.getAttribute('data-media-url'),
+              type: el.getAttribute('data-media-type'),
+              title: el.getAttribute('data-media-title') || 'Preview',
+            });
+          });
+        });
+      } catch (e) {
+        container.innerHTML = `<div class="empty-state"><p>Failed to load posts.</p></div>`;
+      }
+    }
+
+    document.addEventListener('click', (e) => {
+      const t = e.target.closest('.media-thumb');
+      if (!t) return;
+      const url = t.getAttribute('data-media-url');
+      const type = t.getAttribute('data-media-type') || '';
+      const title = t.getAttribute('data-media-title') || 'Preview';
+      openMediaViewer({ url, type, title });
+    });
+
+    async function loadActivities(type) {
+      activeActivityTab = type;
+      
+      // Update tabs
+      document.querySelectorAll('.activity-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.tab === type);
+      });
+
+      const content = document.getElementById('activityContent');
+      content.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+      try {
+        const typeMap = {
+          'posts': 'post',
+          'comments': 'comment',
+          'reactions': 'reaction',
+          'applications': 'application'
+        };
+        
+        const data = await api(`/api/users/${userId}/activity?type=${typeMap[type]}&limit=5`);
+        
+        if (!data.activities || data.activities.length === 0) {
+          content.innerHTML = `
+            <div class="empty-state">
+              <p>No ${type} yet. ${profileData.is_own_profile ? 'Start engaging on CampusLink.' : ''}</p>
+            </div>
+          `;
+          return;
+        }
+
+        content.innerHTML = data.activities.map(activity => {
+          const badgeClass = `badge-${activity.activity_type}`;
+          const typeLabel = activity.activity_type.charAt(0).toUpperCase() + activity.activity_type.slice(1);
+          const refData = activity.reference_data || {};
+          const meta = activity.metadata || {};
+
+          let contentText = '';
+          if (activity.activity_type === 'post') {
+            contentText = meta.content_preview || 'Posted an update';
+          } else if (activity.activity_type === 'comment') {
+            contentText = `Commented: "${meta.content_preview || '...'}"`;
+          } else if (activity.activity_type === 'reaction') {
+            contentText = `Liked a ${activity.reference_type}`;
+          } else if (activity.activity_type === 'application') {
+            contentText = `Applied to ${meta.role || 'a position'} at ${meta.company || 'a company'}`;
+          }
+
+          return `
+            <div class="activity-item">
+              <div class="activity-content">
+                <span class="activity-type-badge ${badgeClass}">${typeLabel}</span>
+                ${escapeHtml(contentText)}
+              </div>
+              <div class="activity-meta">
+                ${refData.title ? escapeHtml(refData.title) + ' · ' : ''}
+                ${formatDate(activity.created_at)}
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        if (data.activities.length >= 5) {
+          content.innerHTML += `<div class="show-all">Show all ${type} &#8594;</div>`;
+        }
+      } catch (e) {
+        content.innerHTML = `
+          <div class="empty-state">
+            <p>Failed to load activities</p>
+          </div>
+        `;
+      }
+    }
+
+    function switchActivityTab(tab) {
+      loadActivities(tab);
+    }
+
+    async function sendConnectionRequest() {
+      try {
+        await api('/api/connections/request', {
+          method: 'POST',
+          body: { user_id: userId }
+        });
+        showToast('Connection request sent!', 'success');
+        loadProfile();
+      } catch (e) {
+        showToast(e.message || 'Failed to send request', 'error');
+      }
+    }
+
+    async function respondToConnection(connectionId, action) {
+      try {
+        await api(`/api/connections/${connectionId}/respond`, {
+          method: 'POST',
+          body: { action }
+        });
+        if (action === 'accept') {
+          showToast('Connection accepted! You are now connected.', 'success');
+        } else {
+          showToast('Connection request ignored.', 'success');
+        }
+        loadProfile();
+      } catch (e) {
+        showToast(e.message || 'Failed to respond', 'error');
+      }
+    }
+
+    async function sendMessage() {
+      const content = document.getElementById('messageInput').value.trim();
+      if (!content) {
+        showToast('Please enter a message', 'error');
+        return;
+      }
+
+      try {
+        await api(`/api/messages/${userId}`, {
+          method: 'POST',
+          body: { content }
+        });
+        showToast('Message sent!', 'success');
+        closeModal('messageModal');
+        document.getElementById('messageInput').value = '';
+      } catch (e) {
+        showToast(e.message || 'Failed to send message', 'error');
+      }
+    }
+
+    async function saveAbout() {
+      const about = document.getElementById('aboutInput').value.trim();
+
+      try {
+        await api('/api/student/profile/about', {
+          method: 'PUT',
+          body: { about }
+        });
+        showToast('About updated!', 'success');
+        closeModal('aboutModal');
+        loadProfile();
+      } catch (e) {
+        showToast(e.message || 'Failed to update', 'error');
+      }
+    }
+
+    function uploadPhoto() {
+      document.getElementById('photoInput').click();
+    }
+
+    async function handlePhotoUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const res = await fetch('/api/student/profile/photo', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Upload failed');
+        
+        showToast('Photo updated!', 'success');
+        loadProfile();
+      } catch (e) {
+        showToast(e.message || 'Failed to upload photo', 'error');
+      }
+    }
+
+    // Photo menu actions
+    photoMenuKeepBlank.addEventListener('click', () => {
+      if (!photoMenuCtx) return;
+      const { kind, userId: uid } = photoMenuCtx;
+      if (kind === 'cover') {
+        (async () => {
+          try {
+            await fetch('/api/student/profile/cover-photo', {
+              method: 'DELETE',
+              credentials: 'same-origin',
+            });
+            setStoredCover(uid, '');
+            closePhotoMenu();
+            loadProfile();
+          } catch (e) {
+            closePhotoMenu();
+            showToast('Failed to clear cover photo', 'error');
+          }
+        })();
+        return;
+      }
+      if (kind === 'profile') {
+        // UI-only "blank" (does not remove from backend)
+        setProfileBlank(uid, true);
+        closePhotoMenu();
+        loadProfile();
+      }
+    });
+
+    photoMenuChange.addEventListener('click', () => {
+      if (!photoMenuCtx) return;
+      const { kind } = photoMenuCtx;
+      closePhotoMenu();
+      if (kind === 'cover') {
+        const coverInput = document.getElementById('coverInput');
+        if (coverInput) coverInput.click();
+        return;
+      }
+      if (kind === 'profile') {
+        // Clear UI-only blank flag, then upload via existing endpoint
+        setProfileBlank(userId, false);
+        uploadPhoto();
+      }
+    });
+
+    function openModal(modalId) {
+      document.getElementById(modalId).classList.add('active');
+      
+      if (modalId === 'aboutModal' && profileData) {
+        document.getElementById('aboutInput').value = profileData.profile.about || '';
+      }
+      
+      if (modalId === 'messageModal') {
+        const convLink = document.getElementById('viewConversationLink');
+        if (convLink) {
+          convLink.href = `/messages?user=${userId}`;
+        }
+      }
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('active');
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function getInitials(name) {
+      if (!name) return 'U';
+      const parts = name.split(' ');
+      return parts.map(p => p.charAt(0).toUpperCase()).slice(0, 2).join('');
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return '';
+      // Ensure UTC interpretation - add Z if not present
+      let utcStr = dateStr;
+      if (!dateStr.endsWith('Z') && !dateStr.includes('+') && !dateStr.includes('-', 10)) {
+        utcStr = dateStr + 'Z';
+      }
+      const date = new Date(utcStr);
+      const now = new Date();
+      const diff = now - date;
+      
+      if (diff < 0) return 'Just now'; // Handle slight clock differences
+      if (diff < 60000) return 'Just now';
+      if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+      if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+      if (diff < 604800000) return `${Math.floor(diff / 86400000)}d ago`;
+      
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = `toast ${type} show`;
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+
+    // Close modals on backdrop click
+    document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+      backdrop.addEventListener('click', (e) => {
+        if (e.target === backdrop) {
+          backdrop.classList.remove('active');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

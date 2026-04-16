@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Profile – Mentor View</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #0a0f1a 0%, #1a1f2e 50%, #0d1117 100%);
+      min-height: 100vh;
+      color: #fff;
+      padding: 24px 16px;
+    }
+    .container { max-width: 800px; margin: 0 auto; }
+    .card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 16px;
+    }
+    .card-title { font-size: 14px; color: rgba(255,255,255,0.6); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .profile-header { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; }
+    .profile-photo {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px; font-weight: 700; color: #fff;
+    }
+    .profile-name { font-size: 22px; margin-bottom: 4px; }
+    .profile-meta { font-size: 14px; color: rgba(255,255,255,0.7); }
+    .section-item { padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .section-item:last-child { border-bottom: none; }
+    .item-title { font-weight: 600; margin-bottom: 4px; }
+    .item-meta { font-size: 13px; color: rgba(255,255,255,0.6); }
+    .tag-list { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tag { padding: 4px 10px; border-radius: 999px; background: rgba(0,70,255,0.2); font-size: 13px; }
+    .loading { text-align: center; padding: 40px; color: rgba(255,255,255,0.6); }
+    .error { color: #ff6b6b; padding: 20px; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="loading" class="loading">Loading profile…</div>
+    <div id="content" style="display:none;"></div>
+    <div id="error" class="error" style="display:none;"></div>
+  </div>
+  <script>
+    (function() {
+      var path = window.location.pathname;
+      var match = path.match(/\/mentor-view-profile\/([^/]+)/);
+      var studentId = match ? match[1] : null;
+      if (!studentId) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('error').style.display = 'block';
+        document.getElementById('error').textContent = 'Invalid student.';
+        return;
+      }
+      fetch('/api/mentor-view-profile/' + encodeURIComponent(studentId), { credentials: 'same-origin' })
+        .then(function(r) {
+          if (r.status === 401) { window.location.href = '/login'; return; }
+          return r.json().then(function(d) { return { ok: r.ok, data: d }; });
+        })
+        .then(function(res) {
+          document.getElementById('loading').style.display = 'none';
+          if (!res || !res.ok) {
+            document.getElementById('error').style.display = 'block';
+            document.getElementById('error').textContent = (res && res.data && res.data.error) || 'Could not load profile.';
+            return;
+          }
+          var u = res.data.user || {};
+          var p = res.data.profile || {};
+          function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+          var html = '<div class="card"><div class="profile-header"><div class="profile-photo">' + (u.name ? u.name.charAt(0).toUpperCase() : '?') + '</div><div><div class="profile-name">' + esc(u.name) + '</div><div class="profile-meta">' + esc(u.headline || 'Student') + '</div><div class="profile-meta">' + esc(u.email) + ' · ' + esc(u.branch) + '</div></div></div></div>';
+          if (p.about) html += '<div class="card"><div class="card-title">About</div><p>' + esc(p.about) + '</p></div>';
+          if (p.education && p.education.length) {
+            html += '<div class="card"><div class="card-title">Education</div>';
+            p.education.forEach(function(ed) {
+              html += '<div class="section-item"><div class="item-title">' + esc(ed.institution || ed.school) + '</div><div class="item-meta">' + esc(ed.degree) + (ed.cgpa != null ? ' · CGPA: ' + esc(ed.cgpa) : '') + '</div></div>';
+            });
+            html += '</div>';
+          }
+          if (p.skills && p.skills.length) {
+            var skills = p.skills.map(function(s) { return typeof s === 'object' ? (s.name || s.skill || s.value) : s; }).filter(Boolean);
+            if (skills.length) html += '<div class="card"><div class="card-title">Skills</div><div class="tag-list">' + skills.map(function(s) { return '<span class="tag">' + esc(s) + '</span>'; }).join('') + '</div></div>';
+          }
+          if (p.experience && p.experience.length) {
+            html += '<div class="card"><div class="card-title">Experience</div>';
+            p.experience.forEach(function(ex) {
+              html += '<div class="section-item"><div class="item-title">' + esc(ex.title || ex.role) + ' at ' + esc(ex.company) + '</div><div class="item-meta">' + esc(ex.description) + '</div></div>';
+            });
+            html += '</div>';
+          }
+          if (p.projects && p.projects.length) {
+            html += '<div class="card"><div class="card-title">Projects</div>';
+            p.projects.forEach(function(pr) {
+              html += '<div class="section-item"><div class="item-title">' + esc(pr.title || pr.name) + '</div><div class="item-meta">' + esc(pr.description) + '</div></div>';
+            });
+            html += '</div>';
+          }
+          if (p.certifications && p.certifications.length) {
+            html += '<div class="card"><div class="card-title">Certifications</div>';
+            p.certifications.forEach(function(c) {
+              html += '<div class="section-item"><div class="item-title">' + esc(c.name || c.title) + '</div><div class="item-meta">' + esc(c.issuer) + '</div></div>';
+            });
+            html += '</div>';
+          }
+          document.getElementById('content').innerHTML = html;
+          document.getElementById('content').style.display = 'block';
+        })
+        .catch(function() {
+          document.getElementById('loading').style.display = 'none';
+          document.getElementById('error').style.display = 'block';
+          document.getElementById('error').textContent = 'Failed to load profile.';
+        });
+    })();
+  </script>
+</body>
+</html>

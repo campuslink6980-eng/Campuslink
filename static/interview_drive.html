@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interview Drive · CampusLink</title>
+  <style>
+    :root { --bg: #f3f2ef; --paper: #fff; --text: #1d2226; --muted: #6b7280; --line: #e5e7eb; --brand: #0a66c2; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: "Segoe UI", Arial, sans-serif; background: var(--bg); color: var(--text); }
+    .topbar { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 24px; background: var(--paper); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 2; }
+    .nav-btn { border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--text); padding: 9px 14px; text-decoration: none; cursor: pointer; font-weight: 600; }
+    .shell { max-width: 1100px; margin: 0 auto; padding: 18px; }
+    .state { text-align: center; padding: 40px 0; color: var(--muted); }
+    .card { background: var(--paper); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 5px 16px rgba(0,0,0,0.06); padding: 20px; margin-bottom: 16px; }
+    .header-title { font-size: 28px; margin: 0 0 6px; font-weight: 700; }
+    .sub { color: var(--muted); margin: 0; }
+    .section-title { margin: 0 0 12px; font-size: 18px; }
+    .value { white-space: pre-wrap; line-height: 1.6; margin: 0; }
+    .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .stat { background: #fafafa; border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
+    .stat .k { color: var(--muted); font-size: 13px; }
+    .stat .v { font-size: 18px; font-weight: 700; margin-top: 4px; }
+    .rounds { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 4px; }
+    .round { min-width: 170px; border: 1px solid var(--line); border-radius: 12px; padding: 14px; background: #fff; }
+    .round-name { margin: 0; font-weight: 700; }
+    @media (max-width: 1024px) { .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 768px) {
+      .topbar { padding: 12px; gap: 8px; }
+      .nav-btn { flex: 1; text-align: center; padding: 8px 10px; font-size: 13px; }
+      .shell { padding: 12px; }
+      .header-title { font-size: 23px; }
+      .stats { grid-template-columns: 1fr; }
+      .rounds { flex-direction: column; }
+      .round { min-width: auto; width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="nav-btn" id="home-tab" href="#">Home (About Drive)</a>
+    <a class="nav-btn" id="feedback-tab" href="#">Feedback</a>
+    <button class="nav-btn" id="back-btn" type="button">← Back</button>
+  </header>
+  <main class="shell">
+    <div id="loading" class="state">Loading drive details...</div>
+    <div id="error" class="state" style="display:none;"></div>
+    <div id="content" style="display:none;">
+      <section class="card">
+        <h1 id="company-title" class="header-title">Company</h1>
+        <p id="role-line" class="sub">Role</p>
+        <p id="extra-line" class="sub"></p>
+      </section>
+      <section class="card">
+        <h2 class="section-title">Job Description</h2>
+        <p class="value" id="jd-value">—</p>
+      </section>
+      <section class="card">
+        <h2 class="section-title">Interview Details</h2>
+        <div class="stats">
+          <div class="stat"><div class="k">Interview Date</div><div class="v" id="date-v">—</div></div>
+          <div class="stat"><div class="k">Students Applied</div><div class="v" id="applied-v">—</div></div>
+          <div class="stat"><div class="k">Students Shortlisted</div><div class="v" id="short-v">—</div></div>
+        </div>
+      </section>
+      <section class="card">
+        <h2 class="section-title">Rounds</h2>
+        <div class="rounds" id="rounds-wrap"></div>
+      </section>
+    </div>
+  </main>
+  <script src="/static/js/cross-tab-auth.js"></script>
+  <script>
+    (function() {
+      var path = window.location.pathname || "";
+      var parts = path.split("/").filter(Boolean);
+      var idx = parts.indexOf("interview-drive");
+      var driveId = idx >= 0 && parts[idx + 1] ? parts[idx + 1] : null;
+      function el(id) { return document.getElementById(id); }
+      function esc(s) { return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
+      if (!driveId) {
+        el("loading").style.display = "none";
+        el("error").textContent = "Invalid drive.";
+        el("error").style.display = "block";
+        return;
+      }
+      var dashboardBackUrl = "/user/dashboard";
+      function resolveDashboardBack() {
+        fetch("/api/auth/me", { credentials: "same-origin" })
+          .then(function(r) { return r.ok ? r.json() : null; })
+          .then(function(me) {
+            var role = (me && (me.role || "")).toString().toLowerCase();
+            if (role === "coordinator") dashboardBackUrl = "/coordinator/dashboard#/interview";
+            else if (role === "faculty") dashboardBackUrl = "/faculty/dashboard#/interview";
+            else if (role === "alumni") dashboardBackUrl = "/alumni/dashboard";
+            else if (role === "student") dashboardBackUrl = "/user/dashboard";
+          })
+          .catch(function() {});
+      }
+      resolveDashboardBack();
+      el("back-btn").addEventListener("click", function() { window.location.href = dashboardBackUrl; });
+      el("home-tab").addEventListener("click", function(e) { e.preventDefault(); });
+      el("feedback-tab").href = "/interview-experiences/" + encodeURIComponent(driveId);
+      fetch("/api/interview/drives/" + encodeURIComponent(driveId), { credentials: "same-origin" })
+        .then(function(r) {
+          if (r.status === 401) { window.location.href = "/login"; return null; }
+          return r.json();
+        })
+        .then(function(data) {
+          el("loading").style.display = "none";
+          if (!data || data.error) {
+            el("error").textContent = (data && data.error) ? data.error : "Failed to load.";
+            el("error").style.display = "block";
+            return;
+          }
+          var drive = data.drive || {};
+          el("company-title").textContent = drive.company || "Company";
+          el("role-line").textContent = drive.role ? "Role: " + drive.role : "Role: —";
+          var extras = [];
+          if (drive.stipend) extras.push("Stipend: " + drive.stipend);
+          if (drive.location) extras.push("Location: " + drive.location);
+          el("extra-line").textContent = extras.join("  |  ");
+          el("jd-value").textContent = drive.jd || "No job description available.";
+          el("date-v").textContent = drive.interview_date || "—";
+          el("applied-v").textContent = drive.students_applied || "—";
+          el("short-v").textContent = drive.students_shortlisted || "—";
+          var rounds = drive.rounds || [];
+          el("rounds-wrap").innerHTML = rounds.length ? rounds.map(function(r) { return "<article class=\"round\"><p class=\"round-name\">" + esc(r) + "</p></article>"; }).join("") : "<p class=\"sub\">No rounds added.</p>";
+          el("content").style.display = "block";
+        })
+        .catch(function() {
+          el("loading").style.display = "none";
+          el("error").textContent = "Failed to load.";
+          el("error").style.display = "block";
+        });
+    })();
+  </script>
+</body>
+</html>

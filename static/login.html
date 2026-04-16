@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign in</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <div class="logo-placeholder" aria-label="Campuslink logo area">
+                    <img class="logo-img" src="/images/logo.png" alt="Campuslink logo">
+                </div>
+            </div>
+        </div>
+    </header>
+    <main class="container">
+        <section class="card" role="region" aria-labelledby="login-title">
+            <div class="card-header">
+                <h1 id="login-title">Welcome back</h1>
+                <p class="subtitle">Sign in to continue to Campuslink</p>
+            </div>
+
+            <form class="form" action="#" method="post" novalidate>
+                <div class="field">
+                    <label for="email">Email</label>
+                    <input id="email" name="email" type="email" autocomplete="email" inputmode="email" required>
+                </div>
+
+                <div class="field">
+                    <label for="password">Password</label>
+                    <input id="password" name="password" type="password" autocomplete="current-password" required>
+                </div>
+
+                <div class="checkbox-row" style="justify-content: space-between;">
+                    <span>
+                        <input id="remember" name="remember" type="checkbox">
+                        <label for="remember">Remember me</label>
+                    </span>
+                    <a class="link" href="/forgot-password">Forgot password?</a>
+                </div>
+
+                <button class="button" type="submit" id="signinBtn">Sign in</button>
+
+                <p class="footnote">New here? <a href="/register" class="link">Create an account</a></p>
+            </form>
+        </section>
+    </main>
+
+    <footer class="footer" aria-label="Footer">
+        <p>© <span id="year"></span> Campuslink</p>
+    </footer>
+
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+        document.querySelector('.form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const res = await fetch('/api/auth/signin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            if (res.ok) {
+                const data = await res.json().catch(() => ({}));
+                // If backend returns a JWT, store it for SPA dashboards (e.g., coordinator).
+                if (data.token) {
+                    localStorage.setItem('campuslink_token', data.token);
+                } else {
+                    localStorage.removeItem('campuslink_token');
+                }
+                if (data.role) {
+                    localStorage.setItem('campuslink_role', data.role);
+                }
+                // Store roles and user info for dashboard selector
+                if (data.roles) {
+                    localStorage.setItem('user_roles', JSON.stringify(data.roles));
+                }
+                if (data.name) {
+                    localStorage.setItem('user_name', data.name);
+                }
+                if (data.email || document.getElementById('email').value) {
+                    localStorage.setItem('user_email', data.email || document.getElementById('email').value);
+                }
+                window.location.href = data.redirect || '/main';
+            } else {
+                const data = await res.json().catch(() => ({ error: 'Signin failed' }));
+                alert(data.error || 'Signin failed');
+            }
+        });
+    </script>
+</body>
+</html>
+
+

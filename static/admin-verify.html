@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Verification</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/admin.css">
+</head>
+<body>
+    <main class="container">
+        <section class="card" role="region" aria-labelledby="admin-verify-title">
+            <div class="card-header">
+                <h1 id="admin-verify-title">Admin Dashboard Access</h1>
+                <p class="subtitle">Re-enter your password for security</p>
+            </div>
+
+            <div id="verifyError" class="error-message" style="margin-bottom:16px; display:none;">
+                <p>Incorrect password. Please try again.</p>
+            </div>
+
+            <form class="form" action="/admin/verify" method="post" id="adminVerifyForm" novalidate>
+                <div class="field">
+                    <label for="password">Password</label>
+                    <input id="password" name="password" type="password" autocomplete="current-password" required>
+                </div>
+
+                <button class="button" type="submit">Continue to Admin Dashboard</button>
+                <p class="footnote"><a href="/dashboard-selector" class="link">Back to dashboard selection</a></p>
+            </form>
+        </section>
+    </main>
+
+    <footer class="footer" aria-label="Footer">
+        <p>© <span id="year"></span> CampusLink</p>
+    </footer>
+
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+        if (window.location.search.indexOf('error=1') !== -1) {
+            document.getElementById('verifyError').style.display = 'block';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Skill Gap Analysis · CampusLink</title>
+  <style>
+    :root {
+      --primary: #001bb7;
+      --primary-dark: #11224e;
+      --accent: #0046ff;
+      --bg: #f9f8f6;
+      --paper: #fcfcfc;
+      --text: #11224e;
+      --muted: #6b7280;
+      --border: #e2e8f0;
+      --success: #16a34a;
+      --danger: #dc2626;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: "Segoe UI", system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    a { color: var(--accent); text-decoration: none; font-weight: 600; }
+    a:hover { text-decoration: underline; }
+
+    .header {
+      background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+      color: #fff;
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    .header h1 { margin: 0; font-size: 20px; font-weight: 700; }
+    .back-link { color: #fff; opacity: 0.95; font-size: 14px; }
+    .back-link:hover { opacity: 1; text-decoration: none; }
+
+    .container { max-width: 800px; margin: 0 auto; padding: 28px 20px; }
+
+    .loading, .error-state { text-align: center; padding: 48px 24px; color: var(--muted); font-size: 16px; }
+    .error-state { color: var(--danger); }
+
+    .card {
+      background: var(--paper);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+    .card-title { padding: 14px 18px; border-bottom: 1px solid var(--border); font-weight: 700; font-size: 15px; color: var(--primary-dark); }
+    .card-body { padding: 20px 18px; }
+
+    .job-meta { font-size: 14px; color: var(--muted); margin-top: 8px; }
+    .job-meta span + span::before { content: " · "; color: var(--border); }
+
+    .match-wrap { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+    .match-value { font-size: 32px; font-weight: 800; color: var(--primary-dark); }
+    .match-label { font-size: 14px; color: var(--muted); }
+    .match-bar { height: 10px; background: var(--border); border-radius: 999px; overflow: hidden; flex: 1; min-width: 120px; max-width: 200px; }
+    .match-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--accent), var(--primary)); transition: width 0.3s ease; }
+
+    .skill-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+    .skill-tag { padding: 6px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; }
+    .skill-tag.matched { background: #dcfce7; color: #16a34a; }
+    .skill-tag.missing { background: #fee2e2; color: #dc2626; }
+    .skill-section { margin-bottom: 16px; }
+    .skill-section:last-child { margin-bottom: 0; }
+    .skill-section-title { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+
+    .course-list { list-style: none; margin: 0; padding: 0; }
+    .course-item { padding: 12px 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .course-item:last-child { border-bottom: none; }
+    .course-name { font-weight: 600; color: var(--text); }
+    .course-platform { font-size: 12px; color: var(--muted); }
+    .course-link { padding: 6px 14px; border-radius: 8px; background: var(--accent); color: #fff; font-size: 13px; font-weight: 600; text-decoration: none; }
+    .course-link:hover { filter: brightness(1.1); text-decoration: none; }
+    .rec-skill-title { font-size: 15px; font-weight: 700; color: var(--primary-dark); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <h1>Skill Gap Analysis</h1>
+    <a href="#" id="back-link" class="back-link">← Back</a>
+  </header>
+
+  <main class="container">
+    <div id="loading" class="loading">Loading skill gap analysis…</div>
+    <div id="error" class="error-state" style="display: none;"></div>
+    <div id="content" style="display: none;">
+      <div class="card">
+        <div class="card-title" id="job-title">—</div>
+        <div class="card-body">
+          <div class="job-meta" id="job-meta"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Skill match</div>
+        <div class="card-body">
+          <div class="match-wrap">
+            <span class="match-value" id="match-value">0%</span>
+            <div class="match-bar"><div class="match-fill" id="match-fill" style="width: 0%;"></div></div>
+          </div>
+          <div class="skill-section">
+            <div class="skill-section-title">Matched skills (you have these)</div>
+            <div class="skill-tags" id="matched-skills"></div>
+          </div>
+          <div class="skill-section" id="missing-section">
+            <div class="skill-section-title">Missing skills (recommended to learn)</div>
+            <div class="skill-tags" id="missing-skills"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="recommendations-card">
+        <div class="card-title">Recommended courses</div>
+        <div class="card-body" id="recommendations-body"></div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    (function() {
+      function getJobId() {
+        var path = window.location.pathname || "";
+        var parts = path.split("/").filter(Boolean);
+        var idx = parts.indexOf("skill-gap");
+        if (idx >= 0 && parts[idx + 1]) return parts[idx + 1];
+        return null;
+      }
+      function escapeHtml(s) {
+        return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+      }
+      var jobId = getJobId();
+      if (!jobId) {
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("error").textContent = "Invalid job.";
+        document.getElementById("error").style.display = "block";
+      } else {
+        document.getElementById("back-link").href = "/jobs/" + encodeURIComponent(jobId);
+        fetch("/api/student/skill-gap/" + encodeURIComponent(jobId), { credentials: "same-origin" })
+          .then(function(r) {
+            if (r.status === 401) { window.location.href = "/login"; return null; }
+            return r.json();
+          })
+          .then(function(data) {
+            document.getElementById("loading").style.display = "none";
+            if (!data) return;
+            if (data.error) {
+              document.getElementById("error").textContent = data.error;
+              document.getElementById("error").style.display = "block";
+              return;
+            }
+            var job = data.job || {};
+            document.getElementById("job-title").textContent = (job.role || "Role") + " · " + (job.company_name || "Company");
+            var metaParts = [];
+            if (job.type) metaParts.push(job.type);
+            if (job.mode) metaParts.push(job.mode);
+            if (job.deadline) metaParts.push("Deadline: " + job.deadline);
+            if (job.salary) metaParts.push("Salary: " + job.salary);
+            if (job.eligible_branches && job.eligible_branches.length) metaParts.push("Eligible: " + job.eligible_branches.join(", "));
+            document.getElementById("job-meta").textContent = metaParts.join(" · ") || "—";
+
+            var pct = Math.min(100, Math.max(0, parseFloat(data.match_percentage) || 0));
+            document.getElementById("match-value").textContent = pct + "%";
+            document.getElementById("match-fill").style.width = pct + "%";
+
+            var matched = data.matched_skills || [];
+            var missing = data.missing_skills || [];
+            document.getElementById("matched-skills").innerHTML = matched.length
+              ? matched.map(function(s) { return "<span class=\"skill-tag matched\">" + escapeHtml(s) + "</span>"; }).join("")
+              : "<span style=\"color:var(--muted);font-size:14px;\">None</span>";
+            document.getElementById("missing-skills").innerHTML = missing.length
+              ? missing.map(function(s) { return "<span class=\"skill-tag missing\">" + escapeHtml(s) + "</span>"; }).join("")
+              : "<span style=\"color:var(--muted);font-size:14px;\">None — you match all required skills.</span>";
+
+            var rec = data.recommendations || {};
+            var recEl = document.getElementById("recommendations-body");
+            var keys = Object.keys(rec);
+            if (!keys.length) {
+              recEl.innerHTML = "<p style=\"color:var(--muted);\">No missing skills to recommend courses for.</p>";
+            } else {
+              recEl.innerHTML = keys.map(function(skill) {
+                var courses = rec[skill] || [];
+                var list = courses.map(function(c) {
+                  return "<li class=\"course-item\"><div><span class=\"course-name\">" + escapeHtml(c.name || c.platform) + "</span><div class=\"course-platform\">" + escapeHtml(c.platform) + "</div></div><a href=\"" + escapeHtml(c.link || "#") + "\" target=\"_blank\" rel=\"noopener\" class=\"course-link\">View</a></li>";
+                }).join("");
+                return "<div class=\"rec-skill-title\">" + escapeHtml(skill) + "</div><ul class=\"course-list\">" + list + "</ul>";
+              }).join("");
+            }
+            document.getElementById("content").style.display = "block";
+          })
+          .catch(function(e) {
+            document.getElementById("loading").style.display = "none";
+            document.getElementById("error").textContent = e.message || "Failed to load.";
+            document.getElementById("error").style.display = "block";
+          });
+      }
+    })();
+  </script>
+</body>
+</html>

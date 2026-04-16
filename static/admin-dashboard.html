@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CampusLink · Admin Dashboard</title>
+  <link rel="stylesheet" href="/static/css/admin-dashboard.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- =============================================
+       TOP NAVBAR
+       ============================================= -->
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <span class="navbar-logo">CampusLink</span>
+      <span class="navbar-title">Admin Dashboard</span>
+    </div>
+    
+    <div class="navbar-right">
+      <div class="admin-profile">
+        <button class="admin-profile-btn" id="adminProfileBtn">
+          <div class="admin-avatar">A</div>
+          <span>Admin</span>
+          <span>▼</span>
+        </button>
+        
+        <div class="profile-dropdown" id="profileDropdown">
+          <a href="/admin/profile">View Profile</a>
+          <a href="#" class="danger" onclick="logout()">Logout</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- =============================================
+       LEFT SIDEBAR
+       ============================================= -->
+  <aside class="sidebar">
+    <ul class="sidebar-menu">
+      <li class="sidebar-item">
+        <a href="#" class="sidebar-link active" data-page="dashboard">
+          <span class="icon">📊</span>
+          <span>Dashboard Overview</span>
+        </a>
+      </li>
+      <li class="sidebar-item">
+        <a href="#" class="sidebar-link" data-page="users">
+          <span class="icon">👥</span>
+          <span>User Management</span>
+        </a>
+      </li>
+      <li class="sidebar-item">
+        <a href="#" class="sidebar-link" data-page="students">
+          <span class="icon">🎓</span>
+          <span>Student Records</span>
+        </a>
+      </li>
+      <li class="sidebar-item">
+        <a href="#" class="sidebar-link" data-page="faculty">
+          <span class="icon">👨‍🏫</span>
+          <span>Faculty / Coordinator</span>
+        </a>
+      </li>
+      <li class="sidebar-item">
+        <a href="#" class="sidebar-link" data-page="jobs">
+          <span class="icon">💼</span>
+          <span>Company & Jobs</span>
+        </a>
+      </li>
+      
+      <li class="sidebar-divider"></li>
+      
+      <li class="sidebar-item">
+        <a href="#" class="sidebar-link" data-page="announcements">
+          <span class="icon">📢</span>
+          <span>Announcements</span>
+        </a>
+      </li>
+      <li class="sidebar-item">
+        <a href="#" class="sidebar-link" data-page="support">
+          <span class="icon">🆘</span>
+          <span>SOS / Support</span>
+        </a>
+      </li>
+      <li class="sidebar-item">
+        <a href="#" class="sidebar-link" data-page="reports">
+          <span class="icon">📈</span>
+          <span>Reports & Analytics</span>
+        </a>
+      </li>
+      <li class="sidebar-item">
+        <a href="#" class="sidebar-link" data-page="settings">
+          <span class="icon">⚙️</span>
+          <span>Settings</span>
+        </a>
+      </li>
+      
+      <li class="sidebar-divider"></li>
+      
+      <li class="sidebar-item">
+        <a href="#" class="sidebar-link" onclick="logout()">
+          <span class="icon">🚪</span>
+          <span>Logout</span>
+        </a>
+      </li>
+    </ul>
+  </aside>
+
+  <!-- =============================================
+       MAIN CONTENT AREA
+       ============================================= -->
+  <main class="main-content">
+    
+    <!-- ==========================================
+         PAGE: Dashboard Overview
+         ========================================== -->
+    <div class="page-view active" id="page-dashboard">
+      <div class="page-header">
+        <h1>Dashboard Overview</h1>
+        <p>Welcome back, Admin. Here's what's happening on CampusLink.</p>
+      </div>
+
+      <!-- Dashboard Analytics - Top Statistic Cards -->
+      <section class="analytics-section">
+        <h2 class="section-title">Dashboard Analytics</h2>
+        <div class="summary-cards">
+          <div class="summary-card">
+            <div class="summary-card-header">
+              <div class="summary-card-icon students">🎓</div>
+            </div>
+            <div class="summary-card-value" id="totalStudents">—</div>
+            <div class="summary-card-label">Total Students</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-card-header">
+              <div class="summary-card-icon alumni">🏆</div>
+            </div>
+            <div class="summary-card-value" id="totalAlumni">—</div>
+            <div class="summary-card-label">Total Alumni</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-card-header">
+              <div class="summary-card-icon faculty">👨‍🏫</div>
+            </div>
+            <div class="summary-card-value" id="totalFaculty">—</div>
+            <div class="summary-card-label">Total Faculty</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-card-header">
+              <div class="summary-card-icon coordinators">📋</div>
+            </div>
+            <div class="summary-card-value" id="totalCoordinators">—</div>
+            <div class="summary-card-label">Total Coordinators</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-card-header">
+              <div class="summary-card-icon jobs">💼</div>
+            </div>
+            <div class="summary-card-value" id="totalJobsPosted">—</div>
+            <div class="summary-card-label">Total Jobs Posted</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-card-header">
+              <div class="summary-card-icon applications">📄</div>
+            </div>
+            <div class="summary-card-value" id="totalApplications">—</div>
+            <div class="summary-card-label">Total Applications</div>
+          </div>
+        </div>
+        <div class="analytics-grid">
+          <div class="analytics-card">
+            <h3 class="analytics-card-title">Placement Analytics</h3>
+            <div class="analytics-stats">
+              <div class="stat-row"><span class="stat-label">Placed Students</span><span class="stat-value" id="placedStudents">—</span></div>
+              <div class="stat-row"><span class="stat-label">Eligible for Placement</span><span class="stat-value" id="eligibleStudents">—</span></div>
+              <div class="stat-row"><span class="stat-label">Avg. Placement Prediction</span><span class="stat-value" id="avgPlacementPrediction">—</span></div>
+            </div>
+          </div>
+          <div class="analytics-card">
+            <h3 class="analytics-card-title">Job Analytics</h3>
+            <div class="analytics-stats">
+              <div class="stat-row"><span class="stat-label">Active Job Postings</span><span class="stat-value" id="activeJobsCount">—</span></div>
+              <div class="stat-row"><span class="stat-label">Closed Jobs</span><span class="stat-value" id="closedJobs">—</span></div>
+              <div class="stat-row"><span class="stat-label">Most Applied Role</span><span class="stat-value" id="mostAppliedRole">—</span></div>
+            </div>
+          </div>
+          <div class="analytics-card">
+            <h3 class="analytics-card-title">User Analytics</h3>
+            <div class="analytics-stats">
+              <div class="stat-row"><span class="stat-label">New Registrations (This Month)</span><span class="stat-value" id="newRegistrationsMonth">—</span></div>
+              <div class="stat-row"><span class="stat-label">Students with Complete Profiles</span><span class="stat-value" id="studentsCompleteProfiles">—</span></div>
+              <div class="stat-row"><span class="stat-label">Students with Incomplete Profiles</span><span class="stat-value" id="studentsIncompleteProfiles">—</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="charts-row">
+          <div class="chart-card">
+            <h3 class="chart-title">Job Postings per Month</h3>
+            <div class="chart-container" id="chartJobPostings"></div>
+          </div>
+          <div class="chart-card">
+            <h3 class="chart-title">Student Registrations per Month</h3>
+            <div class="chart-container" id="chartStudentRegistrations"></div>
+          </div>
+          <div class="chart-card">
+            <h3 class="chart-title">Placement Prediction Distribution</h3>
+            <div class="chart-container" id="chartPlacementDistribution"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Content Grid -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+        
+        <!-- Recent Activities -->
+        <div class="content-section">
+          <div class="section-header">
+            <h2 class="section-title">Recent Activities</h2>
+          </div>
+          <ul class="activity-list" id="recentActivities">
+            <li class="activity-item">
+              <div class="activity-icon">👤</div>
+              <div class="activity-content">
+                <div class="activity-text">New student registered</div>
+                <div class="activity-time">Just now</div>
+              </div>
+            </li>
+            <li class="activity-item">
+              <div class="activity-icon">👨‍🏫</div>
+              <div class="activity-content">
+                <div class="activity-text">New coordinator added</div>
+                <div class="activity-time">2h ago</div>
+              </div>
+            </li>
+            <li class="activity-item">
+              <div class="activity-icon">💼</div>
+              <div class="activity-content">
+                <div class="activity-text">New job posted by TechCorp</div>
+                <div class="activity-time">5h ago</div>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="content-section">
+          <div class="section-header">
+            <h2 class="section-title">Quick Actions</h2>
+          </div>
+          <div class="quick-actions">
+            <button class="btn btn-secondary" onclick="navigateToPage('students')">
+              <span>👁️</span> View Students
+            </button>
+            <button class="btn btn-secondary" onclick="navigateToPage('users')">
+              <span>👥</span> Manage Users
+            </button>
+            <button class="btn btn-secondary" onclick="navigateToPage('faculty')">
+              <span>👨‍🏫</span> Faculty / Coordinators
+            </button>
+            <button class="btn btn-secondary" onclick="navigateToPage('jobs')">
+              <span>💼</span> Manage Jobs
+            </button>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+
+    <!-- ==========================================
+         PAGE: User Management
+         ========================================== -->
+    <div class="page-view" id="page-users">
+      <div class="page-header">
+        <h1>User Management</h1>
+        <p>Manage all users on the platform.</p>
+      </div>
+      
+      <!-- Filters -->
+      <div class="content-section" style="margin-bottom: 16px;">
+        <div class="filters-row">
+          <div class="filter-group">
+            <label>Filter by Role:</label>
+            <select id="userRoleFilter" onchange="filterUsers()">
+              <option value="">All Roles</option>
+              <option value="student">Students</option>
+              <option value="coordinator">Coordinators</option>
+              <option value="faculty">Faculty</option>
+              <option value="alumni">Alumni</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Filter by Status:</label>
+            <select id="userStatusFilter" onchange="filterUsers()">
+              <option value="">All Status</option>
+              <option value="active">Active</option>
+              <option value="blocked">Blocked</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <input type="text" id="userSearchInput" placeholder="Search by name or email..." onkeyup="filterUsers()">
+          </div>
+        </div>
+      </div>
+      
+      <!-- Users Table -->
+      <div class="content-section">
+        <div class="section-header">
+          <h2 class="section-title">All Users (<span id="userCount">0</span>)</h2>
+        </div>
+        <div class="table-container">
+          <table class="data-table" id="usersTable">
+            <thead>
+              <tr id="usersTableHead">
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Joined</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody">
+              <tr>
+                <td colspan="6" class="loading">Loading users...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         PAGE: Student Records
+         ========================================== -->
+    <div class="page-view" id="page-students">
+      <div class="page-header">
+        <h1>Student Records</h1>
+        <p>View all registered students and their profile information.</p>
+      </div>
+      
+      <!-- Filters -->
+      <div class="content-section" style="margin-bottom: 16px;">
+        <div class="filters-row">
+          <div class="filter-group">
+            <label>Filter by Branch:</label>
+            <select id="studentBranchFilter" onchange="filterStudents()">
+              <option value="">All Branches</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Filter by Verification:</label>
+            <select id="studentVerificationFilter" onchange="filterStudents()">
+              <option value="">All Status</option>
+              <option value="verified">Verified</option>
+              <option value="pending">Pending</option>
+              <option value="rejected">Rejected</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Profile Completion:</label>
+            <select id="studentProfileFilter" onchange="filterStudents()">
+              <option value="">All</option>
+              <option value="complete">Complete (80%+)</option>
+              <option value="partial">Partial (40-79%)</option>
+              <option value="incomplete">Incomplete (&lt;40%)</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <input type="text" id="studentSearchInput" placeholder="Search by name..." onkeyup="filterStudents()">
+          </div>
+        </div>
+      </div>
+      
+      <!-- Students Table -->
+      <div class="content-section">
+        <div class="section-header">
+          <h2 class="section-title">All Students (<span id="studentCount">0</span>)</h2>
+          <button class="btn btn-secondary" onclick="exportStudents()">
+            <span>📥</span> Export CSV
+          </button>
+        </div>
+        <div class="table-container">
+          <table class="data-table" id="studentsTable">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Branch</th>
+                <th>CGPA</th>
+                <th>Profile</th>
+                <th>Verification</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="studentsTableBody">
+              <tr>
+                <td colspan="7" class="loading">Loading students...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         PAGE: Faculty / Coordinator
+         ========================================== -->
+    <div class="page-view" id="page-faculty">
+      <div class="page-header">
+        <h1>Faculty / Coordinator Management</h1>
+        <p>View and manage faculty and coordinators. They appear here automatically when they register.</p>
+      </div>
+      <div class="content-section">
+        <div class="section-header">
+          <h2 class="section-title">Faculty List</h2>
+        </div>
+        <div id="admin-faculty-list" class="loading">Loading faculty data...</div>
+        <h2 class="section-title" style="margin-top: 24px;">Coordinator List</h2>
+        <div id="admin-coordinator-list" class="loading">Loading coordinator data...</div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         PAGE: Company & Jobs (Placeholder)
+         ========================================== -->
+    <div class="page-view" id="page-jobs">
+      <div class="page-header">
+        <h1>Manage Jobs</h1>
+        <p>All jobs posted by coordinators and alumni.</p>
+      </div>
+      <div class="content-section">
+        <div id="admin-jobs-list" class="loading">Loading job data...</div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         PAGE: Announcements
+         ========================================== -->
+    <div class="page-view" id="page-announcements">
+      <div class="page-header">
+        <h1>Announcements</h1>
+        <p>Create and manage platform announcements for users.</p>
+      </div>
+      <div class="content-section">
+        <div class="section-header">
+          <h2 class="section-title">All Announcements</h2>
+          <button class="btn btn-primary" id="btnCreateAnnouncement">
+            <span>➕</span> Create Announcement
+          </button>
+        </div>
+        <div id="announcementsList" class="announcements-list"></div>
+      </div>
+      <div class="content-section modal-form-section" id="announcementFormSection" style="display: none;">
+        <h3 class="section-title" id="announcementFormTitle">Create Announcement</h3>
+        <form id="announcementForm" class="admin-form">
+          <input type="hidden" id="announcementId" value="">
+          <div class="form-group">
+            <label for="announcementTitle">Title</label>
+            <input type="text" id="announcementTitle" required placeholder="Announcement title">
+          </div>
+          <div class="form-group">
+            <label for="announcementDescription">Description</label>
+            <textarea id="announcementDescription" rows="4" required placeholder="Description"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="announcementDate">Date</label>
+            <input type="date" id="announcementDate">
+          </div>
+          <div class="form-group">
+            <label>Audience</label>
+            <div class="announcement-audience-checks" style="display:flex;flex-wrap:wrap;gap:12px 16px;margin-top:6px;">
+              <label style="display:flex;align-items:center;gap:8px;font-weight:600;"><input type="checkbox" id="audStudent" checked /> Student</label>
+              <label style="display:flex;align-items:center;gap:8px;font-weight:600;"><input type="checkbox" id="audFaculty" checked /> Faculty</label>
+              <label style="display:flex;align-items:center;gap:8px;font-weight:600;"><input type="checkbox" id="audAlumni" checked /> Alumni</label>
+            </div>
+            <p class="text-muted" style="font-size:12px;margin:8px 0 0;">At least one audience is required. Legacy “visibility” is mapped automatically if you leave boxes as default.</p>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" id="btnCancelAnnouncement">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         PAGE: Reports & Analytics
+         ========================================== -->
+    <div class="page-view" id="page-reports">
+      <div class="page-header">
+        <h1>Reports & Analytics</h1>
+        <p>View platform statistics and reports.</p>
+      </div>
+      <div class="content-section">
+        <p class="text-muted">Full analytics are available on the Dashboard. Use the Dashboard Overview for detailed metrics and charts.</p>
+        <button class="btn btn-primary" onclick="navigateToPage('dashboard')">Open Dashboard Analytics</button>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         PAGE: SOS / Support tickets
+         ========================================== -->
+    <div class="page-view" id="page-support">
+      <div class="page-header">
+        <h1>SOS / Support</h1>
+        <p>Helpdesk tickets from students, alumni, faculty, and coordinators.</p>
+      </div>
+      <div class="content-section" style="margin-bottom: 16px;">
+        <div class="filters-row">
+          <div class="filter-group">
+            <label>Status</label>
+            <select id="supportFilterStatus" onchange="loadSupportTickets()">
+              <option value="">All</option>
+              <option value="open">Open</option>
+              <option value="in_progress">In progress</option>
+              <option value="resolved">Resolved</option>
+              <option value="closed">Closed</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Priority</label>
+            <select id="supportFilterPriority" onchange="loadSupportTickets()">
+              <option value="">All</option>
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Role</label>
+            <select id="supportFilterRole" onchange="loadSupportTickets()">
+              <option value="">All</option>
+              <option value="student">Student</option>
+              <option value="alumni">Alumni</option>
+              <option value="faculty">Faculty</option>
+              <option value="coordinator">Coordinator</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="content-section">
+        <div class="table-container">
+          <table class="data-table" id="supportTicketsTable">
+            <thead>
+              <tr>
+                <th>Ticket</th>
+                <th>User</th>
+                <th>Role</th>
+                <th>Title</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Updated</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="supportTicketsBody">
+              <tr><td colspan="8" class="loading">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="supportTicketModal" class="support-modal" style="display:none;" role="dialog" aria-modal="true">
+      <div class="support-modal-backdrop" onclick="closeSupportModal()"></div>
+      <div class="support-modal-card">
+        <div class="support-modal-head">
+          <h2 id="supportModalTitle">Ticket</h2>
+          <button type="button" class="support-modal-x" onclick="closeSupportModal()" aria-label="Close">×</button>
+        </div>
+        <div class="support-modal-body" id="supportModalBody"></div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         PAGE: Settings
+         ========================================== -->
+    <div class="page-view" id="page-settings">
+      <div class="page-header">
+        <h1>Settings</h1>
+        <p>Configure platform behavior and preferences.</p>
+      </div>
+      <div class="content-section">
+        <form id="adminSettingsForm" class="admin-settings-form">
+          <section class="settings-section">
+            <h2 class="settings-section-title">Platform Configuration</h2>
+            <div class="setting-row">
+              <label class="toggle-label">Enable Student Registration</label>
+              <label class="toggle-switch">
+                <input type="checkbox" id="setting_student_registration" name="platform.enable_student_registration">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-row">
+              <label class="toggle-label">Enable Alumni Registration</label>
+              <label class="toggle-switch">
+                <input type="checkbox" id="setting_alumni_registration" name="platform.enable_alumni_registration">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-row">
+              <label class="toggle-label">Enable Job Posting</label>
+              <label class="toggle-switch">
+                <input type="checkbox" id="setting_job_posting" name="platform.enable_job_posting">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-row">
+              <label class="toggle-label">Maximum Resume Size (MB)</label>
+              <input type="number" id="setting_max_resume_size" name="platform.max_resume_size_mb" min="1" max="20" class="setting-input">
+            </div>
+            <div class="setting-row">
+              <label class="toggle-label">Placement Predictor Visibility</label>
+              <label class="toggle-switch">
+                <input type="checkbox" id="setting_placement_visible" name="platform.placement_predictor_visible">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </section>
+          <section class="settings-section">
+            <h2 class="settings-section-title">Verification Rules</h2>
+            <div class="setting-row">
+              <label class="toggle-label">Enable Student Profile Verification</label>
+              <label class="toggle-switch">
+                <input type="checkbox" id="setting_student_verification" name="verification.enable_student_verification">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-row">
+              <label class="toggle-label">Enable Faculty Approval Requirement</label>
+              <label class="toggle-switch">
+                <input type="checkbox" id="setting_faculty_approval" name="verification.enable_faculty_approval_requirement">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-row">
+              <label class="toggle-label">Auto Approve Alumni Accounts</label>
+              <label class="toggle-switch">
+                <input type="checkbox" id="setting_auto_approve_alumni" name="verification.auto_approve_alumni">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </section>
+          <section class="settings-section">
+            <h2 class="settings-section-title">Resume Settings</h2>
+            <div class="setting-row">
+              <label class="toggle-label">Resume Template</label>
+              <select id="setting_resume_template" name="resume.resume_template" class="setting-input">
+                <option value="default">Default</option>
+              </select>
+            </div>
+            <div class="setting-row">
+              <label class="toggle-label">Auto Generate Resume</label>
+              <label class="toggle-switch">
+                <input type="checkbox" id="setting_auto_generate_resume" name="resume.auto_generate_resume">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-row">
+              <label class="toggle-label">Allow Resume Download</label>
+              <label class="toggle-switch">
+                <input type="checkbox" id="setting_allow_resume_download" name="resume.allow_resume_download">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </section>
+          <section class="settings-section">
+            <h2 class="settings-section-title">Placement Predictor Settings</h2>
+            <div class="setting-row">
+              <label class="toggle-label">Enable Placement Predictor</label>
+              <label class="toggle-switch">
+                <input type="checkbox" id="setting_placement_enabled" name="placement_predictor.enabled">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-row">
+              <label class="toggle-label">Minimum Profile Completion Required (%)</label>
+              <input type="number" id="setting_min_profile_completion" name="placement_predictor.min_profile_completion" min="0" max="100" class="setting-input">
+            </div>
+            <div class="setting-row">
+              <label class="toggle-label">Minimum CGPA Required</label>
+              <input type="number" id="setting_min_cgpa" name="placement_predictor.min_cgpa_required" min="0" max="10" step="0.1" class="setting-input">
+            </div>
+          </section>
+          <section class="settings-section">
+            <h2 class="settings-section-title">Notification Settings</h2>
+            <div class="setting-row">
+              <label class="toggle-label">Email Notifications</label>
+              <label class="toggle-switch">
+                <input type="checkbox" id="setting_email_notifications" name="notifications.email_notifications">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-row">
+              <label class="toggle-label">Job Alert Notifications</label>
+              <label class="toggle-switch">
+                <input type="checkbox" id="setting_job_alerts" name="notifications.job_alert_notifications">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-row">
+              <label class="toggle-label">Placement Update Alerts</label>
+              <label class="toggle-switch">
+                <input type="checkbox" id="setting_placement_alerts" name="notifications.placement_update_alerts">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </section>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Save Settings</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- JavaScript -->
+  <script src="/static/js/cross-tab-auth.js"></script>
+  <script src="/static/js/admin-dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Placement Predictor · CampusLink</title>
+  <link rel="stylesheet" href="/static/css/job-deadline.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --primary: #0a66c2;
+      --primary-dark: #004182;
+      --bg: #f3f4f6;
+      --paper: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #dbe3ec;
+      --success: #16a34a;
+      --danger: #dc2626;
+      --warning: #b45309;
+      --shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: "Segoe UI", system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    .header { position: sticky; top: 0; z-index: 40; background: linear-gradient(90deg,#001bb7 0%, #0046ff 100%); border-bottom: none; box-shadow: 0 8px 16px rgba(0,0,0,0.08); padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .header h1 { margin: 0; font-size: 20px; font-weight: 800; color: #fff; }
+    .back-link { color: #fff; font-size: 14px; font-weight: 700; text-decoration: none; padding: 8px 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.35); background: rgba(255,255,255,0.14); }
+    .container { max-width: 1120px; margin: 0 auto; padding: 20px 14px 40px; }
+    .loading, .error-state { text-align: center; padding: 42px 20px; font-size: 15px; border-radius: 14px; border: 1px solid var(--border); background: #fff; box-shadow: var(--shadow); }
+    .loading { color: var(--muted); position: relative; overflow: hidden; }
+    .loading::after { content: ""; position: absolute; inset: 0; transform: translateX(-100%); background: linear-gradient(90deg, transparent, rgba(15,23,42,0.05), transparent); animation: shimmer 1.4s infinite; }
+    .error-state { color: var(--danger); }
+    @keyframes shimmer { to { transform: translateX(100%); } }
+
+    #content { display: grid; gap: 16px; }
+    .card { background: var(--paper); border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow); overflow: hidden; }
+    .card-title { padding: 14px 16px; border-bottom: 1px solid var(--border); font-weight: 800; font-size: 15px; color: #0f172a; }
+    .card-body { padding: 16px; }
+
+    .jobs-intro { font-size: 14px; color: var(--muted); margin: 0 0 14px; line-height: 1.5; }
+    .jobs-section-title { font-size: 12px; font-weight: 800; color: #475569; margin: 0 0 10px; text-transform: uppercase; letter-spacing: .05em; }
+    .jobs-empty { padding: 18px; text-align: center; color: var(--muted); font-size: 14px; background: #f8fafc; border: 1px dashed var(--border); border-radius: 12px; }
+    .job-card { display: grid; grid-template-columns: 1fr auto; gap: 14px; padding: 14px; border: 1px solid var(--border); border-radius: 14px; margin-bottom: 12px; background: #fff; transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
+    .job-card:last-child { margin-bottom: 0; }
+    .job-card:hover { transform: translateY(-2px); border-color: #bcd8f4; box-shadow: 0 10px 18px rgba(15, 23, 42, 0.07); }
+    .job-card-left { min-width: 0; }
+    .job-card-title { font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 3px; }
+    .job-card-meta { font-size: 13px; color: var(--muted); margin-bottom: 8px; line-height: 1.45; }
+    .job-card-reasons { font-size: 12px; color: var(--warning); margin-top: 8px; }
+    .job-card-reasons ul { margin: 6px 0 0; padding-left: 18px; }
+    .job-card-actions { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; min-width: 172px; }
+    .job-badge { display: inline-flex; align-items: center; justify-content: center; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 800; white-space: nowrap; }
+    .job-badge.eligible { background: #dcfce7; color: var(--success); }
+    .job-badge.applied { background: #e0f2fe; color: #0284c7; }
+    .job-badge.lock { background: #fee2e2; color: #b91c1c; }
+    .job-btn { display: inline-flex; align-items: center; justify-content: center; min-height: 40px; width: 100%; padding: 8px 14px; border-radius: 10px; font-size: 13px; font-weight: 700; text-decoration: none; border: 1px solid transparent; transition: all .14s ease; }
+    .job-btn.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .job-btn.primary:hover { background: var(--primary-dark); border-color: var(--primary-dark); }
+    .job-btn.ghost { background: #fff; color: var(--primary); border-color: #bfdbfe; }
+    .job-btn.ghost:hover { background: #eff6ff; }
+    .job-btn.disabled { background: #e2e8f0; color: #64748b; border-color: #cbd5e1; cursor: not-allowed; pointer-events: none; }
+
+    .predict-select-wrap { display: grid; gap: 8px; }
+    .predict-select-wrap label { font-size: 13px; font-weight: 700; color: #334155; }
+    #prediction-job-select { width: 100%; padding: 11px 12px; border: 1px solid var(--border); border-radius: 12px; font-size: 14px; background: #fff; color: #0f172a; outline: none; }
+    #prediction-job-select:focus { border-color: #93c5fd; box-shadow: 0 0 0 3px rgba(59,130,246,0.2); }
+
+    .circles-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 0 0 12px; }
+    .metric-wrap { text-align: center; width: 100%; border: 1px solid var(--border); border-radius: 14px; padding: 14px 10px; background: #f8fafc; }
+    #metric-important-wrap { grid-column: 1 / -1; max-width: 320px; margin: 0 auto; }
+    .metric-ring-outer { width: 98px; height: 98px; margin: 0 auto 10px; border-radius: 50%; padding: 5px; background: conic-gradient(var(--primary) calc(var(--pct, 0) * 3.6deg), #dbe3ec calc(var(--pct, 0) * 3.6deg)); }
+    .metric-ring-outer.eligibility-pass { background: conic-gradient(var(--success) 360deg, var(--success) 360deg); }
+    .metric-ring-outer.eligibility-fail { background: conic-gradient(var(--danger) 360deg, var(--danger) 360deg); }
+    .metric-ring-inner { width: 100%; height: 100%; border-radius: 50%; background: #fff; display: grid; place-items: center; font-size: 15px; font-weight: 800; color: #0f172a; line-height: 1.2; }
+    .metric-ring-inner small { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .03em; font-weight: 700; }
+    .metric-label { font-size: 12px; font-weight: 700; color: #475569; }
+    .gauge-label { font-size: 13px; color: var(--muted); font-weight: 600; }
+
+    .gauge-wrap { display: grid; place-items: center; gap: 6px; padding: 18px 14px 24px; text-align: center; }
+    .gauge-circle { width: 210px; height: 210px; border-radius: 50%; background: conic-gradient(var(--primary) calc(var(--pct, 0) * 3.6deg), #dbe3ec calc(var(--pct, 0) * 3.6deg)); display: grid; place-items: center; margin-bottom: 6px; }
+    .gauge-inner { width: 158px; height: 158px; border-radius: 50%; background: #fff; display: grid; place-items: center; font-size: 36px; font-weight: 800; color: #0f172a; box-shadow: inset 0 0 0 1px #e2e8f0; }
+    #match-status { font-weight: 800 !important; color: #0f172a; font-size: 16px; }
+    #match-reason { color: var(--warning) !important; }
+
+    #explain-card .card-body { display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    #explain-elig-fail { grid-column: 1 / -1; }
+    .explain-block { margin-top: 0; padding: 14px; border-radius: 12px; border: 1px solid var(--border); background: #fafbfc; font-size: 14px; line-height: 1.55; }
+    .explain-block h3 { margin: 0 0 8px; font-size: 13px; font-weight: 800; color: #0f172a; }
+    .explain-block.warn { background: #fff7ed; border-color: #fed7aa; color: #9a3412; }
+    .tag-ok { color: var(--success); font-weight: 700; }
+    .tag-warn { color: #d97706; font-weight: 700; }
+    .tag-bad { color: var(--danger); font-weight: 700; }
+    .explain-list { margin: 6px 0 0; padding-left: 18px; }
+    .explain-list li { margin-bottom: 4px; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: center; }
+    .chart-container { position: relative; height: 260px; padding: 6px; }
+    .breakdown-list { list-style: none; margin: 0; padding: 0; }
+    .breakdown-list li { display: flex; justify-content: space-between; gap: 8px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+    .breakdown-list li:last-child { border-bottom: none; }
+    .breakdown-list .label { font-weight: 700; color: #0f172a; }
+    .breakdown-list .score { color: var(--primary); font-weight: 800; }
+    .tips-list { margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.6; color: #1e293b; }
+    .tips-list li { margin-bottom: 10px; }
+    .tips-list li:last-child { margin-bottom: 0; }
+    .no-tips { color: var(--muted); font-style: italic; }
+    #tips-list, #no-tips { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 14px 16px; }
+    #no-tips { margin: 0; }
+
+    @media (max-width: 900px) {
+      #explain-card .card-body { grid-template-columns: 1fr; }
+      .grid-2 { grid-template-columns: 1fr; }
+      .chart-container { height: 220px; }
+    }
+    @media (max-width: 768px) {
+      .header { padding: 10px 12px; flex-wrap: wrap; }
+      .header h1 { font-size: 18px; }
+      .container { padding: 14px 10px 28px; }
+      .card-title { font-size: 14px; padding: 12px 14px; }
+      .card-body { padding: 14px; }
+      .job-card { grid-template-columns: 1fr; }
+      .job-card-actions { min-width: 0; width: 100%; align-items: stretch; }
+      .circles-row { grid-template-columns: 1fr; }
+      #metric-important-wrap { grid-column: auto; max-width: none; }
+    }
+    @media (max-width: 480px) {
+      .gauge-circle { width: min(86vw, 210px); height: min(86vw, 210px); }
+      .gauge-inner { width: 72%; height: 72%; font-size: 30px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <h1>📊 Placement Predictor</h1>
+    <a href="/user/dashboard" class="back-link" target="_self">← Back to Dashboard</a>
+  </header>
+
+  <main class="container">
+    <div id="loading" class="loading">Loading your placement analysis and suitable jobs…</div>
+    <div id="error" class="error-state" style="display: none;"></div>
+    <div id="content" style="display: none;">
+      <!-- Jobs for you (main motive) -->
+      <div class="card" id="jobs-card">
+        <div class="card-title">Jobs for you</div>
+        <div class="card-body">
+          <p class="jobs-intro">Jobs you can apply to now, and jobs that match your profile. Complete your profile or meet eligibility to apply where needed.</p>
+          <div id="jobs-you-can-apply"></div>
+          <div id="jobs-section-other" style="display: none;">
+            <div class="jobs-section-title">Suitable for your profile (complete requirements to apply)</div>
+            <div id="jobs-suitable-list"></div>
+          </div>
+          <div id="jobs-empty" class="jobs-empty" style="display: none;">No active jobs at the moment. Check back later.</div>
+        </div>
+      </div>
+
+      <!-- Job selector for prediction -->
+      <div class="card" id="prediction-job-card" style="display: none;">
+        <div class="card-title">Prediction for job</div>
+        <div class="card-body predict-select-wrap">
+          <label for="prediction-job-select">Select a job to see your match score</label>
+          <select id="prediction-job-select"></select>
+        </div>
+      </div>
+
+      <!-- Three circles: eligibility, skills, important criteria -->
+      <div class="card" id="metrics-card">
+        <div class="card-title">Match insights</div>
+        <div class="card-body">
+          <div class="circles-row" id="circles-row">
+            <div class="metric-wrap">
+              <div class="metric-ring-outer eligibility-pass" id="circle-elig-ring">
+                <div class="metric-ring-inner" id="circle-elig-inner"><span id="circle-elig-text">—</span><small>Binary</small></div>
+              </div>
+              <div class="metric-label">Eligibility</div>
+            </div>
+            <div class="metric-wrap">
+              <div class="metric-ring-outer" id="circle-skill-ring" style="--pct: 0;">
+                <div class="metric-ring-inner"><span id="circle-skill-text">0%</span><small>Skills</small></div>
+              </div>
+              <div class="metric-label">Skill match</div>
+            </div>
+            <div class="metric-wrap" id="metric-important-wrap" style="display: none;" aria-hidden="true">
+              <div class="metric-ring-outer" id="circle-important-ring" style="--pct: 0;">
+                <div class="metric-ring-inner"><span id="circle-important-text">—</span><small>Important</small></div>
+              </div>
+              <div class="metric-label">Important criteria</div>
+            </div>
+          </div>
+          <p id="insights-hint" class="gauge-label" style="text-align:center;margin:0 0 8px;"></p>
+        </div>
+      </div>
+
+      <!-- Overall match score -->
+      <div class="card" id="prediction-card">
+        <div class="card-title">Final placement match</div>
+        <div class="card-body gauge-wrap">
+          <div class="gauge-circle" id="gauge-circle">
+            <div class="gauge-inner" id="gauge-value">0%</div>
+          </div>
+          <p id="match-status" class="gauge-label" style="font-weight:600;margin-top:8px;"></p>
+          <p id="match-reason" class="gauge-label" style="color:var(--warning);margin-top:4px;display:none;"></p>
+          <span class="gauge-label">Weighted: Skills 60% · Important criteria 20% · Extras 10% · Projects 10%</span>
+        </div>
+      </div>
+
+      <!-- Explainable breakdown -->
+      <div class="card" id="explain-card">
+        <div class="card-title">Detailed breakdown</div>
+        <div class="card-body">
+          <div id="explain-elig-fail" class="explain-block warn" style="display:none;"></div>
+          <div id="explain-skill" class="explain-block"></div>
+          <div id="explain-important" class="explain-block"></div>
+        </div>
+      </div>
+
+      <!-- Score breakdown: chart + table -->
+      <div class="card">
+        <div class="card-title">Contribution breakdown</div>
+        <div class="card-body grid-2">
+          <div>
+            <div class="chart-container">
+              <canvas id="breakdown-chart"></canvas>
+            </div>
+          </div>
+          <div>
+            <ul class="breakdown-list" id="breakdown-list"></ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Improvement tips -->
+      <div class="card">
+        <div class="card-title">Improvement tips</div>
+        <div class="card-body">
+          <ul class="tips-list" id="tips-list"></ul>
+          <p id="no-tips" class="no-tips" style="display: none;">Your profile looks strong. Keep it updated.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="/static/js/job-deadline-ui.js"></script>
+  <script>
+    (function() {
+      const COLORS = ["#001bb7", "#0046ff", "#3b82f6", "#60a5fa", "#93c5fd"];
+      let chartInstance = null;
+
+      function escapeHtml(s) {
+        return String(s || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function buildScoreBreakdown(data) {
+        const b = data.breakdown || {};
+        if (data.engine_version >= 2 && b.skills_contribution != null) {
+          return [
+            { label: "Skills (60% slice)", score: b.skills_contribution || 0, max: 60 },
+            { label: "Important criteria (20%)", score: b.important_contribution || 0, max: 20 },
+            { label: "Extras (10%)", score: b.extras_contribution || 0, max: 10 },
+            { label: "Projects (10%)", score: b.projects_contribution || 0, max: 10 }
+          ];
+        }
+        return [
+          { label: "CGPA", score: b.cgpaScore || 0, max: 30 },
+          { label: "Job type", score: b.jobTypeScore || 0, max: 20 },
+          { label: "Skills", score: b.skillScore || 0, max: 40 },
+          { label: "Certifications", score: b.certificationScore || 0, max: 10 }
+        ];
+      }
+
+      function renderExplainSkill(sm) {
+        const el = document.getElementById("explain-skill");
+        if (!sm) {
+          el.innerHTML = "";
+          return;
+        }
+        const pct = sm.percent != null ? sm.percent : 0;
+        let html = "<h3>Skill match: " + escapeHtml(String(pct)) + "%</h3>";
+        const m = sm.matched || [];
+        const p = sm.partial || [];
+        const miss = sm.missing || [];
+        if (m.length) {
+          html += "<p class=\"tag-ok\">Matched (full weight)</p><ul class=\"explain-list\">";
+          m.forEach(function (x) {
+            html += "<li>✔ " + escapeHtml(x.skill || "") + "</li>";
+          });
+          html += "</ul>";
+        }
+        if (p.length) {
+          html += "<p class=\"tag-warn\">Partial (related skill, 50% weight)</p><ul class=\"explain-list\">";
+          p.forEach(function (x) {
+            html += "<li>◐ " + escapeHtml(x.skill || "") + " → via " + escapeHtml(x.via || "") + "</li>";
+          });
+          html += "</ul>";
+        }
+        if (miss.length) {
+          html += "<p class=\"tag-bad\">Missing / weak</p><ul class=\"explain-list\">";
+          miss.forEach(function (s) {
+            html += "<li>⚠ " + escapeHtml(s) + "</li>";
+          });
+          html += "</ul>";
+        }
+        if (!m.length && !p.length && !miss.length) {
+          html += "<p>No required skills listed for this job — treated as 100% on skills.</p>";
+        }
+        el.innerHTML = html;
+      }
+
+      function renderExplainImportant(ic) {
+        const el = document.getElementById("explain-important");
+        if (!ic) {
+          el.innerHTML = "";
+          return;
+        }
+        if (ic.skipped) {
+          el.innerHTML = "<h3>Important criteria</h3><p>This job did not flag extra important criteria — full credit for this slice.</p>";
+          return;
+        }
+        const pct = ic.percent != null ? ic.percent : 0;
+        let html = "<h3>Important criteria: " + escapeHtml(String(pct)) + "%</h3><p>Scoring only — never blocks eligibility.</p>";
+        const details = ic.details || [];
+        if (details.length) {
+          html += "<ul class=\"explain-list\">";
+          details.forEach(function (d) {
+            const ok = d.met;
+            html += "<li>" + (ok ? "<span class=\"tag-ok\">✔</span> " : "<span class=\"tag-bad\">✖</span> ") + escapeHtml(d.label || d.tag || "") + "</li>";
+          });
+          html += "</ul>";
+        }
+        el.innerHTML = html;
+      }
+
+      function render(data, selectedJob) {
+        const elig = data.eligibility || { pass: true, reasons: [] };
+        const sm = data.skill_match || {};
+        const ic = data.important_criteria || {};
+
+        const eligRing = document.getElementById("circle-elig-ring");
+        const eligText = document.getElementById("circle-elig-text");
+        if (elig.pass) {
+          eligRing.className = "metric-ring-outer eligibility-pass";
+          eligText.textContent = "PASS";
+        } else {
+          eligRing.className = "metric-ring-outer eligibility-fail";
+          eligText.textContent = "FAIL";
+        }
+
+        const skillPct = Math.min(100, Math.max(0, parseFloat(sm.percent) || 0));
+        document.getElementById("circle-skill-ring").style.setProperty("--pct", skillPct);
+        document.getElementById("circle-skill-text").textContent = Math.round(skillPct) + "%";
+
+        const impWrap = document.getElementById("metric-important-wrap");
+        const hintEl = document.getElementById("insights-hint");
+        if (ic.skipped) {
+          impWrap.style.display = "none";
+          impWrap.setAttribute("aria-hidden", "true");
+          if (hintEl) {
+            hintEl.textContent = "Strict eligibility first; skill match feeds your final weighted score.";
+          }
+        } else {
+          impWrap.style.display = "";
+          impWrap.removeAttribute("aria-hidden");
+          let impPct = Math.min(100, Math.max(0, parseFloat(ic.percent) || 0));
+          document.getElementById("circle-important-ring").style.setProperty("--pct", impPct);
+          document.getElementById("circle-important-text").textContent = Math.round(impPct) + "%";
+          if (hintEl) {
+            hintEl.textContent = "Strict eligibility first; important criteria never block you—they adjust the score only.";
+          }
+        }
+
+        const score = Math.min(100, Math.max(0, parseFloat(data.score) || 0));
+        document.getElementById("gauge-value").textContent = Math.round(score) + "%";
+        document.getElementById("gauge-circle").style.setProperty("--pct", score);
+
+        document.getElementById("match-status").textContent = data.status || data.status_label || "";
+        const reasonEl = document.getElementById("match-reason");
+        if (data.reason) {
+          reasonEl.textContent = data.reason;
+          reasonEl.style.display = "block";
+        } else {
+          reasonEl.style.display = "none";
+        }
+
+        const failEl = document.getElementById("explain-elig-fail");
+        if (!elig.pass && elig.reasons && elig.reasons.length) {
+          failEl.style.display = "block";
+          failEl.innerHTML = "<h3>Eligibility blocked</h3><ul class=\"explain-list\">" +
+            elig.reasons.map(function (r) { return "<li>" + escapeHtml(r) + "</li>"; }).join("") + "</ul>";
+        } else {
+          failEl.style.display = "none";
+          failEl.innerHTML = "";
+        }
+
+        renderExplainSkill(sm);
+        renderExplainImportant(ic);
+
+        const breakdown = buildScoreBreakdown(data);
+        const listEl = document.getElementById("breakdown-list");
+        listEl.innerHTML = breakdown.map(function (b) {
+          return "<li><span class=\"label\">" + escapeHtml(b.label) + "</span><span class=\"score\">" + (Math.round(b.score * 10) / 10) + " / " + b.max + "</span></li>";
+        }).join("");
+
+        if (chartInstance) chartInstance.destroy();
+        const ctx = document.getElementById("breakdown-chart").getContext("2d");
+        const labels = breakdown.map(function (b) { return b.label; });
+        const scores = breakdown.map(function (b) { return b.score; });
+        chartInstance = new Chart(ctx, {
+          type: "doughnut",
+          data: {
+            labels: labels,
+            datasets: [{ data: scores, backgroundColor: COLORS, borderWidth: 0 }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: "bottom" } },
+            cutout: "60%"
+          }
+        });
+
+        const tipsList = document.getElementById("tips-list");
+        const noTips = document.getElementById("no-tips");
+        const tips = [];
+        if (!elig.pass) {
+          tips.push("Fix eligibility items above to unlock a non-zero final match score.");
+        } else {
+          if (skillPct < 60) tips.push("Close skill gaps: add missing skills or related tools shown under Skill match.");
+          if (!ic.skipped && (ic.percent || 0) < 50) tips.push("Important criteria are soft signals — add hackathons, certs, or GitHub links if the JD asks for them.");
+          if ((data.extras_percent || 0) < 50) tips.push("Add certifications and achievements to lift the Extras slice.");
+          if ((data.projects_percent || 0) < 50) tips.push("Document more projects with technologies that overlap the job.");
+        }
+        if (tips.length) {
+          tipsList.innerHTML = tips.map(function (t) { return "<li>" + escapeHtml(t) + "</li>"; }).join("");
+          tipsList.style.display = "";
+          noTips.style.display = "none";
+        } else {
+          tipsList.style.display = "none";
+          noTips.style.display = "block";
+        }
+      }
+
+      function renderJobs(items) {
+        const canApply = items.filter(function (j) { return j.can_apply; });
+        const other = items.filter(function (j) { return !j.can_apply; });
+        const canApplyEl = document.getElementById("jobs-you-can-apply");
+        const otherWrap = document.getElementById("jobs-section-other");
+        const otherList = document.getElementById("jobs-suitable-list");
+        const emptyEl = document.getElementById("jobs-empty");
+        if (!items.length) {
+          canApplyEl.innerHTML = "";
+          otherWrap.style.display = "none";
+          emptyEl.style.display = "block";
+          return;
+        }
+        emptyEl.style.display = "none";
+        function jobCardHtml(j) {
+          const company = escapeHtml(j.company_name || "Company");
+          const role = escapeHtml(j.role || "Role");
+          const jid = escapeHtml(j.id);
+          const basePath = (j.source === "alumni") ? "/alumni-jobs/" : "/jobs/";
+          const meta = [j.type, j.mode, j.deadline ? "Deadline: " + j.deadline : ""].filter(Boolean).join(" · ");
+          const closed = !!j.deadline_passed;
+          let badge = "";
+          if (j.already_applied) badge = "<span class=\"job-badge applied\">Applied</span>";
+          else if (closed) badge = "<span class=\"job-badge lock\">Applications closed</span>";
+          else if (j.can_apply) badge = "<span class=\"job-badge eligible\">Eligible</span>";
+          else badge = "<span class=\"job-badge lock\">Complete profile to apply</span>";
+          let reasonsHtml = "";
+          if (j.reasons && j.reasons.length) {
+            reasonsHtml = "<div class=\"job-card-reasons\"><strong>To apply:</strong><ul>" + j.reasons.map(function (r) { return "<li>" + escapeHtml(r) + "</li>"; }).join("") + "</ul></div>";
+          }
+          let mainBtn = "";
+          const skillGapUrl = "/student/skill-gap/" + encodeURIComponent(j.id);
+          if (j.already_applied) {
+            mainBtn = "<a href=\"" + basePath + jid + "\" class=\"job-btn disabled\">Apply</a> <a href=\"" + basePath + jid + "\" class=\"job-btn ghost\">View</a>";
+          } else if (closed) {
+            mainBtn = "<span class=\"job-btn disabled\">Closed</span> <a href=\"" + basePath + jid + "\" class=\"job-btn ghost\">View</a>";
+          } else if (j.can_apply) {
+            mainBtn = "<a href=\"" + basePath + jid + "\" class=\"job-btn primary\">Apply</a> <a href=\"" + basePath + jid + "\" class=\"job-btn ghost\">View</a>";
+          } else {
+            mainBtn = "<span class=\"job-btn disabled\">Apply</span> <a href=\"" + basePath + jid + "\" class=\"job-btn ghost\">View</a>";
+          }
+          const cdId = "job-countdown-" + String(j.id).replace(/[^a-zA-Z0-9_-]/g, "");
+          return "<div class=\"job-card\"><div class=\"job-card-left\"><div class=\"job-card-title\">" + role + "</div><div class=\"job-card-meta\">" + company + (meta ? " · " + escapeHtml(meta) : "") + "</div><div id=\"" + cdId + "\" class=\"job-deadline-countdown job-deadline-countdown--light\" style=\"margin-top:6px;\"></div>" + reasonsHtml + "</div><div class=\"job-card-actions\">" + badge + mainBtn + "<a href=\"" + skillGapUrl + "\" target=\"_blank\" rel=\"noopener\" class=\"job-btn ghost\">Skill gap</a></div></div>";
+        }
+        canApplyEl.innerHTML = canApply.length ? "<div class=\"jobs-section-title\">You can apply now</div>" + canApply.map(jobCardHtml).join("") : "<div class=\"jobs-section-title\">You can apply now</div><p class=\"jobs-empty\">No jobs you can apply to right now. Complete profile verification or check jobs below that match your profile.</p>";
+        if (other.length) {
+          otherWrap.style.display = "block";
+          otherList.innerHTML = other.map(jobCardHtml).join("");
+        } else {
+          otherWrap.style.display = "none";
+        }
+        if (window.CampusLinkJobDeadline) {
+          items.forEach(function (j) {
+            var safeId = "job-countdown-" + String(j.id).replace(/[^a-zA-Z0-9_-]/g, "");
+            var el = document.getElementById(safeId);
+            if (el) window.CampusLinkJobDeadline.renderCountdown(el, j, { light: true });
+          });
+        }
+      }
+
+      function loadPredictionForJob(jobId, jobsList) {
+        const selectedJob = jobsList && jobsList.find(function (j) { return j.id === jobId; });
+        fetch("/api/student/predict-placement?job_id=" + encodeURIComponent(jobId), { credentials: "same-origin" })
+          .then(function (r) {
+            if (r.status === 401) { window.location.href = "/login"; return null; }
+            return r.json().then(function (data) { return { status: r.status, data: data }; });
+          })
+          .then(function (res) {
+            if (!res) return;
+            if (res.data && res.data.error) {
+              document.getElementById("match-status").textContent = "";
+              document.getElementById("gauge-value").textContent = "—";
+              document.getElementById("match-reason").textContent = res.data.error;
+              document.getElementById("match-reason").style.display = "block";
+              document.getElementById("breakdown-list").innerHTML = "";
+              document.getElementById("explain-skill").innerHTML = "";
+              document.getElementById("explain-important").innerHTML = "";
+              document.getElementById("explain-elig-fail").style.display = "none";
+              document.getElementById("circle-elig-text").textContent = "—";
+              document.getElementById("circle-skill-text").textContent = "—";
+              document.getElementById("circle-important-text").textContent = "—";
+              var iw = document.getElementById("metric-important-wrap");
+              if (iw) {
+                iw.style.display = "none";
+                iw.setAttribute("aria-hidden", "true");
+              }
+              var ih = document.getElementById("insights-hint");
+              if (ih) ih.textContent = "";
+              if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+              return;
+            }
+            render(res.data, selectedJob);
+          });
+      }
+
+      fetch("/api/student/suitable-jobs", { credentials: "same-origin" })
+        .then(function (r) {
+          if (r.status === 401) { window.location.href = "/login"; return null; }
+          return r.json();
+        })
+        .then(function (jobsData) {
+          const items = (jobsData && jobsData.items) || [];
+          document.getElementById("loading").style.display = "none";
+          document.getElementById("content").style.display = "block";
+          renderJobs(items);
+
+          const selectEl = document.getElementById("prediction-job-select");
+          const predictionCard = document.getElementById("prediction-job-card");
+          const predictionMainCard = document.getElementById("prediction-card");
+          if (items.length > 0) {
+            predictionCard.style.display = "block";
+            selectEl.innerHTML = items.map(function (j) {
+              return "<option value=\"" + escapeHtml(j.id) + "\">" + escapeHtml((j.role || "") + " · " + (j.company_name || "")) + "</option>";
+            }).join("");
+            var firstId = items[0].id;
+            var preselect = new URLSearchParams(window.location.search).get("job_id");
+            var startId = firstId;
+            if (preselect && items.some(function (j) { return j.id === preselect; })) {
+              startId = preselect;
+              selectEl.value = preselect;
+            }
+            loadPredictionForJob(startId, items);
+            selectEl.addEventListener("change", function () {
+              loadPredictionForJob(selectEl.value, items);
+            });
+          } else {
+            predictionCard.style.display = "none";
+            document.getElementById("match-status").textContent = "Select a job to see match";
+            document.getElementById("gauge-value").textContent = "—";
+            document.getElementById("match-reason").textContent = "No active jobs available. Add a job to view placement prediction.";
+            document.getElementById("match-reason").style.display = "block";
+          }
+        })
+        .catch(function (e) {
+          document.getElementById("loading").style.display = "none";
+          document.getElementById("error").textContent = (e && e.message) || "Failed to load.";
+          document.getElementById("error").style.display = "block";
+        });
+    })();
+  </script>
+</body>
+</html>

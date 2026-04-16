@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Interview · CampusLink</title>
+  <style>
+    :root { --primary: #001bb7; --accent: #0046ff; --bg: #f9f8f6; --paper: #fff; --text: #11224e; --muted: #6b7280; --border: #e2e8f0; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: "Segoe UI", system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    .header { background: linear-gradient(90deg, var(--primary), var(--accent)); color: #fff; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; }
+    .header h1 { margin: 0; font-size: 20px; }
+    a { color: #fff; text-decoration: none; font-weight: 600; }
+    .container { max-width: 640px; margin: 0 auto; padding: 28px 20px; }
+    .card { background: var(--paper); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-bottom: 24px; }
+    label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; }
+    input, textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; margin-bottom: 14px; }
+    textarea { min-height: 80px; resize: vertical; }
+    .hint { font-size: 12px; color: var(--muted); margin-top: -8px; margin-bottom: 14px; }
+    .btn { padding: 10px 20px; border-radius: 10px; font-weight: 600; cursor: pointer; border: none; font-size: 14px; }
+    .btn-primary { background: linear-gradient(135deg, var(--primary), var(--accent)); color: #fff; }
+    .btn-primary:disabled { opacity: 0.7; cursor: not-allowed; }
+    .success { color: #16a34a; margin-top: 16px; }
+    .error { color: #dc2626; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <h1>Add Interview</h1>
+    <a href="/coordinator/dashboard#/interview">← Dashboard</a>
+  </header>
+  <main class="container">
+    <div class="card">
+      <form id="form">
+        <label>Company *</label>
+        <input type="text" name="company" required placeholder="Company name" />
+        <label>Role *</label>
+        <input type="text" name="role" required placeholder="e.g. SDE" />
+        <label>JD (Job Description)</label>
+        <textarea name="jd" placeholder="Optional"></textarea>
+        <label>Stipend (optional)</label>
+        <input type="text" name="stipend" placeholder="e.g. 30,000 / month" />
+        <label>Location (optional)</label>
+        <input type="text" name="location" placeholder="e.g. Bengaluru / Remote" />
+        <label>Interview Date</label>
+        <input type="text" name="interview_date" placeholder="e.g. 2025-01-15" />
+        <label>Students Applied</label>
+        <input type="text" name="students_applied" placeholder="Number or text" />
+        <label>Students Shortlisted</label>
+        <input type="text" name="students_shortlisted" placeholder="Number or text" />
+        <label>Rounds (comma-separated)</label>
+        <input type="text" name="rounds" placeholder="e.g. Aptitude, Technical, HR" />
+        <label>Upload CSV (student list) *</label>
+        <input type="file" name="csv_file" accept=".csv" required />
+        <p class="hint">CSV columns: Name, Branch, Year, Email, Role (optional). Headers case-insensitive. Duplicate emails are removed. Branch codes: IT, CST, CE, ENC, AI, DS. Year: 1–4 or First/Second/Third/Fourth/Final.</p>
+        <button type="submit" class="btn btn-primary" id="submit-btn">Create Interview Drive</button>
+        <p id="message" class="success" style="display:none;"></p>
+        <p id="err" class="error" style="display:none;"></p>
+        <div id="summary-card" class="card" style="display:none; margin-top: 16px;">
+          <h3 style="margin-top: 0;">CSV processing summary</h3>
+          <div id="summary-body"></div>
+          <p class="hint" style="margin-bottom: 0;">Redirecting to dashboard…</p>
+        </div>
+      </form>
+    </div>
+  </main>
+  <script>
+    function renderSummary(s) {
+      if (!s) return "";
+      var html = "<p><strong>Total rows:</strong> " + (s.total_rows || 0) + " &middot; <strong>Duplicates removed:</strong> " + (s.duplicates_removed || 0) + " &middot; <strong>Successfully invited:</strong> " + (s.successfully_invited || 0) + "</p>";
+      function list(label, arr) {
+        if (!arr || !arr.length) return "";
+        return "<p><strong>" + label + " (" + arr.length + "):</strong> " + arr.join(", ") + "</p>";
+      }
+      html += list("Emails not found", s.emails_not_found);
+      html += list("Branch invalid", s.branch_invalid);
+      html += list("Year invalid", s.year_invalid);
+      html += list("Branch mismatch (CSV vs student)", s.branch_mismatch);
+      html += list("Year mismatch (CSV vs student)", s.year_mismatch);
+      html += list("Role mismatch", s.role_mismatch);
+      return html;
+    }
+    document.getElementById("form").addEventListener("submit", function(e) {
+      e.preventDefault();
+      var form = e.target;
+      var fd = new FormData();
+      fd.append("company", form.company.value.trim());
+      fd.append("role", form.role.value.trim());
+      fd.append("jd", form.jd.value.trim());
+      fd.append("stipend", form.stipend.value.trim());
+      fd.append("location", form.location.value.trim());
+      fd.append("interview_date", form.interview_date.value.trim());
+      fd.append("students_applied", form.students_applied.value.trim());
+      fd.append("students_shortlisted", form.students_shortlisted.value.trim());
+      fd.append("rounds", form.rounds.value.trim());
+      var file = form.csv_file.files[0];
+      if (!file) { document.getElementById("err").textContent = "Please select a CSV file."; document.getElementById("err").style.display = "block"; return; }
+      fd.append("csv_file", file);
+      document.getElementById("submit-btn").disabled = true;
+      document.getElementById("err").style.display = "none";
+      document.getElementById("message").style.display = "none";
+      document.getElementById("summary-card").style.display = "none";
+      fetch("/api/coordinator/interview-drives", { method: "POST", credentials: "same-origin", body: fd })
+        .then(function(r) { return r.json().then(function(d) { return { status: r.status, data: d }; }); })
+        .then(function(res) {
+          document.getElementById("submit-btn").disabled = false;
+          if (res.status === 201) {
+            document.getElementById("message").textContent = "Drive created.";
+            document.getElementById("message").style.display = "block";
+            var sum = res.data.summary;
+            if (sum && (sum.total_rows > 0 || sum.successfully_invited > 0)) {
+              document.getElementById("summary-body").innerHTML = renderSummary(sum);
+              document.getElementById("summary-card").style.display = "block";
+            }
+            setTimeout(function() { window.location.href = "/coordinator/dashboard#/interview"; }, 5000);
+          } else {
+            document.getElementById("err").textContent = res.data.error || "Failed.";
+            document.getElementById("err").style.display = "block";
+          }
+        })
+        .catch(function() {
+          document.getElementById("submit-btn").disabled = false;
+          document.getElementById("err").textContent = "Request failed.";
+          document.getElementById("err").style.display = "block";
+        });
+    });
+  </script>
+</body>
+</html>

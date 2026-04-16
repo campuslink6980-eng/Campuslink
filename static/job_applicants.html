@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Applicants · CampusLink</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: #f1f5f9;
+      color: #0f172a;
+      min-height: 100vh;
+    }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 20px 16px 40px; }
+    .top {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    h1 { margin: 0; font-size: 20px; font-weight: 800; color: #0f172a; }
+    .sub { margin: 4px 0 0; font-size: 13px; color: #64748b; max-width: 520px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .btn {
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      border-radius: 999px;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      color: #0f172a;
+    }
+    .btn:hover { background: #f8fafc; border-color: #94a3b8; }
+    .btn.primary {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      border: none;
+      color: #fff;
+    }
+    .btn.primary:hover { filter: brightness(1.05); }
+    .shell {
+      background: #fff;
+      border-radius: 16px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 10px 40px rgba(15, 23, 42, 0.06);
+      overflow: hidden;
+    }
+    .state { padding: 28px; text-align: center; color: #64748b; font-size: 14px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th {
+      text-align: left;
+      padding: 12px 14px;
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+      font-weight: 700;
+      color: #475569;
+    }
+    td { padding: 10px 14px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    a.profile-link { color: #2563eb; font-weight: 600; text-decoration: none; font-size: 12px; }
+    a.profile-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <h1 id="pageTitle">Applicants</h1>
+        <p class="sub" id="pageSub">Loading…</p>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn" id="btnBack">Back</button>
+        <button type="button" class="btn primary" id="btnCsv" style="display:none;">Download CSV</button>
+      </div>
+    </div>
+    <div class="shell">
+      <div id="state" class="state">Loading applicants…</div>
+      <div id="tableWrap" style="display:none;"></div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      var TOKEN_KEY = "campuslink_token";
+
+      function getToken() {
+        return localStorage.getItem(TOKEN_KEY);
+      }
+
+      function escapeHtml(s) {
+        return String(s || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      function escapeCsvCell(val) {
+        var s = String(val == null ? "" : val);
+        if (/[",\n\r]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+        return s;
+      }
+
+      function parseNameParts(row) {
+        if (row.first_name != null || row.last_name != null) {
+          return {
+            first: String(row.first_name || ""),
+            second: String(row.last_name || ""),
+          };
+        }
+        var full = String(row.student_name || "").trim();
+        if (!full) return { first: "", second: "" };
+        var parts = full.split(/\s+/);
+        if (parts.length === 1) return { first: parts[0], second: "" };
+        return { first: parts[0], second: parts.slice(1).join(" ") };
+      }
+
+      function normalizeApplicantRow(raw) {
+        var name = parseNameParts(raw);
+        return {
+          first_name: name.first,
+          second_name: name.second,
+          branch: String(raw.branch != null ? raw.branch : ""),
+          year: String(raw.year != null ? raw.year : ""),
+          mail: String(raw.mail || raw.student_email || ""),
+          student_id: raw.student_id,
+          applied_at: raw.applied_at,
+          status: raw.status,
+          message: raw.message,
+        };
+      }
+
+      var params = new URLSearchParams(window.location.search);
+      var jobId = params.get("job_id");
+      var type = (params.get("type") || "alumni").toLowerCase();
+      var label = params.get("label") || "";
+
+      document.getElementById("pageSub").textContent = label
+        ? decodeURIComponent(label.replace(/\+/g, " "))
+        : (jobId ? "Job ID: " + jobId : "");
+
+      document.getElementById("btnBack").addEventListener("click", function () {
+        window.close();
+        setTimeout(function () {
+          if (!window.closed) window.history.back();
+        }, 200);
+      });
+
+      var rowsForCsv = [];
+
+      document.getElementById("btnCsv").addEventListener("click", function () {
+        if (!rowsForCsv.length) return;
+        var lines = [];
+        lines.push(["first name", "second name", "branch", "year", "mail"].map(escapeCsvCell).join(","));
+        rowsForCsv.forEach(function (r) {
+          lines.push(
+            [r.first_name, r.second_name, r.branch, r.year, r.mail].map(escapeCsvCell).join(",")
+          );
+        });
+        var blob = new Blob(["\uFEFF" + lines.join("\r\n")], { type: "text/csv;charset=utf-8;" });
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "applicants_" + (jobId || "job") + "_" + new Date().toISOString().slice(0, 10) + ".csv";
+        a.click();
+        URL.revokeObjectURL(a.href);
+      });
+
+      if (!jobId) {
+        document.getElementById("state").textContent = "Missing job_id in the URL.";
+        return;
+      }
+
+      var token = getToken();
+      if (type === "coordinator" && !token) {
+        document.getElementById("state").textContent = "Please open this page from the coordinator dashboard (sign in required).";
+        return;
+      }
+
+      var url =
+        type === "coordinator"
+          ? "/api/coordinator/jobs/" + encodeURIComponent(jobId) + "/applications"
+          : "/api/alumni/jobs/" + encodeURIComponent(jobId) + "/applicants";
+
+      var headers = {};
+      if (token) headers["Authorization"] = "Bearer " + token;
+
+      fetch(url, {
+        credentials: "same-origin",
+        headers: headers,
+      })
+        .then(function (res) {
+          if (res.status === 401) {
+            if (token) localStorage.removeItem(TOKEN_KEY);
+            throw new Error("Session expired. Sign in again and reopen Applicants.");
+          }
+          return res.json().then(function (data) {
+            return { ok: res.ok, data: data };
+          });
+        })
+        .then(function (out) {
+          if (!out.ok) throw new Error((out.data && out.data.error) || "Failed to load");
+          var rawList =
+            type === "coordinator"
+              ? out.data.applications || []
+              : out.data.applicants || [];
+          var list = rawList.map(normalizeApplicantRow);
+          rowsForCsv = list.map(function (r) {
+            return {
+              first_name: r.first_name,
+              second_name: r.second_name,
+              branch: r.branch,
+              year: r.year,
+              mail: r.mail,
+            };
+          });
+
+          var stateEl = document.getElementById("state");
+          var tableWrap = document.getElementById("tableWrap");
+          var btnCsv = document.getElementById("btnCsv");
+
+          if (!list.length) {
+            stateEl.style.display = "block";
+            stateEl.textContent = "No applicants yet for this job.";
+            tableWrap.style.display = "none";
+            btnCsv.style.display = "none";
+            return;
+          }
+
+          stateEl.style.display = "none";
+          tableWrap.style.display = "block";
+          btnCsv.style.display = "inline-flex";
+
+          var body = list
+            .map(function (r) {
+              var applied = r.applied_at
+                ? escapeHtml(String(r.applied_at).slice(0, 16).replace("T", " "))
+                : "—";
+              var mid = type === "coordinator"
+                ? "<td>" + applied + "</td><td>" + escapeHtml((r.status || "APPLIED").toUpperCase()) + "</td>"
+                : "<td>" + applied + "</td><td>" + escapeHtml((r.message || "").slice(0, 80)) + "</td>";
+              var prof =
+                r.student_id
+                  ? '<a class="profile-link" href="/profile/' + encodeURIComponent(r.student_id) + '" target="_blank" rel="noopener">Profile</a>'
+                  : "—";
+              return (
+                "<tr><td>" +
+                escapeHtml(r.first_name) +
+                "</td><td>" +
+                escapeHtml(r.second_name) +
+                "</td><td>" +
+                escapeHtml(r.branch) +
+                "</td><td>" +
+                escapeHtml(r.year) +
+                "</td><td>" +
+                escapeHtml(r.mail) +
+                "</td>" +
+                mid +
+                "<td>" +
+                prof +
+                "</td></tr>"
+              );
+            })
+            .join("");
+
+          tableWrap.innerHTML =
+            "<table><thead><tr><th>First name</th><th>Second name</th><th>Branch</th><th>Year</th><th>Mail</th>" +
+            (type === "coordinator"
+              ? "<th>Applied</th><th>Status</th><th>Profile</th>"
+              : "<th>Applied</th><th>Note</th><th>Profile</th>") +
+            "</tr></thead><tbody>" +
+            body +
+            "</tbody></table>";
+        })
+        .catch(function (e) {
+          document.getElementById("state").style.display = "block";
+          document.getElementById("state").textContent = e.message || "Something went wrong.";
+        });
+    })();
+  </script>
+</body>
+</html>

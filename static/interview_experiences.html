@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interview Experiences · CampusLink</title>
+  <style>
+    :root { --bg: #f3f2ef; --paper: #fff; --text: #1d2226; --muted: #6b7280; --line: #e5e7eb; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: "Segoe UI", Arial, sans-serif; background: var(--bg); color: var(--text); }
+    .header { background: var(--paper); border-bottom: 1px solid var(--line); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; }
+    .header h1 { margin: 0; font-size: 20px; }
+    .back-link { color: var(--text); text-decoration: none; font-weight: 600; border: 1px solid var(--line); border-radius: 9px; padding: 8px 12px; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 20px 16px; }
+    .loading, .error-state { text-align: center; padding: 34px 24px; color: var(--muted); }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+    .exp-card { background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 18px; cursor: pointer; transition: transform 0.18s ease, box-shadow 0.18s ease; text-decoration: none; color: inherit; display: block; box-shadow: 0 4px 14px rgba(0,0,0,0.06); }
+    .exp-card:hover { transform: scale(1.01); box-shadow: 0 10px 24px rgba(0,0,0,0.1); }
+    .exp-card h3 { margin: 0 0 8px 0; font-size: 18px; }
+    .meta { font-size: 14px; color: var(--muted); margin: 2px 0; }
+    @media (max-width: 1024px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 768px) { .header { padding: 12px; } .container { padding: 12px; } .grid { grid-template-columns: 1fr; } .back-link { width: 100%; text-align: center; } }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <h1 id="page-title">Interview Experiences</h1>
+    <a href="#" id="back-link" class="back-link">← Back</a>
+  </header>
+  <main class="container">
+    <div id="loading" class="loading">Loading…</div>
+    <div id="error" class="error-state" style="display: none;"></div>
+    <div id="list" class="grid" style="display: none;"></div>
+  </main>
+  <script src="/static/js/cross-tab-auth.js"></script>
+  <script>
+    (function() {
+      var path = window.location.pathname || "";
+      var parts = path.split("/").filter(Boolean);
+      var idx = parts.indexOf("interview-experiences");
+      var driveId = idx >= 0 && parts[idx + 1] ? parts[idx + 1] : null;
+      function el(id) { return document.getElementById(id); }
+      function esc(s) { return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
+      if (!driveId) {
+        el("loading").style.display = "none";
+        el("error").textContent = "Invalid drive.";
+        el("error").style.display = "block";
+        return;
+      }
+      el("back-link").href = "/interview-drive/" + encodeURIComponent(driveId);
+      fetch("/api/interview/experiences/by-drive/" + encodeURIComponent(driveId), { credentials: "same-origin" })
+        .then(function(r) {
+          if (r.status === 401) { window.location.href = "/login"; return null; }
+          return r.json();
+        })
+        .then(function(data) {
+          el("loading").style.display = "none";
+          if (!data || data.error) {
+            el("error").textContent = (data && data.error) ? data.error : "Failed to load.";
+            el("error").style.display = "block";
+            return;
+          }
+          var drive = data.drive || {};
+          var experiences = data.experiences || [];
+          el("page-title").textContent = (drive.company || "Drive") + " – Experiences";
+          if (!experiences.length) {
+            el("list").innerHTML = "<p style=\"color:var(--muted);\">No experiences submitted yet for this drive.</p>";
+          } else {
+            el("list").innerHTML = experiences.map(function(exp) {
+              var meta = [exp.branch, exp.year != null ? "Year " + exp.year : ""].filter(Boolean).join(" · ");
+              return "<a class=\"exp-card\" href=\"/interview-experience/" + encodeURIComponent(exp.id) + "\"><h3>" + esc(exp.student_name) + "</h3><p class=\"meta\">Role: " + esc(drive.role || "—") + "</p><p class=\"meta\">Branch: " + esc(exp.branch || "—") + "</p><p class=\"meta\">" + esc(meta || "—") + "</p></a>";
+            }).join("");
+          }
+          el("list").style.display = "block";
+        })
+        .catch(function() {
+          el("loading").style.display = "none";
+          el("error").textContent = "Failed to load.";
+          el("error").style.display = "block";
+        });
+    })();
+  </script>
+</body>
+</html>

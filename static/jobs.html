@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CampusLink · Jobs</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <link rel="stylesheet" href="/static/css/job-deadline.css" />
+  <style>
+    :root { --li-blue:#0a66c2; --bg:#f3f2ef; --card:#fff; --text:#1f2937; --muted:#64748b; --border:#dbe3ec; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; background:var(--bg); color:var(--text); }
+    .topnav { position:sticky; top:0; z-index:50; background:linear-gradient(90deg,#001bb7 0%, #0046ff 100%); border-bottom:none; box-shadow:0 8px 16px rgba(0,0,0,0.08); padding:10px 18px; display:flex; justify-content:space-between; align-items:center; gap:12px; }
+    .topnav-brand { font-weight:800; color:#fff; }
+    .topnav-links { display:flex; gap:10px; flex-wrap:wrap; }
+    .topnav-links a { text-decoration:none; color:#fff; font-weight:600; font-size:14px; padding:8px 12px; border-radius:999px; }
+    .topnav-links a.active { background:rgba(255,255,255,0.2); color:#fff; }
+    .wrap { max-width:1280px; margin:0 auto; padding:20px 16px 48px; }
+    .page-head { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:14px; }
+    h1 { margin:0; font-size:30px; letter-spacing:-0.02em; color:#0f172a; }
+    .subtitle { margin-top:6px; font-size:14px; color:var(--muted); }
+    .tabs { margin-top:12px; display:flex; gap:10px; flex-wrap:wrap; }
+    .tab { border:1px solid var(--border); background:#fff; border-radius:999px; padding:8px 14px; font-size:13px; font-weight:700; text-decoration:none; color:#334155; }
+    .tab.active { background:#e8f3ff; color:var(--li-blue); border-color:#bfdbfe; }
+    .btn { border:1px solid var(--border); background:#fff; border-radius:10px; padding:10px 14px; font-size:13px; font-weight:700; cursor:pointer; color:#334155; text-decoration:none; }
+    .btn.primary { background:var(--li-blue); color:#fff; border-color:var(--li-blue); }
+    .layout { display:grid; grid-template-columns:minmax(260px,30%) minmax(0,70%); gap:18px; align-items:start; }
+    .filters { position:sticky; top:76px; background:#fff; border:1px solid var(--border); border-radius:12px; padding:16px; box-shadow:0 2px 8px rgba(15,23,42,0.06); }
+    .filters h3 { margin:0 0 12px; font-size:16px; color:#0f172a; }
+    .filter-group { margin-bottom:14px; }
+    .filter-group label.title { display:block; font-size:12px; color:#475569; font-weight:700; margin-bottom:8px; text-transform:uppercase; letter-spacing:.04em; }
+    .filter-opts { display:flex; flex-wrap:wrap; gap:8px; }
+    .chip { border:1px solid var(--border); background:#f8fafc; border-radius:999px; padding:6px 10px; font-size:12px; display:inline-flex; align-items:center; gap:6px; cursor:pointer; }
+    .chip input { margin:0; }
+    .content { min-width:0; }
+    .toolbar { display:flex; gap:10px; align-items:center; margin-bottom:14px; }
+    .search { flex:1; min-width:0; background:#fff; border:1px solid var(--border); border-radius:12px; padding:10px 12px; display:flex; gap:8px; align-items:center; }
+    .search input { border:none; outline:none; width:100%; font-size:14px; color:#0f172a; }
+    .mobile-filter-btn { display:none; }
+    .state { padding:12px; color:var(--muted); font-size:14px; background:#fff; border:1px solid var(--border); border-radius:12px; }
+    .list { display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); }
+    .job { background:var(--card); border:1px solid var(--border); border-radius:12px; box-shadow:0 2px 8px rgba(15,23,42,0.06); padding:16px; transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
+    .job:hover { transform:translateY(-2px); border-color:#bcd8f4; box-shadow:0 10px 20px rgba(15,23,42,0.08); }
+    .job-head { display:flex; gap:12px; align-items:flex-start; }
+    .logo { width:46px; height:46px; border-radius:10px; background:#e8f3ff; color:var(--li-blue); font-weight:800; display:flex; align-items:center; justify-content:center; flex:0 0 46px; }
+    .job h3 { margin:0; font-size:17px; color:#0f172a; }
+    .company { font-size:14px; color:#475569; margin-top:4px; }
+    .tags { margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; }
+    .pill { display:inline-flex; padding:4px 9px; border-radius:999px; font-size:11px; font-weight:700; background:#eef6ff; color:#1d4ed8; border:1px solid #dbeafe; }
+    .details { margin-top:10px; font-size:13px; color:#475569; display:grid; gap:6px; }
+    .job-deadline-countdown { font-weight:700; color:#b45309; }
+    .actions { margin-top:14px; display:flex; gap:10px; }
+    .actions .btn { flex:1; text-align:center; justify-content:center; display:inline-flex; min-height:42px; align-items:center; }
+    .btn.closed { background:#e2e8f0; border-color:#cbd5e1; color:#64748b; cursor:not-allowed; }
+    .filter-overlay { display:none; }
+    .filter-drawer { display:none; }
+    @media (max-width:1024px){ .layout{grid-template-columns:minmax(240px,33%) minmax(0,67%);} }
+    @media (max-width:768px){
+      .topnav { padding:10px 12px; }
+      .wrap { padding:16px 12px 30px; }
+      h1 { font-size:24px; }
+      .layout { grid-template-columns:1fr; }
+      .filters { display:none; }
+      .mobile-filter-btn { display:inline-flex; }
+      .toolbar { flex-wrap:wrap; }
+      .search { flex:1 1 100%; }
+      .list { grid-template-columns:1fr; }
+      .filter-overlay { position:fixed; inset:0; background:rgba(15,23,42,0.4); z-index:90; display:none; }
+      .filter-overlay.open { display:block; }
+      .filter-drawer { position:fixed; left:0; right:0; bottom:0; max-height:82vh; background:#fff; border-top-left-radius:16px; border-top-right-radius:16px; padding:16px; overflow:auto; z-index:91; transform:translateY(100%); transition:transform .2s ease; display:block; }
+      .filter-drawer.open { transform:translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <header class="topnav">
+    <div class="topnav-brand">CampusLink</div>
+    <nav class="topnav-links" aria-label="Main">
+      <a href="/user/dashboard">Home</a>
+      <a href="/jobs" class="active">Jobs</a>
+    </nav>
+  </header>
+  <div class="wrap">
+    <section class="page-head">
+      <div>
+        <h1>Jobs & Internships</h1>
+        <div class="tabs">
+          <a class="tab" id="activeJobsLink" href="/jobs">Active Jobs</a>
+          <a class="tab" id="pastJobsLink" href="/jobs/past">Past Jobs</a>
+          <a class="tab" href="/applications">My Applications</a>
+        </div>
+        <div class="subtitle" id="jobsPageSubtitle">Find opportunities that match your profile.</div>
+      </div>
+      <button class="btn primary" id="createBtn" type="button" style="display:none;">Create Job</button>
+    </section>
+
+    <section class="layout">
+      <aside class="filters" id="desktopFilters">
+        <h3>Job Filters</h3>
+        <div class="filter-group">
+          <label class="title">Job Type</label>
+          <div class="filter-opts" id="typeFilters"></div>
+        </div>
+        <div class="filter-group">
+          <label class="title">Work Mode</label>
+          <div class="filter-opts" id="modeFilters"></div>
+        </div>
+        <div class="filter-group">
+          <label class="title">Branch</label>
+          <div class="filter-opts" id="branchFilters"></div>
+        </div>
+        <div class="filter-group">
+          <label class="title" for="cgpaFilter">CGPA Range</label>
+          <select id="cgpaFilter" class="btn" style="width:100%;">
+            <option value="">Any CGPA</option>
+            <option value="4">4.0+</option>
+            <option value="4.5">4.5+</option>
+            <option value="5">5.0+</option>
+            <option value="5.5">5.5+</option>
+            <option value="6">6.0+</option>
+            <option value="6.5">6.5+</option>
+            <option value="7">7.0+</option>
+            <option value="7.5">7.5+</option>
+            <option value="8">8.0+</option>
+            <option value="8.5">8.5+</option>
+            <option value="9">9.0+</option>
+            <option value="9.5">9.5+</option>
+            <option value="10">10.0</option>
+          </select>
+        </div>
+      </aside>
+      <div class="content">
+        <div class="toolbar">
+          <div class="search">
+            <span>🔍</span>
+            <input id="jobSearch" type="search" placeholder="Search by role, company, location..." />
+          </div>
+          <button class="btn mobile-filter-btn" id="openFiltersBtn" type="button">Filter</button>
+        </div>
+        <div id="state" class="state">Loading jobs…</div>
+        <div id="list" class="list" style="display:none;"></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="filter-overlay" id="filterOverlay"></div>
+  <aside class="filter-drawer" id="filterDrawer">
+    <h3 style="margin-top:0;">Filters</h3>
+    <div class="filter-group"><label class="title">Job Type</label><div class="filter-opts" id="typeFiltersMobile"></div></div>
+    <div class="filter-group"><label class="title">Work Mode</label><div class="filter-opts" id="modeFiltersMobile"></div></div>
+    <div class="filter-group"><label class="title">Branch</label><div class="filter-opts" id="branchFiltersMobile"></div></div>
+    <div class="filter-group">
+      <label class="title" for="cgpaFilterMobile">CGPA Range</label>
+      <select id="cgpaFilterMobile" class="btn" style="width:100%;">
+        <option value="">Any CGPA</option><option value="4">4.0+</option><option value="4.5">4.5+</option><option value="5">5.0+</option><option value="5.5">5.5+</option><option value="6">6.0+</option><option value="6.5">6.5+</option><option value="7">7.0+</option><option value="7.5">7.5+</option><option value="8">8.0+</option><option value="8.5">8.5+</option><option value="9">9.0+</option><option value="9.5">9.5+</option><option value="10">10.0</option>
+      </select>
+    </div>
+    <button class="btn primary" id="applyMobileFilters" type="button" style="width:100%;">Apply Filters</button>
+  </aside>
+
+  <script src="/static/js/job-deadline-ui.js"></script>
+  <script>
+    function escapeHtml(s) {
+      return String(s || "")
+        .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+        .replaceAll("\"","&quot;").replaceAll("'","&#039;");
+    }
+
+    let allJobs = [];
+    const filters = { type: new Set(), mode: new Set(), branch: new Set(), cgpa: "", q: "" };
+
+    function firstLetter(name) {
+      const n = String(name || "").trim();
+      return n ? n.charAt(0).toUpperCase() : "C";
+    }
+
+    function readBranch(j) {
+      if (j.branch) return String(j.branch);
+      if (Array.isArray(j.branches) && j.branches.length) return String(j.branches[0]);
+      if (Array.isArray(j.eligible_branches) && j.eligible_branches.length) return String(j.eligible_branches[0]);
+      return "";
+    }
+
+    function readCgpa(j) {
+      const val = j.min_cgpa ?? j.cgpa ?? j.minimum_cgpa ?? "";
+      const num = Number(val);
+      return Number.isFinite(num) ? num : null;
+    }
+
+    function renderJobCard(j, kind) {
+      const safeId = String(j.id).replace(/[^a-zA-Z0-9_-]/g, "");
+      const cdId = "jobs-list-cd-" + kind + "-" + safeId;
+      const viewUrl = kind === "alumni"
+        ? "/alumni-jobs/" + encodeURIComponent(j.id)
+        : "/jobs/" + encodeURIComponent(j.id);
+      const isClosed = !!j.deadline_passed;
+      const deadlineRaw = j.deadline || j.application_deadline || "—";
+      const jobType = j.type || j.job_type || "Opportunity";
+      const mode = j.mode || j.work_mode || "";
+      const branch = readBranch(j);
+      const location = j.location || j.job_location || j.city || "";
+      return `
+        <article class="job">
+          <div class="job-head">
+            <div class="logo">${firstLetter(j.company_name || "Company")}</div>
+            <div style="min-width:0;">
+              <h3>${escapeHtml(j.role || "Role")}</h3>
+              <div class="company">${escapeHtml(j.company_name || "Company")}</div>
+            </div>
+          </div>
+          <div class="tags">
+            <span class="pill">${escapeHtml(jobType)}</span>
+            ${mode ? `<span class="pill">${escapeHtml(mode)}</span>` : ""}
+            ${branch ? `<span class="pill">${escapeHtml(branch)}</span>` : ""}
+            <span class="pill">${kind === "alumni" ? "Alumni" : "Campus"}</span>
+          </div>
+          <div class="details">
+            <div>📍 ${escapeHtml(location || "Location not specified")}</div>
+            <div>📅 Deadline: ${escapeHtml(deadlineRaw)}</div>
+            <div id="${cdId}" class="job-deadline-countdown">⏳</div>
+          </div>
+          <div class="actions">
+            <button class="btn primary ${isClosed ? "closed" : ""}" type="button" ${isClosed ? "disabled" : ""} onclick="${isClosed ? "return;" : `window.location.href='${viewUrl}'`}">${isClosed ? "Closed" : "Apply"}</button>
+            <a class="btn" href="${viewUrl}">View Details</a>
+          </div>
+        </article>`;
+    }
+
+    function bindCountdowns(rows, kind) {
+      if (!window.CampusLinkJobDeadline) return;
+      rows.forEach((j) => {
+        const el = document.getElementById("jobs-list-cd-" + kind + "-" + String(j.id).replace(/[^a-zA-Z0-9_-]/g, ""));
+        if (el) window.CampusLinkJobDeadline.renderCountdown(el, j, {});
+      });
+    }
+
+    function isPastJobsPage() {
+      return /\/jobs\/past\/?$/.test(window.location.pathname || "");
+    }
+
+    function matchesFilters(j) {
+      const q = filters.q.trim().toLowerCase();
+      if (q) {
+        const hay = [j.role, j.company_name, j.location, j.type, j.mode, readBranch(j)].join(" ").toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      const typeVal = String(j.type || j.job_type || "").toLowerCase();
+      if (filters.type.size && !filters.type.has(typeVal)) return false;
+      const modeVal = String(j.mode || j.work_mode || "").toLowerCase();
+      if (filters.mode.size && !filters.mode.has(modeVal)) return false;
+      const branchVal = readBranch(j).toLowerCase();
+      if (filters.branch.size && !filters.branch.has(branchVal)) return false;
+      if (filters.cgpa) {
+        const minCgpa = readCgpa(j);
+        if (minCgpa !== null && minCgpa > Number(filters.cgpa)) return false;
+      }
+      return true;
+    }
+
+    function renderJobsList() {
+      const state = document.getElementById("state");
+      const list = document.getElementById("list");
+      const filtered = allJobs.filter(matchesFilters);
+      if (!filtered.length) {
+        list.style.display = "none";
+        state.style.display = "block";
+        state.textContent = "No jobs match selected filters.";
+        return;
+      }
+      state.style.display = "none";
+      list.style.display = "grid";
+      list.innerHTML = filtered.map((j) => renderJobCard(j, j.__source)).join("");
+      filtered.forEach((j) => bindCountdowns([j], j.__source));
+    }
+
+    function attachFilterHandlers(scopeId, key) {
+      document.querySelectorAll(`#${scopeId} input[type="checkbox"]`).forEach((el) => {
+        el.addEventListener("change", () => {
+          const v = String(el.value || "").toLowerCase();
+          if (el.checked) filters[key].add(v);
+          else filters[key].delete(v);
+          renderJobsList();
+        });
+      });
+    }
+
+    function renderFilterOptions(target, values, key) {
+      const box = document.getElementById(target);
+      if (!box) return;
+      box.innerHTML = values.map((v) => `<label class="chip"><input type="checkbox" value="${escapeHtml(v)}" />${escapeHtml(v)}</label>`).join("");
+      box.id = box.id;
+      attachFilterHandlers(box.id, key);
+    }
+
+    function syncMobileDrawer(open) {
+      const ov = document.getElementById("filterOverlay");
+      const dr = document.getElementById("filterDrawer");
+      ov.classList.toggle("open", open);
+      dr.classList.toggle("open", open);
+    }
+
+    async function load() {
+      const state = document.getElementById("state");
+      const list = document.getElementById("list");
+      const createBtn = document.getElementById("createBtn");
+      const pastOnly = isPastJobsPage();
+      const subEl = document.getElementById("jobsPageSubtitle");
+      const pastLink = document.getElementById("pastJobsLink");
+      const activeLink = document.getElementById("activeJobsLink");
+
+      if (pastOnly) {
+        if (subEl) subEl.textContent = "Postings whose application deadline has passed (view only).";
+        if (pastLink) pastLink.classList.add("active");
+        if (activeLink) activeLink.classList.remove("active");
+      } else {
+        if (activeLink) activeLink.classList.add("active");
+        if (pastLink) pastLink.classList.remove("active");
+      }
+
+      try {
+        const res = await fetch("/api/jobs");
+        if (res.status === 401) { window.location.href = "/login"; return; }
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || "Failed to load jobs");
+
+        let coordinatorJobs = data.items || [];
+        let alumniJobs = data.alumni_items || [];
+        if (pastOnly) {
+          coordinatorJobs = coordinatorJobs.filter((j) => j.deadline_passed);
+          alumniJobs = alumniJobs.filter((j) => j.deadline_passed);
+        } else {
+          coordinatorJobs = coordinatorJobs.filter((j) => !j.deadline_passed);
+          alumniJobs = alumniJobs.filter((j) => !j.deadline_passed);
+        }
+
+        allJobs = [
+          ...coordinatorJobs.map((j) => ({ ...j, __source: "coordinator" })),
+          ...alumniJobs.map((j) => ({ ...j, __source: "alumni" }))
+        ];
+        if (!allJobs.length) {
+          list.style.display = "none";
+          state.style.display = "block";
+          state.textContent = pastOnly
+            ? "No past job postings."
+            : "No open job posts right now. Try Past jobs for older listings.";
+        } else {
+          const defaultTypes = ["Internship", "Full-time", "Part-time", "Project"];
+          const defaultModes = ["Remote", "On-site", "Hybrid"];
+          const defaultBranches = ["IT", "CST", "AI", "DS", "ENC", "CE"];
+          const types = Array.from(new Set([
+            ...defaultTypes,
+            ...allJobs.map((j) => j.type || j.job_type).filter(Boolean)
+          ])).sort();
+          const modes = Array.from(new Set([
+            ...defaultModes,
+            ...allJobs.map((j) => j.mode || j.work_mode).filter(Boolean)
+          ])).sort();
+          const branches = Array.from(new Set([
+            ...defaultBranches,
+            ...allJobs.map(readBranch).filter(Boolean)
+          ])).sort();
+          renderFilterOptions("typeFilters", types, "type");
+          renderFilterOptions("modeFilters", modes, "mode");
+          renderFilterOptions("branchFilters", branches, "branch");
+          renderFilterOptions("typeFiltersMobile", types, "type");
+          renderFilterOptions("modeFiltersMobile", modes, "mode");
+          renderFilterOptions("branchFiltersMobile", branches, "branch");
+          renderJobsList();
+        }
+
+        if (!pastOnly) {
+          const probe = await fetch("/jobs/create", { method: "GET", redirect: "manual" });
+          if (probe.status === 200) {
+            createBtn.style.display = "inline-flex";
+            createBtn.onclick = () => (window.location.href = "/jobs/create");
+          }
+        }
+      } catch (e) {
+        state.textContent = (e && e.message) ? e.message : "Failed to load jobs";
+        if (list) list.style.display = "none";
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const search = document.getElementById("jobSearch");
+      const cgpa = document.getElementById("cgpaFilter");
+      const cgpaMob = document.getElementById("cgpaFilterMobile");
+      const openBtn = document.getElementById("openFiltersBtn");
+      const applyBtn = document.getElementById("applyMobileFilters");
+      const overlay = document.getElementById("filterOverlay");
+      search?.addEventListener("input", () => { filters.q = search.value || ""; renderJobsList(); });
+      cgpa?.addEventListener("change", () => { filters.cgpa = cgpa.value || ""; if (cgpaMob) cgpaMob.value = cgpa.value; renderJobsList(); });
+      cgpaMob?.addEventListener("change", () => { filters.cgpa = cgpaMob.value || ""; if (cgpa) cgpa.value = cgpaMob.value; });
+      openBtn?.addEventListener("click", () => syncMobileDrawer(true));
+      applyBtn?.addEventListener("click", () => { syncMobileDrawer(false); renderJobsList(); });
+      overlay?.addEventListener("click", () => syncMobileDrawer(false));
+      load();
+    });
+  </script>
+</body>
+</html>
+

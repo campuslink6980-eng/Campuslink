@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin · Coordinators</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/admin.css">
+  <style>
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(220, 38, 38, 0.35);
+      background: rgba(15, 21, 48, 0.65);
+      color: var(--text);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .btn-secondary:hover { filter: brightness(1.08); }
+    .divider {
+      height: 1px;
+      background: rgba(220, 38, 38, 0.2);
+      margin: 16px 0;
+    }
+    .status {
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(220, 38, 38, 0.25);
+      background: rgba(15, 21, 48, 0.5);
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .status.error {
+      border-color: rgba(239, 68, 68, 0.35);
+      color: var(--danger);
+      background: rgba(239, 68, 68, 0.08);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      overflow: hidden;
+      border-radius: 12px;
+      border: 1px solid rgba(220, 38, 38, 0.18);
+    }
+    th, td {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(220, 38, 38, 0.14);
+      font-size: 14px;
+      color: var(--text);
+    }
+    th { color: #c9d3ff; font-weight: 700; background: rgba(255,255,255,0.03); }
+    tr:last-child td { border-bottom: none; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <section class="card" role="region" aria-labelledby="title">
+      <div class="topbar">
+        <div class="card-header" style="margin:0;">
+          <h1 id="title">Coordinator Accounts</h1>
+          <p class="subtitle">Create and manage placement coordinator logins (admin only).</p>
+        </div>
+        <a class="btn-secondary" href="/main">Back to main</a>
+      </div>
+
+      <form class="form" id="createForm" novalidate>
+        <div class="grid">
+          <div class="field">
+            <label for="firstName">First name</label>
+            <input id="firstName" name="first_name" type="text" autocomplete="given-name" required>
+          </div>
+          <div class="field">
+            <label for="lastName">Last name</label>
+            <input id="lastName" name="last_name" type="text" autocomplete="family-name">
+          </div>
+        </div>
+
+        <div class="grid">
+          <div class="field">
+            <label for="email">Coordinator email</label>
+            <input id="email" name="email" type="email" autocomplete="email" inputmode="email" required>
+          </div>
+          <div class="field">
+            <label for="branchCode">Branch code</label>
+            <input id="branchCode" name="branch_code" type="text" placeholder="e.g. IT, CSE, ECE" required>
+            <small class="hint">Branch scope for coordinator tools (e.g. placement). Student profile verification is done by faculty of the same branch; coordinators approve alumni requests.</small>
+          </div>
+        </div>
+        <div class="grid">
+          <div class="field">
+            <label for="password">Temporary password</label>
+            <input id="password" name="password" type="password" autocomplete="new-password" minlength="8" required>
+            <small class="hint">At least 8 characters. Share securely with the coordinator.</small>
+          </div>
+        </div>
+
+        <button class="button" type="submit" id="createBtn">Create Coordinator</button>
+      </form>
+
+      <div class="divider"></div>
+
+      <div id="listStatus" class="status">Loading coordinator accounts…</div>
+      <div id="tableWrap"></div>
+    </section>
+  </main>
+
+  <footer class="footer" aria-label="Footer">
+    <p>© <span id="year"></span> Campuslink Admin</p>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    const statusEl = document.getElementById('listStatus');
+    const tableWrap = document.getElementById('tableWrap');
+    const form = document.getElementById('createForm');
+    const btn = document.getElementById('createBtn');
+
+    function setStatus(message, isError=false) {
+      statusEl.textContent = message;
+      statusEl.className = 'status' + (isError ? ' error' : '');
+    }
+
+    function renderTable(items) {
+      if (!items || !items.length) {
+        tableWrap.innerHTML = '';
+        setStatus('No coordinators found yet. Create the first coordinator above.');
+        return;
+      }
+      setStatus(`Showing ${items.length} coordinator account(s).`);
+      const rows = items.map((c) => {
+        const name = [c.first_name, c.last_name].filter(Boolean).join(' ') || '—';
+        const created = c.created_at ? new Date(c.created_at).toLocaleString() : '—';
+        return `<tr>
+          <td>${name}</td>
+          <td class="mono">${c.email || '—'}</td>
+          <td>${created}</td>
+        </tr>`;
+      }).join('');
+
+      tableWrap.innerHTML = `
+        <table aria-label="Coordinator accounts">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Created</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    }
+
+    async function loadCoordinators() {
+      setStatus('Loading coordinator accounts…');
+      tableWrap.innerHTML = '';
+      try {
+        const res = await fetch('/api/admin/coordinators');
+        if (res.status === 401) {
+          // Admin session missing/expired
+          window.location.href = '/admin/login';
+          return;
+        }
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'Failed to load coordinators');
+        renderTable(data.items || []);
+      } catch (e) {
+        setStatus(e && e.message ? e.message : 'Failed to load coordinators', true);
+      }
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      btn.disabled = true;
+      btn.textContent = 'Creating…';
+      try {
+        const payload = {
+          first_name: document.getElementById('firstName').value.trim(),
+          last_name: document.getElementById('lastName').value.trim(),
+          email: document.getElementById('email').value.trim(),
+          branch_code: document.getElementById('branchCode').value.trim(),
+          password: document.getElementById('password').value,
+        };
+        const res = await fetch('/api/admin/coordinators', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (res.status === 401) {
+          window.location.href = '/admin/login';
+          return;
+        }
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'Failed to create coordinator');
+        form.reset();
+        await loadCoordinators();
+      } catch (e2) {
+        setStatus(e2 && e2.message ? e2.message : 'Failed to create coordinator', true);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Create Coordinator';
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', loadCoordinators);
+  </script>
+</body>
+</html>
+

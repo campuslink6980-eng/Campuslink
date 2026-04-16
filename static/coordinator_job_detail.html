@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CampusLink · Job Details</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <style>
+    body {
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      background:
+        radial-gradient(1200px 800px at 80% -10%, #1d2a5c 0%, transparent 60%),
+        radial-gradient(900px 600px at -10% 40%, #0b63c5 0%, transparent 55%),
+        var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .wrap { max-width: 980px; margin: 0 auto; padding: 26px 18px 60px; }
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02)), #0f172a;
+      border-radius:22px;
+      border:1px solid rgba(148,163,184,0.55);
+      padding:18px 20px 16px;
+      box-shadow:
+        0 30px 80px rgba(15,23,42,0.8),
+        0 0 0 1px rgba(15,23,42,0.7);
+      color:#e5e7eb;
+    }
+    .breadcrumb {
+      font-size: 13px;
+      color: #9ca3af;
+      margin-bottom: 12px;
+    }
+    .breadcrumb a {
+      color: #60a5fa;
+      text-decoration: none;
+    }
+    .breadcrumb a:hover {
+      text-decoration: underline;
+    }
+    h1 { margin:0; font-size: 20px; }
+    .meta { margin-top:6px; font-size:12px; color: #9ca3af; display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+    .pill { display:inline-flex; padding:4px 8px; border-radius:999px; font-size:11px; font-weight:700; background: rgba(79,70,229,0.2); color: #e5e7eb; }
+    .pill.active { background: rgba(5, 118, 66, 0.3); color: #5dc983; }
+    .pill.inactive { background: rgba(220, 53, 69, 0.3); color: #ff6b6b; }
+    .btn {
+      border:1px solid rgba(148,163,184,0.7);
+      background: transparent;
+      border-radius:999px;
+      padding:8px 12px;
+      font-size:12px;
+      font-weight:800;
+      cursor:pointer;
+      color:#e5e7eb;
+    }
+    .btn.primary {
+      background: linear-gradient(135deg, #4f46e5, #06b6d4);
+      border:none;
+      color:#fff;
+      box-shadow:0 12px 30px rgba(59,130,246,0.45);
+    }
+    .btn.danger {
+      background: rgba(220, 53, 69, 0.2);
+      border-color: rgba(220, 53, 69, 0.5);
+      color: #ff6b6b;
+    }
+    .btn[disabled] { opacity: 0.6; cursor: not-allowed; box-shadow:none; }
+    .desc { margin-top: 12px; font-size: 13px; line-height: 1.6; color: #e5e7eb; white-space: pre-wrap; }
+    .desc-label { font-weight: 700; color: #9ca3af; font-size: 12px; margin-bottom: 4px; }
+    .job-important-criteria {
+      margin-top: 14px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(251, 191, 36, 0.45);
+      background: linear-gradient(135deg, rgba(254, 243, 199, 0.14), rgba(252, 165, 165, 0.12));
+      box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.4) inset;
+    }
+    .job-important-criteria h2 {
+      margin: 0 0 8px;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      color: #fde68a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .job-important-criteria .job-important-criteria-body {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.55;
+      color: #fef3c7;
+      white-space: pre-wrap;
+    }
+    .state { padding:12px; color: #9ca3af; font-size: 13px; }
+    
+    /* Applications section */
+    .applications-section {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(148,163,184,0.3);
+    }
+    .applications-section h2 {
+      font-size: 16px;
+      margin: 0 0 12px;
+    }
+    .app-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .app-table th, .app-table td {
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid rgba(148,163,184,0.2);
+    }
+    .app-table th {
+      font-weight: 700;
+      color: #9ca3af;
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+    .app-table .badge {
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-applied { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+    .badge-shortlisted { background: rgba(5, 118, 66, 0.2); color: #5dc983; }
+    .badge-rejected { background: rgba(220, 53, 69, 0.2); color: #ff6b6b; }
+    .app-actions {
+      display: flex;
+      gap: 6px;
+    }
+    .app-actions button {
+      padding: 4px 8px;
+      font-size: 11px;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 1px solid rgba(148,163,184,0.5);
+      background: transparent;
+      color: #e5e7eb;
+    }
+    .app-actions button:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    .app-actions button.accept {
+      background: rgba(5, 118, 66, 0.2);
+      border-color: rgba(5, 118, 66, 0.5);
+      color: #5dc983;
+    }
+    .app-actions button.reject {
+      background: rgba(220, 53, 69, 0.2);
+      border-color: rgba(220, 53, 69, 0.5);
+      color: #ff6b6b;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="breadcrumb">
+        <a href="/coordinator/dashboard">Dashboard</a> &gt; 
+        <a href="/coordinator/dashboard#job-posts">Job Posts</a> &gt; 
+        <span>Job Details</span>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
+        <div>
+          <h1 id="title">Loading…</h1>
+          <div class="meta" id="meta"></div>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button class="btn" type="button" onclick="goBack()">Back</button>
+          <button class="btn primary" id="editBtn" type="button">Edit</button>
+          <button class="btn danger" id="deleteBtn" type="button">Delete</button>
+        </div>
+      </div>
+
+      <div id="importantCriteria" class="job-important-criteria" style="display:none;" role="note"></div>
+      <div id="desc" class="desc"></div>
+      <div id="req" class="desc" style="margin-top:8px;"></div>
+      <div id="salary" class="desc" style="margin-top:8px;"></div>
+      <div id="attachment" class="desc" style="margin-top:8px;"></div>
+      
+      <!-- Applications Section -->
+      <div class="applications-section" id="applicationsSection" style="display:none;">
+        <h2>Applications (<span id="appCount">0</span>)</h2>
+        <div id="applicationsContent"></div>
+      </div>
+      
+      <div id="state" class="state"></div>
+    </div>
+  </div>
+
+  <script>
+    let jobId = null;
+
+    function goBack() {
+      window.location.href = "/coordinator/dashboard#job-posts";
+    }
+
+    function escapeHtml(s) {
+      return String(s || "")
+        .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+        .replaceAll("\"","&quot;").replaceAll("'","&#039;");
+    }
+
+    async function load() {
+      jobId = window.location.pathname.split("/").pop();
+      const title = document.getElementById("title");
+      const meta = document.getElementById("meta");
+      const desc = document.getElementById("desc");
+      const req = document.getElementById("req");
+      const state = document.getElementById("state");
+      const salaryEl = document.getElementById("salary");
+      const attachmentEl = document.getElementById("attachment");
+      const editBtn = document.getElementById("editBtn");
+      const deleteBtn = document.getElementById("deleteBtn");
+      const importantCriteriaEl = document.getElementById("importantCriteria");
+
+      state.textContent = "Loading job…";
+      try {
+        const res = await fetch(`/api/jobs/${encodeURIComponent(jobId)}`);
+        if (res.status === 401) { window.location.href = "/login"; return; }
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || "Failed to load job");
+
+        const j = data.job || {};
+        title.textContent = `${j.role || "Role"} · ${j.company_name || "Company"}`;
+        
+        const statusClass = j.status === "active" ? "active" : "inactive";
+        const locationText = j.location ? `Location: ${j.location}` : "";
+        meta.innerHTML = `
+          <span class="pill">${escapeHtml(j.type || "")}</span>
+          <span class="pill">${escapeHtml(j.mode || "")}</span>
+          <span class="pill ${statusClass}">${escapeHtml(j.status || "active")}</span>
+          ${locationText ? `<span>${escapeHtml(locationText)}</span>` : ""}
+          <span>Deadline: ${escapeHtml(j.deadline || "—")}</span>
+          <span>Eligible: ${escapeHtml((j.eligible_branches || []).join(", ") || "All")}</span>
+        `;
+
+        const icText = (j.important_criteria_text && String(j.important_criteria_text).trim()) || "";
+        if (j.important_criteria_enabled && icText) {
+          importantCriteriaEl.style.display = "block";
+          importantCriteriaEl.innerHTML =
+            "<h2><span aria-hidden=\"true\">⚠️</span> Important Criteria</h2>" +
+            "<p class=\"job-important-criteria-body\">" +
+            escapeHtml(icText).replace(/\n/g, "<br>") +
+            "</p>";
+        } else {
+          importantCriteriaEl.style.display = "none";
+          importantCriteriaEl.innerHTML = "";
+        }
+
+        let descBody = "";
+        if (j.about) descBody += escapeHtml(j.about);
+        if (j.responsibilities && j.responsibilities.length) {
+          descBody += (descBody ? "<br><br>" : "") + "<strong>Key responsibilities</strong><br>" +
+            j.responsibilities.map((r) => "• " + escapeHtml(r)).join("<br>");
+        }
+        if (!descBody && j.description) descBody = escapeHtml(j.description);
+        desc.innerHTML = `<div class="desc-label">Description</div>${descBody || "No description provided."}`;
+
+        let reqParts = [];
+        if (j.required_skills && j.required_skills.length) {
+          reqParts.push("<strong>Required skills</strong><br>" + j.required_skills.map(escapeHtml).join(", "));
+        }
+        if (j.preferred_skills && j.preferred_skills.length) {
+          reqParts.push("<strong>Preferred skills</strong><br>" + j.preferred_skills.map(escapeHtml).join(", "));
+        }
+        if (j.requirements) reqParts.push(escapeHtml(j.requirements));
+        req.innerHTML = reqParts.length ? `<div class="desc-label">Requirements</div>${reqParts.join("<br><br>")}` : "";
+
+        let salParts = [];
+        if (j.salary) salParts.push(escapeHtml(j.salary));
+        if (j.perks && j.perks.length) salParts.push("Perks: " + j.perks.map(escapeHtml).join(", "));
+        if (j.selection_process) salParts.push("Selection: " + escapeHtml(j.selection_process));
+        if (j.rounds && j.rounds.length) salParts.push("Rounds: " + j.rounds.map(escapeHtml).join(" → "));
+        if (j.joining_date) salParts.push("Joining: " + escapeHtml(j.joining_date));
+        salaryEl.innerHTML = salParts.length ? `<div class="desc-label">Compensation &amp; process</div>${salParts.join("<br>")}` : "";
+
+        const multi = j.attachments || [];
+        if (multi.length) {
+          attachmentEl.innerHTML = `<div class="desc-label">Attachments</div>` + multi.map((a, i) => {
+            const fn = a.filename || "Document " + (i + 1);
+            return `<div style="margin-top:4px;"><a href="/jobs/${encodeURIComponent(jobId)}/attachment?n=${i}" class="link" style="font-size:13px; color: #60a5fa;">Download ${escapeHtml(fn)}</a></div>`;
+          }).join("");
+        } else {
+          const att = j.attachment || {};
+          if (att.has_attachment && att.filename) {
+            attachmentEl.innerHTML = `<a href="/jobs/${encodeURIComponent(jobId)}/attachment" class="link" style="font-size:13px; color: #60a5fa;">Download detailed JD (${escapeHtml(att.filename)})</a>`;
+          } else {
+            attachmentEl.textContent = "";
+          }
+        }
+
+        editBtn.onclick = () => {
+          window.location.href = `/coordinator/jobs/create?edit=${encodeURIComponent(jobId)}`;
+        };
+        
+        deleteBtn.onclick = async () => {
+          if (!confirm("Are you sure you want to delete this job?")) return;
+          const r = await fetch(`/api/jobs/${encodeURIComponent(jobId)}`, { method: "DELETE" });
+          const d = await r.json().catch(() => ({}));
+          if (!r.ok) {
+            alert(d.error || "Failed to delete job");
+            return;
+          }
+          window.location.href = "/coordinator/dashboard#job-posts";
+        };
+
+        state.textContent = "";
+        
+        // Load applications
+        await loadApplications();
+      } catch (e) {
+        state.textContent = e.message || "Failed to load job";
+      }
+    }
+
+    async function loadApplications() {
+      const section = document.getElementById("applicationsSection");
+      const content = document.getElementById("applicationsContent");
+      const countEl = document.getElementById("appCount");
+      
+      try {
+        const res = await fetch(`/api/coordinator/jobs/${encodeURIComponent(jobId)}/applications`);
+        if (!res.ok) {
+          // API might not exist yet
+          return;
+        }
+        const data = await res.json();
+        const apps = data.applications || [];
+        
+        countEl.textContent = apps.length;
+        
+        if (apps.length === 0) {
+          content.innerHTML = '<p style="color: #9ca3af; font-size: 13px;">No applications yet.</p>';
+          section.style.display = "block";
+          return;
+        }
+        
+        section.style.display = "block";
+        
+        let html = `
+          <table class="app-table">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Branch</th>
+                <th>Applied On</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+        `;
+        
+        apps.forEach(app => {
+          const badgeClass = {
+            'APPLIED': 'badge-applied',
+            'SHORTLISTED': 'badge-shortlisted',
+            'REJECTED': 'badge-rejected'
+          }[app.status] || 'badge-applied';
+          
+          html += `
+            <tr>
+              <td>${escapeHtml(app.student_name || 'Unknown')}</td>
+              <td>${escapeHtml(app.branch || '—')}</td>
+              <td>${app.applied_at ? new Date(app.applied_at).toLocaleDateString() : '—'}</td>
+              <td><span class="badge ${badgeClass}">${escapeHtml(app.status || 'APPLIED')}</span></td>
+              <td class="app-actions">
+                <a href="/profile/${app.student_id}" class="accept" style="text-decoration:none;color:inherit;display:inline-block;padding:4px 8px;font-size:11px;border-radius:6px;border:1px solid rgba(5,118,66,0.5);background:rgba(5,118,66,0.2);color:#5dc983;" target="_blank" rel="noopener">View profile</a>
+                ${app.status === 'APPLIED' ? `
+                  <button class="accept" onclick="updateAppStatus('${app.id}', 'SHORTLISTED')">Shortlist</button>
+                  <button class="reject" onclick="updateAppStatus('${app.id}', 'REJECTED')">Reject</button>
+                ` : app.status === 'SHORTLISTED' ? `
+                  <button class="reject" onclick="updateAppStatus('${app.id}', 'REJECTED')">Reject</button>
+                ` : '—'}
+              </td>
+            </tr>
+          `;
+        });
+        
+        html += '</tbody></table>';
+        content.innerHTML = html;
+        
+      } catch (e) {
+        console.error("Failed to load applications", e);
+      }
+    }
+
+    async function updateAppStatus(appId, status) {
+      try {
+        const res = await fetch(`/api/jobs/${encodeURIComponent(jobId)}/applications/${appId}/status`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status })
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || 'Failed to update status');
+        }
+        await loadApplications(); // Refresh
+      } catch (e) {
+        alert(e.message || 'Failed to update application status');
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", load);
+  </script>
+</body>
+</html>

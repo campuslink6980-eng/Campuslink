@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CampusLink · Settings</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root { --primary: #001bb7; --accent: #0046ff; --text: #11224e; --muted: #64748b; --border: #e2e8f0; --card: #fff; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Inter, system-ui, sans-serif; background: #f1f5f9; color: var(--text); min-height: 100vh; }
+    header { background: linear-gradient(90deg, var(--primary), var(--accent)); color: #fff; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+    header a { color: #fff; text-decoration: none; font-weight: 600; }
+    main { max-width: 560px; margin: 32px auto; padding: 0 20px; }
+    .card { background: var(--card); border-radius: 12px; border: 1px solid var(--border); padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+    h1 { margin: 0 0 8px; font-size: 22px; }
+    p.lead { margin: 0 0 20px; color: var(--muted); font-size: 14px; line-height: 1.5; }
+    ul { list-style: none; margin: 0; padding: 0; }
+    li { border-bottom: 1px solid var(--border); }
+    li:last-child { border-bottom: none; }
+    li a { display: block; padding: 14px 4px; color: var(--text); text-decoration: none; font-weight: 600; font-size: 15px; }
+    li a:hover { color: var(--accent); }
+    li span.hint { display: block; font-size: 12px; font-weight: 400; color: var(--muted); margin-top: 2px; }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="/user/dashboard">← Back to dashboard</a>
+    <span style="font-weight:700;">CampusLink</span>
+  </header>
+  <main>
+    <div class="card">
+      <h1>Settings</h1>
+      <p class="lead">Account and profile shortcuts. Use Edit profile to update your CampusLink profile sections.</p>
+      <ul>
+        <li>
+          <a href="/student/profile">Edit profile<span class="hint">Skills, projects, education, and more</span></a>
+        </li>
+        <li>
+          <a href="/profile/me">View public profile<span class="hint">How others see your profile</span></a>
+        </li>
+        <li>
+          <a href="/forgot-password">Reset password<span class="hint">We’ll email you a secure link</span></a>
+        </li>
+        <li>
+          <a href="/logout">Sign out</a>
+        </li>
+      </ul>
+    </div>
+  </main>
+</body>
+</html>

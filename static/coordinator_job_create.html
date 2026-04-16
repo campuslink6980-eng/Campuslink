@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CampusLink · Create Job</title>
+  <link rel="stylesheet" href="/static/css/job-post-form.css" />
+</head>
+<body class="jpf-page">
+  <div
+    id="jobPostFormApp"
+    class="jpf-shell"
+    data-redirect-mode="list"
+    data-success-url="/coordinator/dashboard#job-posts"
+  >
+    <div class="jpf-breadcrumb">
+      <a href="/coordinator/dashboard">Dashboard</a> &gt;
+      <a href="/coordinator/dashboard#job-posts">Job Posts</a> &gt;
+      <span id="jpf_breadcrumb_current">Create</span>
+    </div>
+
+    <div class="jpf-topbar">
+      <div>
+        <h1 id="jpf_page_title">Create job posting</h1>
+        <p class="jpf-sub" id="jpf_page_subtitle">Structured posting with eligibility, skills, and attachments. Students see listings as before.</p>
+      </div>
+      <a class="jpf-btn" href="/coordinator/dashboard#job-posts">Back</a>
+    </div>
+
+    <form id="jobPostForm" novalidate>
+      <input type="hidden" id="jpf_rounds_json" name="rounds_json" value="[]" />
+
+      <section class="jpf-section" aria-labelledby="jpf-h-basic">
+        <h2 class="jpf-section-title" id="jpf-h-basic">Basic job details</h2>
+        <p class="jpf-section-hint">Role title, company, and how the position works.</p>
+        <div class="jpf-grid">
+          <div class="jpf-field">
+            <label for="jpf_title">Job title</label>
+            <input id="jpf_title" name="title" type="text" required placeholder="e.g. Software Engineer Intern" autocomplete="off" />
+          </div>
+          <div class="jpf-field">
+            <label for="jpf_company_name">Company name</label>
+            <input id="jpf_company_name" name="company_name" type="text" required placeholder="Company legal or brand name" autocomplete="organization" />
+          </div>
+          <div class="jpf-field">
+            <label for="jpf_job_type">Job type</label>
+            <select id="jpf_job_type" name="job_type" required>
+              <option value="">Select</option>
+              <option value="Full-time">Full-time</option>
+              <option value="Internship">Internship</option>
+              <option value="Part-time">Part-time</option>
+              <option value="Project">Project</option>
+            </select>
+          </div>
+          <div class="jpf-field">
+            <label for="jpf_work_mode">Work mode</label>
+            <select id="jpf_work_mode" name="work_mode" required>
+              <option value="">Select</option>
+              <option value="On-site">On-site</option>
+              <option value="Remote">Remote</option>
+              <option value="Hybrid">Hybrid</option>
+            </select>
+          </div>
+          <div class="jpf-field jpf-field-full">
+            <label for="jpf_location">Location</label>
+            <input id="jpf_location" name="location" type="text" required placeholder="City, Country — or Remote" />
+            <span class="jpf-hint-inline">Use “Remote” if fully remote.</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="jpf-section" aria-labelledby="jpf-h-desc">
+        <h2 class="jpf-section-title" id="jpf-h-desc">Job description</h2>
+        <p class="jpf-section-hint">Overview, responsibilities (one per line), and skills as comma-separated lists.</p>
+        <div class="jpf-grid">
+          <div class="jpf-field jpf-field-full">
+            <label for="jpf_about">About the role</label>
+            <textarea id="jpf_about" name="about" class="jpf-textarea-sm" required placeholder="Short overview of the team, impact, and what success looks like."></textarea>
+          </div>
+          <div class="jpf-field jpf-field-full">
+            <label for="jpf_responsibilities">Key responsibilities</label>
+            <textarea id="jpf_responsibilities" name="responsibilities" required placeholder="One bullet per line (dashes optional), e.g.&#10;Build REST APIs&#10;Collaborate with product"></textarea>
+          </div>
+          <div class="jpf-field jpf-field-full">
+            <label for="jpf_required_skills">Required skills</label>
+            <textarea id="jpf_required_skills" name="required_skills" required placeholder="Comma-separated, e.g. Python, SQL, React"></textarea>
+          </div>
+          <div class="jpf-field jpf-field-full">
+            <label for="jpf_preferred_skills">Preferred skills <span class="jpf-optional">(optional)</span></label>
+            <textarea id="jpf_preferred_skills" name="preferred_skills" placeholder="Comma-separated"></textarea>
+          </div>
+        </div>
+      </section>
+
+      <section class="jpf-section" aria-labelledby="jpf-h-elig">
+        <h2 class="jpf-section-title" id="jpf-h-elig">Eligibility criteria</h2>
+        <p class="jpf-section-hint">Who can apply; enforced when students submit applications.</p>
+        <div class="jpf-grid">
+          <div class="jpf-field">
+            <label for="jpf_min_cgpa">Minimum CGPA <span class="jpf-optional">(optional, 0–10)</span></label>
+            <input id="jpf_min_cgpa" name="min_cgpa" type="number" min="0" max="10" step="0.01" placeholder="e.g. 7.5" />
+          </div>
+          <div class="jpf-field">
+            <label for="jpf_batch_year">Batch / graduation year <span class="jpf-optional">(optional)</span></label>
+            <select id="jpf_batch_year" name="batch_year">
+              <option value="">Any / not specified</option>
+              <option value="2024">2024</option>
+              <option value="2025">2025</option>
+              <option value="2026">2026</option>
+              <option value="2027">2027</option>
+            </select>
+          </div>
+          <div class="jpf-field">
+            <label for="jpf_experience">Experience required</label>
+            <select id="jpf_experience" name="experience">
+              <option value="">Select</option>
+              <option value="Fresher">Fresher</option>
+              <option value="0-1 years">0–1 years</option>
+              <option value="0-2 years">0–2 years</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="jpf-field">
+            <label for="jpf_backlog_criteria">Backlog criteria</label>
+            <select id="jpf_backlog_criteria" name="backlog_criteria">
+              <option value="">Select</option>
+              <option value="Allowed">Allowed</option>
+              <option value="Not Allowed">Not Allowed</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="jpf-field jpf-field-full">
+            <label for="jpf_other_requirements">Other requirements <span class="jpf-optional">(optional)</span></label>
+            <textarea id="jpf_other_requirements" name="other_requirements" class="jpf-textarea-sm" placeholder="Visa, certifications, etc."></textarea>
+          </div>
+          <div class="jpf-field jpf-field-full">
+            <label class="jpf-checkbox-row">
+              <input type="checkbox" id="jpf_important_criteria_enabled" name="important_criteria_enabled" value="1" />
+              <span>Mark as Important Job Criteria</span>
+            </label>
+          </div>
+          <div class="jpf-field jpf-field-full jpf-important-criteria-panel" id="jpf_important_criteria_wrap" aria-live="polite">
+            <label for="jpf_important_criteria_text">Important Criteria</label>
+            <textarea id="jpf_important_criteria_text" name="important_criteria_text" class="jpf-textarea-sm" disabled placeholder="e.g. Strictly no backlogs allowed; Only IT branch eligible; Minimum CGPA 8.5 mandatory"></textarea>
+          </div>
+          <div class="jpf-field jpf-field-full">
+            <span class="jpf-label">Branches allowed</span>
+            <div class="jpf-chips" role="group" aria-label="Branches allowed">
+              <label><input type="checkbox" name="branches_allowed" value="CST" /> CST</label>
+              <label><input type="checkbox" name="branches_allowed" value="IT" /> IT</label>
+              <label><input type="checkbox" name="branches_allowed" value="ENC" /> ENC</label>
+              <label><input type="checkbox" name="branches_allowed" value="DS" /> DS</label>
+              <label><input type="checkbox" name="branches_allowed" value="AI" /> AI</label>
+              <label><input type="checkbox" name="branches_allowed" value="CE" /> CE</label>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="jpf-section" aria-labelledby="jpf-h-comp">
+        <h2 class="jpf-section-title" id="jpf-h-comp">Compensation &amp; benefits</h2>
+        <div class="jpf-grid">
+          <div class="jpf-field jpf-field-full">
+            <label for="jpf_salary">Salary / stipend <span class="jpf-optional">(optional)</span></label>
+            <input id="jpf_salary" name="salary" type="text" placeholder="e.g. ₹20,000/month or ₹5–8 LPA" />
+          </div>
+          <div class="jpf-field jpf-field-full">
+            <span class="jpf-label">Perks</span>
+            <div class="jpf-chips" role="group" aria-label="Perks">
+              <label><input type="checkbox" name="perks" value="Certificate" /> Certificate</label>
+              <label><input type="checkbox" name="perks" value="PPO (Pre-Placement Offer)" /> PPO (Pre-Placement Offer)</label>
+              <label><input type="checkbox" name="perks" value="Flexible hours" /> Flexible hours</label>
+              <label><input type="checkbox" name="perks" value="Learning opportunities" /> Learning opportunities</label>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="jpf-section" aria-labelledby="jpf-h-app">
+        <h2 class="jpf-section-title" id="jpf-h-app">Application process</h2>
+        <div class="jpf-grid">
+          <div class="jpf-field">
+            <label for="jpf_application_deadline">Application deadline</label>
+            <input id="jpf_application_deadline" name="application_deadline" type="date" required />
+          </div>
+          <div class="jpf-field">
+            <label for="jpf_joining_date">Expected joining date <span class="jpf-optional">(optional)</span></label>
+            <input id="jpf_joining_date" name="joining_date" type="date" />
+          </div>
+          <div class="jpf-field jpf-field-full">
+            <label for="jpf_selection_process">Selection process</label>
+            <textarea id="jpf_selection_process" name="selection_process" class="jpf-textarea-sm" placeholder="e.g. Resume → Online test → Technical interview → HR"></textarea>
+          </div>
+          <div class="jpf-field">
+            <label for="jpf_num_rounds">Number of rounds</label>
+            <select id="jpf_num_rounds">
+              <option value="0">None</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+            </select>
+          </div>
+          <div class="jpf-field jpf-field-full">
+            <span class="jpf-label">Round names</span>
+            <div id="jpf_rounds_container" class="jpf-rounds-box"></div>
+            <span class="jpf-hint-inline">Shown to candidates in order.</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="jpf-section" aria-labelledby="jpf-h-files">
+        <h2 class="jpf-section-title" id="jpf-h-files">Attachments</h2>
+        <p class="jpf-section-hint">PDF job descriptions only. You can add up to 10 files; new files append when editing.</p>
+        <div class="jpf-field jpf-field-full">
+          <label for="jpf_job_pdfs">Job description PDF(s)</label>
+          <input id="jpf_job_pdfs" name="job_pdfs" type="file" accept="application/pdf,.pdf" multiple />
+        </div>
+      </section>
+
+      <div class="jpf-actions">
+        <a class="jpf-btn" href="/coordinator/dashboard#job-posts">Cancel</a>
+        <button type="submit" class="jpf-btn jpf-btn-primary" id="jpf_submit">Publish job</button>
+      </div>
+      <div id="jpf_state" class="jpf-state" role="status"></div>
+    </form>
+  </div>
+  <script src="/static/js/job-post-form.js"></script>
+</body>
+</html>

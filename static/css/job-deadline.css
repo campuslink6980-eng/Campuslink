@@ -1,0 +1,43 @@
+/* Countdown + urgency for job application deadlines */
+.job-deadline-countdown {
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 6px;
+  letter-spacing: 0.02em;
+}
+.job-deadline-countdown.cl-cd-normal {
+  color: #94a3b8;
+}
+.job-deadline-countdown.cl-cd-orange {
+  color: #fb923c;
+}
+.job-deadline-countdown.cl-cd-red {
+  color: #f87171;
+}
+.job-deadline-countdown.cl-cd-ended {
+  color: #9ca3af;
+  font-weight: 700;
+}
+
+.job-deadline-note {
+  font-size: 12px;
+  color: #fb923c;
+  margin-top: 6px;
+  font-weight: 600;
+}
+
+.job-deadline-countdown--light {
+  color: #64748b;
+}
+.job-deadline-countdown--light.cl-cd-orange {
+  color: #ea580c;
+}
+.job-deadline-countdown--light.cl-cd-red {
+  color: #dc2626;
+}
+
+.btn.apply-closed {
+  opacity: 0.55;
+  cursor: not-allowed !important;
+  filter: grayscale(0.35);
+}

@@ -1,0 +1,875 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CampusLink · Edit Profile</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      color: var(--text);
+      background: radial-gradient(1200px 800px at 80% -10%, #1a2250 0%, transparent 60%),
+                  radial-gradient(900px 600px at -10% 20%, #0e5fc1 0%, transparent 55%),
+                  var(--bg);
+    }
+    .edit-shell {
+      min-height: calc(100vh - 80px);
+      padding: 24px 16px 48px;
+      max-width: 1120px;
+      margin: 0 auto;
+      color: var(--text);
+    }
+    .edit-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .edit-title-wrap h1 {
+      margin: 0 0 4px;
+      font-size: 24px;
+    }
+    .edit-title-wrap p {
+      margin: 0;
+      font-size: 14px;
+      color: var(--muted);
+    }
+    .save-row {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .save-row button {
+      padding: 10px 18px;
+      border-radius: 999px;
+      border: none;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .logout-icon-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      font-size: 18px;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+    .sections {
+      display: grid;
+      gap: 16px;
+    }
+    .section-card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)), var(--card);
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 18px 18px 12px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    .section-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-actions button {
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: transparent;
+      color: var(--text);
+      font-size: 12px;
+      padding: 6px 10px;
+      cursor: pointer;
+    }
+    .section-body {
+      display: grid;
+      gap: 12px;
+    }
+    .field-row {
+      display: grid;
+      gap: 12px;
+    }
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .field-group label {
+      font-size: 13px;
+      color: #c9d3ff;
+    }
+    .field-group input,
+    .field-group select,
+    .field-group textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: var(--input);
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
+    }
+    .field-group input::placeholder,
+    .field-group textarea::placeholder {
+      color: #9aa4c0;
+    }
+    .field-group textarea {
+      min-height: 72px;
+      resize: vertical;
+    }
+    .inline {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+    }
+    .checkbox-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 18px;
+      font-size: 13px;
+      color: #cfd8ff;
+    }
+    .checkbox-list label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+    .tag-input-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .tag-input-row input {
+      flex: 1;
+      min-width: 180px;
+    }
+    .chip {
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(59,130,246,0.18);
+      font-size: 12px;
+    }
+    .item-card {
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 10px 12px 8px;
+      background: rgba(15,21,48,0.8);
+    }
+    .item-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+    .item-actions {
+      display: flex;
+      gap: 6px;
+      font-size: 12px;
+      color: #aeb7e8;
+    }
+    .item-actions button {
+      background: transparent;
+      border: none;
+      color: inherit;
+      cursor: pointer;
+      padding: 0;
+    }
+    @media (max-width: 720px) {
+      .edit-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .save-row {
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="edit-shell">
+    <header class="edit-header">
+      <div class="edit-title-wrap">
+        <h1>Edit profile</h1>
+        <p>Keep your CampusLink profile up to date, just like a LinkedIn profile.</p>
+      </div>
+      <div class="save-row">
+        <button type="button" class="logout-icon-btn" onclick="window.location.href='/logout'" aria-label="Logout">
+          ⎋
+        </button>
+      </div>
+    </header>
+
+    <section class="section-card">
+      <div class="section-header">
+        <div class="section-title">Basic information</div>
+      </div>
+      <div class="section-body">
+        <div class="field-row inline">
+          <div class="field-group">
+            <label for="fullName">Full name</label>
+            <input id="fullName" name="full_name" type="text" placeholder="Enter your full name">
+          </div>
+          <div class="field-group">
+            <label for="headline">Headline</label>
+            <input id="headline" name="headline" type="text" placeholder="e.g. Computer Engineering Student | Aspiring Software Developer">
+          </div>
+        </div>
+        <div class="field-row inline">
+          <div class="field-group">
+            <label for="location">Location</label>
+            <input id="location" name="location" type="text" placeholder="e.g. Mumbai, India">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-group">
+            <label>Open to opportunities</label>
+            <div class="checkbox-list">
+              <label><input type="checkbox" name="open_to" value="internship"> Internship</label>
+              <label><input type="checkbox" name="open_to" value="full_time"> Full-time</label>
+              <label><input type="checkbox" name="open_to" value="remote"> Remote</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-header">
+        <div class="section-title">Education</div>
+        <div class="section-actions">
+          <button type="button">+ Add education</button>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="item-card">
+          <div class="item-header-row">
+            <div>Education entry</div>
+            <div class="item-actions">
+              <button type="button">Edit</button>
+              <button type="button">Delete</button>
+            </div>
+          </div>
+          <div class="field-row inline">
+            <div class="field-group">
+              <label for="eduCollege">College / University</label>
+              <input id="eduCollege" name="edu_college" type="text" placeholder="Search for your college">
+            </div>
+            <div class="field-group">
+              <label for="eduDegree">Degree</label>
+              <select id="eduDegree" name="edu_degree">
+                <option value="">Select degree</option>
+                <option>B.E / B.Tech</option>
+                <option>M.E / M.Tech</option>
+                <option>Diploma</option>
+              </select>
+            </div>
+          </div>
+          <div class="field-row inline">
+            <div class="field-group">
+              <label for="fieldOfStudy">Field of study</label>
+              <input id="fieldOfStudy" name="field_of_study" type="text" placeholder="e.g. Computer Engineering">
+            </div>
+            <div class="field-group">
+              <label for="eduCgpa">CGPA</label>
+              <input id="eduCgpa" name="cgpa" type="text" placeholder="e.g. 8.42">
+            </div>
+          </div>
+          <div class="field-row inline">
+            <div class="field-group">
+              <label for="eduStartDate">Start date</label>
+              <input id="eduStartDate" type="date" title="Select start date">
+            </div>
+            <div class="field-group">
+              <label for="eduEndDate">End date (or expected)</label>
+              <input id="eduEndDate" type="date" title="Select end date">
+              <div class="checkbox-row" style="margin-top:6px;">
+                <input id="eduCurrent" type="checkbox">
+                <label for="eduCurrent">Currently studying</label>
+              </div>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-group">
+              <label for="eduDescription">Description (optional)</label>
+              <textarea id="eduDescription" name="edu_description" placeholder="Achievements, coursework, rank, scholarships…"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-header">
+        <div class="section-title">Internships / Work experience</div>
+        <div class="section-actions">
+          <button type="button">+ Add experience</button>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="item-card">
+          <div class="item-header-row">
+            <div>Experience entry</div>
+            <div class="item-actions">
+              <button type="button">Edit</button>
+              <button type="button">Delete</button>
+            </div>
+          </div>
+          <div class="field-row inline">
+            <div class="field-group">
+              <label for="expCompany">Company name</label>
+              <input id="expCompany" name="company_name" type="text" placeholder="e.g. Google">
+            </div>
+            <div class="field-group">
+              <label for="expRole">Internship role</label>
+              <input id="expRole" name="internship_role" type="text" placeholder="e.g. Software Development Intern">
+            </div>
+          </div>
+          <div class="field-row inline">
+            <div class="field-group">
+              <label for="expType">Employment type</label>
+              <select id="expType" name="employment_type">
+                <option value="">Select type</option>
+                <option>On-site</option>
+                <option>Remote</option>
+                <option>Hybrid</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label for="expLocation">Location</label>
+              <input id="expLocation" name="exp_location" type="text" placeholder="e.g. Bengaluru, India">
+            </div>
+          </div>
+          <div class="field-row inline">
+            <div class="field-group">
+              <label for="expStartDate">Start date</label>
+              <input id="expStartDate" type="date" title="Select start date">
+            </div>
+            <div class="field-group">
+              <label for="expEndDate">End date</label>
+              <input id="expEndDate" type="date" title="Select end date">
+              <div class="checkbox-row" style="margin-top:6px;">
+                <input id="expCurrent" type="checkbox">
+                <label for="expCurrent">Currently working here</label>
+              </div>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-group">
+              <label for="expDescription">Description</label>
+              <textarea id="expDescription" name="exp_description" placeholder="• What did you work on?
+• Technologies used
+• Impact or outcome"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-header">
+        <div class="section-title">Projects</div>
+        <div class="section-actions">
+          <button type="button">+ Add project</button>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="item-card">
+          <div class="item-header-row">
+            <div>Project entry</div>
+            <div class="item-actions">
+              <button type="button">Edit</button>
+              <button type="button">Delete</button>
+            </div>
+          </div>
+          <div class="field-row inline">
+            <div class="field-group">
+              <label for="projectTitle">Project title</label>
+              <input id="projectTitle" name="project_title" type="text" placeholder="e.g. CampusLink Placement Portal">
+            </div>
+            <div class="field-group">
+              <label for="projectType">Project type</label>
+              <select id="projectType" name="project_type">
+                <option value="">Select type</option>
+                <option>Academic</option>
+                <option>Personal</option>
+                <option>Internship</option>
+                <option>Hackathon</option>
+              </select>
+            </div>
+          </div>
+          <div class="field-row inline">
+            <div class="field-group">
+              <label for="projStartDate">Start date</label>
+              <input id="projStartDate" type="date" title="Select start date">
+            </div>
+            <div class="field-group">
+              <label for="projEndDate">End date</label>
+              <input id="projEndDate" type="date" title="Select end date">
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-group">
+              <label for="techStack">Tech stack</label>
+              <input id="techStack" name="tech_stack" type="text" placeholder="e.g. HTML, CSS, Python, MongoDB">
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-group">
+              <label for="projectDescription">Project description</label>
+              <textarea id="projectDescription" name="project_description" placeholder="• Problem statement
+• Your contribution
+• Results / features"></textarea>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-group">
+              <label>Project link</label>
+              <div class="checkbox-list" style="margin-bottom: 6px;">
+                <label><input type="checkbox" name="project_link_type" value="github"> GitHub</label>
+                <label><input type="checkbox" name="project_link_type" value="live_demo"> Live Demo</label>
+              </div>
+              <input type="text" name="project_link_url" placeholder="Paste URL">
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-group">
+              <label for="projectMedia">Project media (images or videos)</label>
+              <input id="projectMedia" name="project_media" type="file" accept="image/*,video/*" multiple>
+              <small class="hint">Add screenshots or demo videos that showcase your project (optional).</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-header">
+        <div class="section-title">Skills</div>
+      </div>
+      <div class="section-body">
+        <div class="field-row">
+          <div class="field-group">
+            <label for="skillsSearch">Skills</label>
+            <div class="tag-input-row">
+              <input id="skillsSearch" type="text" placeholder="Search skills (e.g. Python, React, MongoDB)">
+            </div>
+          </div>
+        </div>
+        <div class="field-row inline">
+          <div class="field-group">
+            <label for="skillLevel">Skill level for selected skill</label>
+            <select id="skillLevel" name="skill_level">
+              <option value="">Select level</option>
+              <option>Beginner</option>
+              <option>Intermediate</option>
+              <option>Advanced</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-header">
+        <div class="section-title">College clubs & councils</div>
+        <div class="section-actions">
+          <button type="button">+ Add organization</button>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="item-card">
+          <div class="item-header-row">
+            <div>Organization entry</div>
+            <div class="item-actions">
+              <button type="button">Edit</button>
+              <button type="button">Delete</button>
+            </div>
+          </div>
+          <div class="field-row inline">
+            <div class="field-group">
+              <label for="orgName">Organization name</label>
+              <input id="orgName" name="org_name" type="text" placeholder="e.g. Coding Club, IEEE, Student Council">
+            </div>
+            <div class="field-group">
+              <label for="orgRole">Role</label>
+              <input id="orgRole" name="org_role" type="text" placeholder="e.g. Core Member, Secretary, Treasurer">
+            </div>
+          </div>
+          <div class="field-row inline">
+            <div class="field-group">
+              <label for="orgStartDate">Start date</label>
+              <input id="orgStartDate" type="date" title="Select start date">
+            </div>
+            <div class="field-group">
+              <label for="orgEndDate">End date</label>
+              <input id="orgEndDate" type="date" title="Select end date">
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-group">
+              <label for="orgDescription">Description</label>
+              <textarea id="orgDescription" name="org_description" placeholder="• Responsibilities
+• Events organized
+• Leadership contributions"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-header">
+        <div class="section-title">Certifications</div>
+        <div class="section-actions">
+          <button type="button">+ Add certification</button>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="item-card">
+          <div class="item-header-row">
+            <div>Certification entry</div>
+            <div class="item-actions">
+              <button type="button">Edit</button>
+              <button type="button">Delete</button>
+            </div>
+          </div>
+          <div class="field-row inline">
+            <div class="field-group">
+              <label for="certName">Certification name</label>
+              <input id="certName" name="cert_name" type="text" placeholder="e.g. Google Data Analytics">
+            </div>
+            <div class="field-group">
+              <label for="certOrg">Issuing organization</label>
+              <input id="certOrg" name="cert_org" type="text" placeholder="e.g. Coursera">
+            </div>
+          </div>
+          <div class="field-row inline">
+            <div class="field-group">
+              <label for="certIssueDate">Issue date</label>
+              <input id="certIssueDate" type="date" title="Select issue date">
+            </div>
+            <div class="field-group">
+              <label for="certUrl">Credential URL</label>
+              <input id="certUrl" name="cert_url" type="text" placeholder="Paste certificate link">
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <div class="save-row" style="margin-top: 20px;">
+      <button type="button" id="saveProfileBtn">Save Changes</button>
+      <span id="saveStatus">All changes saved</span>
+    </div>
+  </main>
+  <script>
+    function getCheckedValues(name) {
+      return Array.from(document.querySelectorAll('input[name="' + name + '"]:checked')).map(el => el.value);
+    }
+
+    function value(id) {
+      const el = document.getElementById(id);
+      return el ? el.value.trim() : "";
+    }
+
+    function dateToMonthYear(dateStr) {
+      if (!dateStr || dateStr.length < 10) return { month: null, year: null };
+      return { month: dateStr.slice(5, 7), year: dateStr.slice(0, 4) };
+    }
+    function monthYearToDate(month, year) {
+      if (!month || !year) return "";
+      const m = String(month).padStart(2, "0");
+      const y = String(year);
+      if (y.length !== 4) return "";
+      return y + "-" + m + "-01";
+    }
+
+    function loadProfile() {
+      fetch("/api/profile")
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (!data) return;
+          const basic = data.basic || {};
+          if (basic.full_name) document.getElementById("fullName").value = basic.full_name;
+          if (basic.headline) document.getElementById("headline").value = basic.headline;
+          if (basic.location) document.getElementById("location").value = basic.location;
+
+          const openTo = basic.open_to || [];
+          openTo.forEach(v => {
+            const cb = document.querySelector('input[name="open_to"][value="' + v + '"]');
+            if (cb) cb.checked = true;
+          });
+
+          const edu = (data.education && data.education[0]) || {};
+          if (edu.college_name) document.getElementById("eduCollege").value = edu.college_name;
+          if (edu.degree) document.getElementById("eduDegree").value = edu.degree;
+          if (edu.field_of_study) document.getElementById("fieldOfStudy").value = edu.field_of_study;
+          if (edu.cgpa) document.getElementById("eduCgpa").value = edu.cgpa;
+          const eduStartEl = document.getElementById("eduStartDate");
+          if (eduStartEl) eduStartEl.value = monthYearToDate(edu.start_month, edu.start_year) || (edu.start_date || "");
+          const eduEndEl = document.getElementById("eduEndDate");
+          if (eduEndEl) eduEndEl.value = monthYearToDate(edu.end_month, edu.end_year) || (edu.end_date || "");
+          if (edu.current) document.getElementById("eduCurrent").checked = true;
+          if (edu.description) document.getElementById("eduDescription").value = edu.description;
+
+          const exp = (data.experience && data.experience[0]) || {};
+          if (exp.company_name) document.getElementById("expCompany").value = exp.company_name;
+          if (exp.internship_role) document.getElementById("expRole").value = exp.internship_role;
+          if (exp.employment_type) document.getElementById("expType").value = exp.employment_type;
+          if (exp.location) document.getElementById("expLocation").value = exp.location;
+          const expStartEl = document.getElementById("expStartDate");
+          if (expStartEl) expStartEl.value = monthYearToDate(exp.start_month, exp.start_year) || (exp.start_date || "");
+          const expEndEl = document.getElementById("expEndDate");
+          if (expEndEl) expEndEl.value = monthYearToDate(exp.end_month, exp.end_year) || (exp.end_date || "");
+          if (exp.current) document.getElementById("expCurrent").checked = true;
+          if (exp.description) document.getElementById("expDescription").value = exp.description;
+
+          const proj = (data.projects && data.projects[0]) || {};
+          if (proj.title) document.getElementById("projectTitle").value = proj.title;
+          if (proj.project_type) document.getElementById("projectType").value = proj.project_type;
+          const projStartEl = document.getElementById("projStartDate");
+          if (projStartEl) projStartEl.value = monthYearToDate(proj.start_month, proj.start_year) || (proj.start_date || "");
+          const projEndEl = document.getElementById("projEndDate");
+          if (projEndEl) projEndEl.value = monthYearToDate(proj.end_month, proj.end_year) || (proj.end_date || "");
+          if (proj.tech_stack) document.getElementById("techStack").value = proj.tech_stack;
+          if (proj.description) document.getElementById("projectDescription").value = proj.description;
+          if (proj.link_url) document.querySelector('input[name="project_link_url"]').value = proj.link_url;
+          (proj.link_types || []).forEach(v => {
+            const cb = document.querySelector('input[name="project_link_type"][value="' + v + '"]');
+            if (cb) cb.checked = true;
+          });
+
+          const skills = data.skills || [];
+          if (skills.length) {
+            document.getElementById("skillsSearch").value = skills.map(s => s.name).join(", ");
+            if (skills[0].level) document.getElementById("skillLevel").value = skills[0].level;
+          }
+
+          const club = (data.clubs && data.clubs[0]) || {};
+          if (club.org_name) document.getElementById("orgName").value = club.org_name;
+          if (club.role) document.getElementById("orgRole").value = club.role;
+          if (club.description) document.getElementById("orgDescription").value = club.description;
+          const orgStartEl = document.getElementById("orgStartDate");
+          if (orgStartEl) orgStartEl.value = monthYearToDate(club.start_month, club.start_year) || (club.start_date || "");
+          const orgEndEl = document.getElementById("orgEndDate");
+          if (orgEndEl) orgEndEl.value = monthYearToDate(club.end_month, club.end_year) || (club.end_date || "");
+
+          const cert = (data.certifications && data.certifications[0]) || {};
+          if (cert.name) document.getElementById("certName").value = cert.name;
+          if (cert.issuer) document.getElementById("certOrg").value = cert.issuer;
+          if (cert.credential_url) document.getElementById("certUrl").value = cert.credential_url;
+          const certIssueEl = document.getElementById("certIssueDate");
+          if (certIssueEl) certIssueEl.value = (cert.issue_date || "") || monthYearToDate(cert.issue_month, cert.issue_year);
+        })
+        .catch(() => {});
+    }
+
+    function buildPayload() {
+      const fullName = value("fullName");
+      const headline = value("headline");
+      const locationVal = value("location");
+
+      const education = [];
+      const eduCollege = value("eduCollege");
+      const eduDegree = document.getElementById("eduDegree").value;
+      const eduField = value("fieldOfStudy");
+      const eduCgpa = value("eduCgpa");
+      const eduStartDate = value("eduStartDate");
+      const eduEndDate = value("eduEndDate");
+      const eduStart = dateToMonthYear(eduStartDate);
+      const eduEnd = dateToMonthYear(eduEndDate);
+      const eduCurrent = document.getElementById("eduCurrent").checked;
+      const eduDescription = value("eduDescription");
+      if (eduCollege || eduDegree || eduField || eduCgpa || eduDescription || eduStartDate || eduEndDate) {
+        education.push({
+          college_name: eduCollege || null,
+          degree: eduDegree || null,
+          field_of_study: eduField || null,
+          cgpa: eduCgpa || null,
+          start_month: eduStart.month || null,
+          start_year: eduStart.year || null,
+          end_month: eduEnd.month || null,
+          end_year: eduEnd.year || null,
+          start_date: eduStartDate || null,
+          end_date: eduEndDate || null,
+          current: eduCurrent,
+          description: eduDescription || null,
+        });
+      }
+
+      const experience = [];
+      const expCompany = value("expCompany");
+      const expRole = value("expRole");
+      const expType = document.getElementById("expType").value;
+      const expLocation = value("expLocation");
+      const expStartDate = value("expStartDate");
+      const expEndDate = value("expEndDate");
+      const expStart = dateToMonthYear(expStartDate);
+      const expEnd = dateToMonthYear(expEndDate);
+      const expCurrent = document.getElementById("expCurrent").checked;
+      const expDescription = value("expDescription");
+      if (expCompany || expRole || expType || expLocation || expDescription || expStartDate || expEndDate) {
+        experience.push({
+          company_name: expCompany || null,
+          internship_role: expRole || null,
+          employment_type: expType || null,
+          location: expLocation || null,
+          start_month: expStart.month || null,
+          start_year: expStart.year || null,
+          end_month: expEnd.month || null,
+          end_year: expEnd.year || null,
+          start_date: expStartDate || null,
+          end_date: expEndDate || null,
+          current: expCurrent,
+          description: expDescription || null,
+        });
+      }
+
+      const projects = [];
+      const projTitle = value("projectTitle");
+      const projType = document.getElementById("projectType").value;
+      const projStartDate = value("projStartDate");
+      const projEndDate = value("projEndDate");
+      const projStart = dateToMonthYear(projStartDate);
+      const projEnd = dateToMonthYear(projEndDate);
+      const techStack = value("techStack");
+      const projDescription = value("projectDescription");
+      const projLinkInput = document.querySelector('input[name="project_link_url"]');
+      const projLinkUrl = projLinkInput ? projLinkInput.value.trim() : "";
+      const projLinkTypes = getCheckedValues("project_link_type");
+      if (projTitle || projType || techStack || projDescription || projStartDate || projEndDate || projLinkUrl) {
+        projects.push({
+          title: projTitle || null,
+          project_type: projType || null,
+          start_month: projStart.month || null,
+          start_year: projStart.year || null,
+          end_month: projEnd.month || null,
+          end_year: projEnd.year || null,
+          start_date: projStartDate || null,
+          end_date: projEndDate || null,
+          tech_stack: techStack || null,
+          description: projDescription || null,
+          link_url: projLinkUrl || null,
+          link_types: projLinkTypes,
+        });
+      }
+
+      const skillsVal = value("skillsSearch");
+      const skills = [];
+      if (skillsVal) {
+        const names = skillsVal.split(",").map(s => s.trim()).filter(Boolean);
+        const level = document.getElementById("skillLevel").value || null;
+        names.forEach(n => {
+          skills.push({ name: n, level: level });
+        });
+      }
+
+      const clubs = [];
+      const orgName = value("orgName");
+      const orgRole = value("orgRole");
+      const orgDescription = value("orgDescription");
+      const orgStartDate = value("orgStartDate");
+      const orgEndDate = value("orgEndDate");
+      const orgStart = dateToMonthYear(orgStartDate);
+      const orgEnd = dateToMonthYear(orgEndDate);
+      if (orgName || orgRole || orgDescription || orgStartDate || orgEndDate) {
+        clubs.push({
+          org_name: orgName || null,
+          role: orgRole || null,
+          start_month: orgStart.month || null,
+          start_year: orgStart.year || null,
+          end_month: orgEnd.month || null,
+          end_year: orgEnd.year || null,
+          start_date: orgStartDate || null,
+          end_date: orgEndDate || null,
+          description: orgDescription || null,
+        });
+      }
+
+      const certifications = [];
+      const certName = value("certName");
+      const certOrg = value("certOrg");
+      const certUrl = value("certUrl");
+      const certIssueDate = value("certIssueDate");
+      const certIssue = dateToMonthYear(certIssueDate);
+      if (certName || certOrg || certUrl || certIssueDate) {
+        certifications.push({
+          name: certName || null,
+          issuer: certOrg || null,
+          credential_url: certUrl || null,
+          issue_date: certIssueDate || null,
+          issue_month: certIssue.month || null,
+          issue_year: certIssue.year || null,
+        });
+      }
+
+      return {
+        basic: {
+          full_name: fullName,
+          headline: headline,
+          location: locationVal,
+          open_to: getCheckedValues("open_to"),
+        },
+        education: education,
+        experience: experience,
+        projects: projects,
+        skills: skills,
+        clubs: clubs,
+        certifications: certifications,
+      };
+    }
+
+    function saveProfile() {
+      const statusEl = document.getElementById("saveStatus");
+      if (statusEl) statusEl.textContent = "Saving…";
+      const payload = buildPayload();
+      fetch("/api/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
+        .then(res => res.ok ? res.json() : Promise.reject())
+        .then(() => {
+          if (statusEl) statusEl.textContent = "✔ Changes saved";
+          // After saving, send the user back to the student dashboard
+          window.location.href = "/user/dashboard";
+        })
+        .catch(() => {
+          if (statusEl) statusEl.textContent = "Could not save changes";
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      loadProfile();
+      const btn = document.getElementById("saveProfileBtn");
+      if (btn) btn.addEventListener("click", saveProfile);
+    });
+  </script>
+</body>
+</html>
+
+

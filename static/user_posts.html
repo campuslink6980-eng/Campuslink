@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Posts</title>
+  <style>
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #F3F6F8; color: #111827; }
+    .container { max-width: 860px; margin: 20px auto; padding: 0 14px 30px; }
+    .top { display: flex; justify-content: flex-end; margin-bottom: 12px; }
+    .btn { border: 1px solid #0A66C2; color: #0A66C2; background: #fff; border-radius: 22px; padding: 8px 16px; cursor: pointer; font-weight: 600; }
+    .btn:hover { background: rgba(10,102,194,0.08); }
+    .card { background: #fff; border: 1px solid #E0E0E0; border-radius: 12px; padding: 14px; margin-bottom: 14px; }
+    .head { display: flex; gap: 10px; align-items: center; }
+    .avatar { width: 42px; height: 42px; border-radius: 50%; background: #0A66C2; color: #fff; display: grid; place-items: center; font-weight: 700; }
+    .name { font-weight: 700; }
+    .meta { font-size: 12px; color: #6b7280; }
+    .content { margin-top: 8px; line-height: 1.5; color: #374151; white-space: pre-wrap; }
+    .actions { display:flex; gap:8px; margin-top:10px; }
+    .act-btn { border:1px solid #e5e7eb; background:#fff; border-radius:999px; padding:6px 10px; font-size:12px; cursor:pointer; }
+    .act-btn:hover { background:#f8fafc; }
+    .media-grid { margin-top: 10px; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+    .media-grid img, .media-grid video { width: 100%; height: 130px; object-fit: cover; border-radius: 10px; background: #eef2f7; }
+    .empty { text-align: center; color: #6b7280; padding: 30px 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="top"><button class="btn" id="homeBtn" type="button">Home</button></div>
+    <div id="postsWrap"><div class="empty">Loading posts...</div></div>
+  </div>
+  <script>
+    const userId = (location.pathname.split("/").pop() || "").trim();
+    function esc(v){ return String(v || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;"); }
+    function initials(name){ const p = String(name || "U").trim().split(/\s+/); return ((p[0]?.[0]||"") + (p[1]?.[0]||"")).toUpperCase() || "U"; }
+    function timeAgo(s){ if(!s) return ""; const d=new Date((s.endsWith("Z")||s.includes("+"))?s:(s+"Z")); const m=Math.floor((Date.now()-d.getTime())/60000); if(m<1)return"Just now"; if(m<60)return m+"m ago"; const h=Math.floor(m/60); if(h<24)return h+"h ago"; return Math.floor(h/24)+"d ago"; }
+    async function load() {
+      const wrap = document.getElementById("postsWrap");
+      try {
+        const res = await fetch(`/api/users/${encodeURIComponent(userId)}/posts?limit=100`, { credentials: "same-origin" });
+        if (!res.ok) throw new Error("Failed");
+        const data = await res.json();
+        const posts = data.posts || [];
+        if (!posts.length) { wrap.innerHTML = `<div class="empty">No posts found.</div>`; return; }
+        wrap.innerHTML = posts.map((p) => {
+          const media = Array.isArray(p.media) ? p.media : [];
+          const mediaHtml = media.map((m) => (String(m.type||"").toLowerCase()==="video"
+            ? `<video src="${esc(m.url)}" controls></video>`
+            : `<img src="${esc(m.url)}" alt="Post media">`)).join("");
+          const avatarHtml = p.author_profile_photo
+            ? `<div class="avatar" style="background-image:url('${esc(p.author_profile_photo)}');background-size:cover;background-position:center;color:transparent;">U</div>`
+            : `<div class="avatar">${initials(p.author?.name)}</div>`;
+          return `<div class="card">
+            <div class="head">${avatarHtml}<div><div class="name">${esc(p.author?.name || "User")}</div><div class="meta">${esc((p.author?.role || "Student"))} · ${timeAgo(p.created_at)}</div></div></div>
+            ${p.content ? `<div class="content">${esc(p.content)}</div>` : ""}
+            ${mediaHtml ? `<div class="media-grid">${mediaHtml}</div>` : ""}
+            <div class="actions">
+              <button class="act-btn" data-like-id="${esc(p.id)}">${p.liked ? "❤️" : "🤍"} Like${p.likes_count_hidden ? "" : " " + (p.likes_count ?? 0)}</button>
+              <button class="act-btn" data-comment-id="${esc(p.id)}">💬 Comment${p.comments_count_hidden ? "" : " " + (p.comments_count ?? 0)}</button>
+            </div>
+          </div>`;
+        }).join("");
+        wrap.querySelectorAll(".act-btn[data-like-id]").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            const id = btn.getAttribute("data-like-id");
+            if (!id) return;
+            const res = await fetch(`/toggle-like/${encodeURIComponent(id)}`, { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" } });
+            if (!res.ok) return;
+            const d = await res.json();
+            const hid = !!d.likes_count_hidden;
+            btn.textContent = `${d.liked ? "❤️" : "🤍"} Like${hid ? "" : " " + (d.likes_count ?? 0)}`;
+          });
+        });
+        wrap.querySelectorAll(".act-btn[data-comment-id]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const id = btn.getAttribute("data-comment-id");
+            if (!id) return;
+            window.open(`/post/${encodeURIComponent(id)}/comments`, "_blank", "noopener,noreferrer");
+          });
+        });
+      } catch (e) {
+        wrap.innerHTML = `<div class="empty">Failed to load posts.</div>`;
+      }
+    }
+    document.getElementById("homeBtn").addEventListener("click", () => {
+      window.close();
+      if (window.history.length > 1) window.history.back();
+      else window.location.href = "/user/dashboard";
+    });
+    load();
+  </script>
+</body>
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Submit Interview Feedback · CampusLink</title>
+  <style>
+    :root { --bg: #f3f2ef; --paper: #fff; --text: #1d2226; --muted: #6b7280; --line: #e5e7eb; --brand: #0a66c2; --danger: #dc2626; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: "Segoe UI", Arial, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    .header { background: var(--paper); color: var(--text); border-bottom: 1px solid var(--line); padding: 14px 24px; }
+    .header h1 { margin: 0; font-size: 20px; }
+    .container { max-width: 940px; margin: 0 auto; padding: 16px 12px; }
+    .loading, .error-state { text-align: center; padding: 48px 24px; color: var(--muted); }
+    .error-state { color: var(--danger); }
+    .card { background: var(--paper); border: 1px solid var(--line); border-radius: 14px; margin-bottom: 14px; overflow: hidden; box-shadow: 0 4px 14px rgba(0,0,0,0.06); }
+    .card-title { padding: 13px 16px; border-bottom: 1px solid var(--line); font-weight: 700; }
+    .card-body { padding: 15px; }
+    label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; }
+    input[type="text"], input[type="password"], select, textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font-size: 14px; margin-bottom: 14px; }
+    textarea { min-height: 80px; resize: vertical; }
+    .checkbox-group { display: flex; flex-wrap: wrap; gap: 10px 20px; margin-bottom: 14px; }
+    .checkbox-group label { display: inline-flex; align-items: center; gap: 6px; font-weight: 500; margin: 0; }
+    .btn { padding: 10px 20px; border-radius: 10px; font-weight: 600; font-size: 14px; cursor: pointer; border: none; }
+    .btn-secondary { border: 1px solid var(--line); background: #fff; color: var(--text); }
+    .btn-primary { background: var(--brand); color: #fff; }
+    .btn-primary:disabled { opacity: 0.7; cursor: not-allowed; }
+    .drive-info { font-size: 14px; color: var(--muted); margin-bottom: 20px; }
+    .round-card { border: 1px solid var(--line); border-radius: 12px; padding: 12px; margin-bottom: 12px; background: #fafafa; }
+    .row { display: flex; gap: 8px; align-items: center; }
+    .row > * { flex: 1; }
+    .q-list { margin-top: 8px; }
+    .q-item { display: flex; gap: 8px; margin-bottom: 8px; }
+    .q-item input { margin: 0; }
+    .action-row { display: flex; gap: 10px; }
+    .action-row .btn { width: auto; }
+    @media (max-width: 768px) {
+      .header { padding: 12px; }
+      .container { padding: 12px; }
+      .row, .q-item, .action-row { flex-direction: column; align-items: stretch; }
+      .btn { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <header class="header"><h1>Submit Interview Feedback</h1></header>
+  <main class="container">
+    <div id="loading" class="loading">Validating invite…</div>
+    <div id="error" class="error-state" style="display: none;"></div>
+    <form id="form" style="display: none;">
+      <div class="card">
+        <div class="card-title" id="drive-heading">—</div>
+        <div class="card-body drive-info" id="drive-info"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Your Feedback</div>
+        <div class="card-body">
+          <label>Experience Overview</label>
+          <textarea name="experience_overview" id="experience_overview" placeholder="Briefly describe your overall interview experience..."></textarea>
+          <label>Difficulty</label>
+          <select name="difficulty" id="difficulty">
+            <option value="Easy">Easy</option>
+            <option value="Medium" selected>Medium</option>
+            <option value="Hard">Hard</option>
+          </select>
+          <label>Technical vs HR</label>
+          <select name="technical_vs_hr" id="technical_vs_hr">
+            <option value="More Technical">More Technical</option>
+            <option value="More HR">More HR</option>
+            <option value="Balanced" selected>Balanced</option>
+          </select>
+          <label>Domains asked (select all that apply)</label>
+          <div class="checkbox-group" id="domains"></div>
+          <label>Focus area (select all that apply)</label>
+          <div class="checkbox-group" id="focus_area"></div>
+          <label>Rounds & Questions</label>
+          <div id="rounds-list"></div>
+          <div class="action-row">
+            <button type="button" class="btn btn-secondary" id="add-round">+ Add Round</button>
+          </div>
+          <label>Tips</label>
+          <textarea name="tips" id="tips" placeholder="Tips for future candidates…"></textarea>
+          <label>Final Result</label>
+          <input type="text" name="result" id="result" placeholder="Selected / Rejected / Waiting / Not disclosed" />
+          <div class="checkbox-group">
+            <label><input type="checkbox" name="selected" id="selected" /> I was selected</label>
+          </div>
+          <button type="submit" class="btn btn-primary" id="submit-btn">Submit experience</button>
+        </div>
+      </div>
+    </form>
+  </main>
+  <script>
+    (function() {
+      var path = window.location.pathname || "";
+      var parts = path.split("/").filter(Boolean);
+      var token = parts[parts.indexOf("submit-experience") + 1];
+      var inviteData = null;
+      var DOMAINS = ["DSA", "OOPS", "DBMS", "OS", "CN", "Projects", "Internship", "Aptitude", "Other"];
+      var FOCUS = ["Projects", "Internship", "Skills", "Fundamentals"];
+      function el(id) { return document.getElementById(id); }
+      function renderCheckboxes(containerId, options, name) {
+        var el = document.getElementById(containerId);
+        if (!el) return;
+        el.innerHTML = options.map(function(o) {
+          return "<label><input type=\"checkbox\" name=\"" + name + "\" value=\"" + o + "\" /> " + o + "</label>";
+        }).join("");
+      }
+      function addQuestionRow(roundCard) {
+        var qList = roundCard.querySelector(".q-list");
+        var row = document.createElement("div");
+        row.className = "q-item";
+        row.innerHTML = "<input type=\"text\" placeholder=\"Question\" class=\"round-question\" /><button type=\"button\" class=\"btn btn-secondary remove-question\">Remove</button>";
+        row.querySelector(".remove-question").addEventListener("click", function() { row.remove(); });
+        qList.appendChild(row);
+      }
+      function addRound() {
+        var roundsList = document.getElementById("rounds-list");
+        var card = document.createElement("div");
+        card.className = "round-card";
+        card.innerHTML = "<div class=\"row\"><input type=\"text\" class=\"round-name\" placeholder=\"Round Name (Aptitude / Technical / HR)\" /><button type=\"button\" class=\"btn btn-secondary add-question\">+ Add Question</button><button type=\"button\" class=\"btn btn-secondary remove-round\">Remove Round</button></div><div class=\"q-list\"></div>";
+        card.querySelector(".add-question").addEventListener("click", function() { addQuestionRow(card); });
+        card.querySelector(".remove-round").addEventListener("click", function() { card.remove(); });
+        roundsList.appendChild(card);
+        addQuestionRow(card);
+      }
+      document.getElementById("add-round").addEventListener("click", addRound);
+      if (!token) {
+        el("loading").style.display = "none";
+        el("error").textContent = "Invalid link.";
+        el("error").style.display = "block";
+        return;
+      }
+      fetch("/api/interview/invite-by-token/" + encodeURIComponent(token))
+        .then(function(r) { return r.json().then(function(d) { return { status: r.status, data: d }; }); })
+        .then(function(res) {
+          el("loading").style.display = "none";
+          if (res.status !== 200 || res.data.error) {
+            el("error").textContent = res.data.error || "Invalid or expired link.";
+            el("error").style.display = "block";
+            return;
+          }
+          inviteData = res.data;
+          el("drive-heading").textContent = (res.data.company || "Company") + " · " + (res.data.role || "Role");
+          el("drive-info").textContent = "Share your interview experience for this drive. One submission per invite.";
+          renderCheckboxes("domains", DOMAINS, "domains_asked");
+          renderCheckboxes("focus_area", FOCUS, "focus_area");
+          addRound();
+          el("form").style.display = "block";
+        })
+        .catch(function() {
+          el("loading").style.display = "none";
+          el("error").textContent = "Failed to load.";
+          el("error").style.display = "block";
+        });
+      document.getElementById("form").addEventListener("keydown", function(e) {
+        if (e.key === "Enter") e.preventDefault();
+      });
+      document.getElementById("form").addEventListener("submit", function(e) {
+        e.preventDefault();
+        var form = e.target;
+        var domains = [].slice.call(form.querySelectorAll("input[name=domains_asked]:checked")).map(function(c) { return c.value; });
+        var focus = [].slice.call(form.querySelectorAll("input[name=focus_area]:checked")).map(function(c) { return c.value; });
+        var questions = [];
+        var roundCards = form.querySelectorAll(".round-card");
+        roundCards.forEach(function(card) {
+          var roundName = (card.querySelector(".round-name").value || "").trim();
+          card.querySelectorAll(".round-question").forEach(function(q) {
+            var question = (q.value || "").trim();
+            if (roundName || question) questions.push({ round: roundName, question: question });
+          });
+        });
+        var payload = {
+          invite_token: token,
+          experience_overview: (form.experience_overview && form.experience_overview.value) ? form.experience_overview.value.trim() : "",
+          difficulty: form.difficulty.value,
+          technical_vs_hr: form.technical_vs_hr.value,
+          domains_asked: domains,
+          focus_area: focus,
+          questions: questions,
+          tips: (form.tips && form.tips.value) ? form.tips.value.trim() : "",
+          result: (form.result && form.result.value) ? form.result.value.trim() : "",
+          selected: !!(form.selected && form.selected.checked),
+        };
+        el("submit-btn").disabled = true;
+        fetch("/api/interview/submit-experience", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        })
+          .then(function(r) { return r.json().then(function(d) { return { status: r.status, data: d }; }); })
+          .then(function(res) {
+            if (res.status === 201 && res.data.drive_id) {
+              window.location.href = "/interview-drive/" + res.data.drive_id;
+            } else {
+              alert(res.data.error || "Submission failed.");
+              el("submit-btn").disabled = false;
+            }
+          })
+          .catch(function() {
+            alert("Submission failed.");
+            el("submit-btn").disabled = false;
+          });
+      });
+    })();
+  </script>
+</body>
+</html>

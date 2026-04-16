@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <div class="logo-placeholder" aria-label="Campuslink logo area">
+                    <img class="logo-img" src="/images/logo.png" alt="Campuslink logo">
+                </div>
+            </div>
+        </div>
+    </header>
+    <main class="container">
+        <section class="card" role="region" aria-labelledby="register-title">
+            <div class="card-header">
+                <h1 id="register-title">Create your account</h1>
+            </div>
+
+            <form class="form" id="registrationForm" novalidate>
+                <div class="field field-spaced">
+                    <label for="role">Role</label>
+                    <select id="role" name="user_type" required>
+                        <option value="" selected disabled>Select a role</option>
+                        <option value="student">Student</option>
+                        <option value="faculty">Faculty</option>
+                        <option value="coordinator">Coordinator</option>
+                        <option value="alumni">Alumni</option>
+                    </select>
+                </div>
+
+                <div class="grid">
+                    <div class="field">
+                        <label for="firstName">First name</label>
+                        <input id="firstName" name="first_name" type="text" autocomplete="given-name" required>
+                    </div>
+                    <div class="field">
+                        <label for="lastName">Last name</label>
+                        <input id="lastName" name="last_name" type="text" autocomplete="family-name" required>
+                    </div>
+                </div>
+
+                <div class="field field-spaced">
+                    <label for="email">Email</label>
+                    <input id="email" name="email" type="email" autocomplete="email" inputmode="email" required>
+                </div>
+
+                <div class="field field-spaced">
+                    <label for="branch">Branch</label>
+                    <select id="branch" name="branch" required>
+                        <option value="" selected disabled>Select your branch</option>
+                        <option value="IT">IT</option>
+                        <option value="CST">CST</option>
+                        <option value="CE">CE</option>
+                        <option value="DS">DS</option>
+                        <option value="ENC">ENC</option>
+                        <option value="AI">AI</option>
+                    </select>
+                </div>
+
+                <div class="field role-field field-spaced" id="studentRollField" style="display:none;">
+                    <label for="rollNumber">Roll Number</label>
+                    <input id="rollNumber" name="roll_number" type="text" placeholder="Enter your roll number" autocomplete="off">
+                </div>
+
+                <div class="field role-field" id="coordinatorField" style="display:none;">
+                    <label for="coordinatorId">Coordinator ID (if required)</label>
+                    <input id="coordinatorId" name="faculty_id" type="text" placeholder="Enter Coordinator ID" autocomplete="off">
+                </div>
+                <div class="field role-field" id="facultyField" style="display:none;">
+                    <p class="hint" style="margin-bottom:8px;">Faculty must select their department below. You will only see students from your department.</p>
+                </div>
+
+                <div class="field role-field" id="alumniField" style="display:none;">
+                    <p class="hint" style="margin-bottom:8px;">Alumni sign up is approval-based. Submit a request; you will receive an email to set your password after approval.</p>
+                    <label for="passoutYear">Passout Year</label>
+                    <input id="passoutYear" name="passout_year" type="text" placeholder="e.g. 2023" pattern="[0-9]{4}" maxlength="4" title="4-digit year">
+                </div>
+
+                <div class="grid field-spaced">
+                    <div class="field">
+                        <label for="password">Password</label>
+                        <input id="password" name="password" type="password" autocomplete="new-password" minlength="8" required>
+                        <small class="hint">Use at least 8 characters</small>
+                    </div>
+                    <div class="field">
+                        <label for="confirmPassword">Confirm password</label>
+                        <input id="confirmPassword" type="password" autocomplete="new-password" minlength="8" required>
+                    </div>
+                </div>
+
+                <button class="button" type="submit" id="registerBtn">Create account</button>
+
+                <p class="footnote">Already have an account? <a href="/login" class="link">Sign in</a></p>
+            </form>
+        </section>
+    </main>
+
+    <footer class="footer" aria-label="Footer">
+        <p>© <span id="year"></span> Campuslink</p>
+    </footer>
+
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        const roleSelect = document.getElementById('role');
+        const studentRollField = document.getElementById('studentRollField');
+        const coordinatorField = document.getElementById('coordinatorField');
+        const facultyField = document.getElementById('facultyField');
+        const alumniField = document.getElementById('alumniField');
+        const rollInput = document.getElementById('rollNumber');
+        const coordinatorInput = document.getElementById('coordinatorId');
+
+        function updateRoleFields() {
+            const role = roleSelect.value;
+            studentRollField.style.display = role === 'student' ? '' : 'none';
+            coordinatorField.style.display = role === 'coordinator' ? '' : 'none';
+            facultyField.style.display = role === 'faculty' ? '' : 'none';
+            alumniField.style.display = role === 'alumni' ? '' : 'none';
+            rollInput.required = role === 'student';
+            if (coordinatorInput) coordinatorInput.required = role === 'coordinator';
+            document.getElementById('branch').required = role === 'student' || role === 'faculty';
+            const pwdRow = document.querySelector('.grid.field-spaced');
+            if (pwdRow) pwdRow.style.display = role === 'alumni' ? 'none' : '';
+            const submitBtn = document.getElementById('registerBtn');
+            if (submitBtn) submitBtn.textContent = role === 'alumni' ? 'Submit request' : 'Create account';
+        }
+
+        roleSelect.addEventListener('change', updateRoleFields);
+        updateRoleFields();
+
+        document.getElementById('registrationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const role = roleSelect.value;
+            if (!role) {
+                alert('Please select a role.');
+                return;
+            }
+            if (role === 'alumni') {
+                const payload = {
+                    first_name: document.getElementById('firstName').value.trim(),
+                    last_name: document.getElementById('lastName').value.trim(),
+                    email: document.getElementById('email').value.trim().toLowerCase(),
+                    branch: document.getElementById('branch').value,
+                    passout_year: document.getElementById('passoutYear') ? document.getElementById('passoutYear').value.trim() : ''
+                };
+                try {
+                    const res = await fetch('/api/alumni/request', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const data = await res.json().catch(() => ({}));
+                    if (res.ok) {
+                        alert('Your registration request has been sent for approval.');
+                        window.location.href = '/main';
+                    } else {
+                        alert(data.error || 'Request failed.');
+                    }
+                } catch (err) {
+                    alert('Network error. Please try again.');
+                }
+                return;
+            }
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            if (password !== confirmPassword) {
+                alert('Passwords do not match.');
+                return;
+            }
+            const payload = {
+                user_type: role,
+                first_name: document.getElementById('firstName').value.trim(),
+                last_name: document.getElementById('lastName').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                branch: document.getElementById('branch').value,
+                password,
+                roll_number: rollInput.value.trim(),
+                faculty_id: coordinatorInput ? coordinatorInput.value.trim() : ''
+            };
+            try {
+                const res = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    alert('Registration successful. Please sign in.');
+                    window.location.href = '/login';
+                } else {
+                    const data = await res.json().catch(() => ({ error: 'Registration failed.' }));
+                    alert(data.error || 'Registration failed.');
+                }
+            } catch (err) {
+                alert('Network error. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>
+
+

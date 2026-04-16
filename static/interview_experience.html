@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interview Feedback · CampusLink</title>
+  <style>
+    :root { --bg: #f3f2ef; --paper: #fff; --text: #1d2226; --muted: #6b7280; --line: #e5e7eb; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: "Segoe UI", Arial, sans-serif; background: var(--bg); color: var(--text); }
+    .header { background: var(--paper); border-bottom: 1px solid var(--line); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; }
+    .header h1 { margin: 0; font-size: 20px; }
+    .back-link { color: var(--text); text-decoration: none; font-weight: 600; border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; }
+    .container { max-width: 980px; margin: 0 auto; padding: 18px 14px; }
+    .loading, .error-state { text-align: center; padding: 42px 24px; color: var(--muted); }
+    .card { background: var(--paper); border: 1px solid var(--line); border-radius: 14px; margin-bottom: 14px; box-shadow: 0 4px 14px rgba(0,0,0,0.06); }
+    .card-body { padding: 16px; }
+    .top-meta { color: var(--muted); font-size: 14px; }
+    .sec-title { margin: 0 0 8px; font-size: 16px; }
+    .value { margin: 0; line-height: 1.6; white-space: pre-wrap; }
+    .pill-list { display: flex; flex-wrap: wrap; gap: 8px; }
+    .pill { border: 1px solid var(--line); border-radius: 999px; padding: 6px 10px; font-size: 13px; background: #fafafa; }
+    .q-card { border: 1px solid var(--line); border-radius: 12px; padding: 10px; margin-top: 8px; }
+    .q-card h4 { margin: 0 0 6px; font-size: 14px; }
+    .q-card ul { margin: 0; padding-left: 18px; }
+    @media (max-width: 768px) { .header { padding: 12px; } .container { padding: 12px; } .back-link { width: 100%; text-align: center; } }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <h1 id="page-title">Feedback Detail</h1>
+    <a href="#" id="back-link" class="back-link">← Back</a>
+  </header>
+  <main class="container">
+    <div id="loading" class="loading">Loading…</div>
+    <div id="error" class="error-state" style="display: none;"></div>
+    <div id="content" style="display: none;">
+      <div class="card">
+        <div class="card-body">
+          <div class="top-meta" id="top-meta"></div>
+        </div>
+      </div>
+      <div id="experience-body"></div>
+    </div>
+  </main>
+  <script src="/static/js/cross-tab-auth.js"></script>
+  <script>
+    (function() {
+      var path = window.location.pathname || "";
+      var parts = path.split("/").filter(Boolean);
+      var idx = parts.indexOf("interview-experience");
+      var experienceId = idx >= 0 && parts[idx + 1] ? parts[idx + 1] : null;
+      function el(id) { return document.getElementById(id); }
+      function esc(s) { return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
+      if (!experienceId) {
+        el("loading").style.display = "none";
+        el("error").textContent = "Invalid experience.";
+        el("error").style.display = "block";
+        return;
+      }
+      el("back-link").addEventListener("click", function(e) { e.preventDefault(); window.history.back(); });
+      fetch("/api/interview/experiences/" + encodeURIComponent(experienceId), { credentials: "same-origin" })
+        .then(function(r) {
+          if (r.status === 401) { window.location.href = "/login"; return null; }
+          return r.json();
+        })
+        .then(function(data) {
+          el("loading").style.display = "none";
+          if (!data || data.error) {
+            el("error").textContent = (data && data.error) ? data.error : "Failed to load.";
+            el("error").style.display = "block";
+            return;
+          }
+          var exp = data.experience || {};
+          el("page-title").textContent = (exp.company || "Experience") + " · " + (exp.student_name || "");
+          el("top-meta").innerHTML = "<strong>" + esc(exp.student_name || "Anonymous") + "</strong> · " + esc(exp.branch || "—") + (exp.year != null ? " · Year " + exp.year : "") + "<br>" + esc(exp.company || "") + (exp.role ? " – " + esc(exp.role) : "");
+
+          var grouped = {};
+          (exp.questions || []).forEach(function(q) {
+            var k = q.round || "General";
+            if (!grouped[k]) grouped[k] = [];
+            grouped[k].push(q.question || "");
+          });
+          var roundHtml = Object.keys(grouped).map(function(rn) {
+            return "<div class=\"q-card\"><h4>" + esc(rn) + "</h4><ul>" + grouped[rn].map(function(q) { return "<li>" + esc(q || "—") + "</li>"; }).join("") + "</ul></div>";
+          }).join("");
+
+          var body = "";
+          body += "<section class=\"card\"><div class=\"card-body\"><h3 class=\"sec-title\">1. Experience Overview</h3><p class=\"value\">" + esc(exp.experience_overview || "—") + "</p></div></section>";
+          body += "<section class=\"card\"><div class=\"card-body\"><h3 class=\"sec-title\">2. Difficulty</h3><p class=\"value\">" + esc(exp.difficulty || "—") + "</p></div></section>";
+          body += "<section class=\"card\"><div class=\"card-body\"><h3 class=\"sec-title\">3. Technical vs HR</h3><p class=\"value\">" + esc(exp.technical_vs_hr || "—") + "</p></div></section>";
+          body += "<section class=\"card\"><div class=\"card-body\"><h3 class=\"sec-title\">4. Domains Asked</h3><div class=\"pill-list\">" + ((exp.domains_asked || []).map(function(d) { return "<span class=\"pill\">" + esc(d) + "</span>"; }).join("") || "<p class=\"value\">—</p>") + "</div></div></section>";
+          body += "<section class=\"card\"><div class=\"card-body\"><h3 class=\"sec-title\">5. Focus Area</h3><div class=\"pill-list\">" + ((exp.focus_area || []).map(function(f) { return "<span class=\"pill\">" + esc(f) + "</span>"; }).join("") || "<p class=\"value\">—</p>") + "</div></div></section>";
+          body += "<section class=\"card\"><div class=\"card-body\"><h3 class=\"sec-title\">6. Round-wise Questions</h3>" + (roundHtml || "<p class=\"value\">—</p>") + "</div></section>";
+          body += "<section class=\"card\"><div class=\"card-body\"><h3 class=\"sec-title\">7. Tips</h3><p class=\"value\">" + esc(exp.tips || "—") + "</p></div></section>";
+          body += "<section class=\"card\"><div class=\"card-body\"><h3 class=\"sec-title\">8. Final Result</h3><p class=\"value\">" + esc(exp.result || (exp.selected ? "Selected" : "Not Selected / Not Mentioned")) + "</p></div></section>";
+          el("experience-body").innerHTML = body || "<p style=\"color:var(--muted);\">No content.</p>";
+          el("content").style.display = "block";
+        })
+        .catch(function() {
+          el("loading").style.display = "none";
+          el("error").textContent = "Failed to load.";
+          el("error").style.display = "block";
+        });
+    })();
+  </script>
+</body>
+</html>
